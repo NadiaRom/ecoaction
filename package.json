@@ -1,0 +1,27 @@
+{
+  "name": "ecoaction",
+  "version": "1.0.0",
+  "description": "modules for ecoaction viz",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NadiaRom/ecoaction.git"
+  },
+  "keywords": [
+    "d3",
+    "infoviz"
+  ],
+  "author": "Nadiia Romanenko",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NadiaRom/ecoaction/issues"
+  },
+  "homepage": "https://github.com/NadiaRom/ecoaction#readme",
+  "dependencies": {
+    "d3": "^5.7.0",
+    "jquery": "^3.3.1"
+  }
+}
