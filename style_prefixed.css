@@ -1,3 +1,84 @@
+body {
+  color: #3c353f;
+  background-color: #f7f7f7;
+  font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+  margin: 0;
+  padding: 0; }
+  body * {
+    box-sizing: border-box;
+    outline: none; }
 
+header {
+  padding: 1em 10% 2em 10%;
+  height: 100vh;
+  background: linear-gradient(0.5turn, #3c353f, #00a650, #00a650);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #f7f7f7; }
+  header h1 {
+    font-size: 3em;
+    font-family: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif; }
+  header h2 {
+    font-size: 1em;
+    font-weight: 600; }
 
-/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzdHlsZV9wcmVmaXhlZC5jc3MifQ== */
+main #chart {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.61fr 1fr;
+  padding: 1em 2em 1em 2em; }
+  main #chart h3 {
+    grid-column: 1 / -1;
+    padding: 1em 0 1em 0; }
+  main #chart nav {
+    grid-column: 1 / -1;
+    padding: 0;
+    margin: 0; }
+    main #chart nav ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center; }
+      main #chart nav ul li {
+        padding: 0 0 1em 0; }
+        main #chart nav ul li button {
+          width: 100%;
+          text-align: start;
+          border-radius: 0;
+          line-height: 1.5;
+          border: none;
+          background-color: #dedede;
+          padding: 0.5em 0.5em 0.5em 0.5em; }
+        main #chart nav ul li button.active {
+          background-color: #b7b7b7;
+          font-weight: 600; }
+  main #chart figure {
+    padding: 0;
+    margin: 0; }
+    main #chart figure svg {
+      margin: 0;
+      padding: 0;
+      overflow: visible; }
+      main #chart figure svg path {
+        stroke: #f7f7f7;
+        stroke-opacity: 0.25; }
+      main #chart figure svg .x_axis .tick text {
+        font-size: 0.85rem; }
+      main #chart figure svg .y_axis .tick text {
+        font-size: 0.7rem; }
+  main #chart #explanation {
+    padding: 0;
+    margin: 0; }
+    main #chart #explanation ul {
+      list-style-type: none; }
+      main #chart #explanation ul i {
+        font-size: 0.5em;
+        color: #00a650; }
+      main #chart #explanation ul li.subsection {
+        font-weight: 600;
+        margin-top: 1em; }
+
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInN0eWxlLnNjc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBT0E7RUFDRSxlQU5lO0VBT2YsMEJBTmE7RUFPYixnRUFOMEQ7RUFPMUQsVUFBUztFQUNULFdBQVUsRUFBQTtFQUVWO0lBQ0UsdUJBQXNCO0lBQ3RCLGNBQWEsRUFBQTs7QUFJakI7RUFDRSx5QkFBd0I7RUFDeEIsY0FBYTtFQUNiLGdFQUE4RDtFQUM5RCxjQUFhO0VBQ2IsdUJBQXNCO0VBQ3RCLHdCQUF1QjtFQUN2QixlQXhCYSxFQUFBO0VBMEJiO0lBQ0UsZUFBYztJQUNkLGtFQTFCMEQsRUFBQTtFQTZCNUQ7SUFDRSxlQUFjO0lBQ2QsaUJBQWdCLEVBQUE7O0FBS2xCO0VBQ0Usa0JBQWlCO0VBQ2pCLGNBQWE7RUFDYixrQ0FBaUM7RUFDakMseUJBQXdCLEVBQUE7RUFFeEI7SUFDRSxvQkFBbUI7SUFDbkIscUJBQW9CLEVBQUE7RUFHdEI7SUFDRSxvQkFBbUI7SUFDbkIsV0FBVTtJQUNWLFVBQVMsRUFBQTtJQUNUO01BQ0Usc0JBQXFCO01BQ3JCLFdBQVU7TUFDVixVQUFTO01BQ1QsY0FBYTtNQUNiLCtCQUE4QjtNQUM5QixvQkFBbUIsRUFBQTtNQUVuQjtRQUNFLG1CQUFrQixFQUFBO1FBRWxCO1VBQ0UsWUFBVztVQUNYLGtCQUFpQjtVQUNqQixpQkFBZ0I7VUFDaEIsaUJBQWdCO1VBQ2hCLGFBQVk7VUFDWiwwQkFBcUM7VUFDckMsaUNBQWdDLEVBQUE7UUFHbEM7VUFDRSwwQkFBcUM7VUFDckMsaUJBQWdCLEVBQUE7RUFNeEI7SUFDRSxXQUFVO0lBQ1YsVUFBUyxFQUFBO0lBRVQ7TUFDRSxVQUFTO01BQ1QsV0FBVTtNQUNWLGtCQUFpQixFQUFBO01BRWpCO1FBQ0UsZ0JBNUZLO1FBNkZMLHFCQUFvQixFQUFBO01BR3RCO1FBQ0UsbUJBQWtCLEVBQUE7TUFHcEI7UUFDRSxrQkFBaUIsRUFBQTtFQUt2QjtJQUNFLFdBQVU7SUFDVixVQUFTLEVBQUE7SUFFVDtNQUNFLHNCQUFxQixFQUFBO01BRXJCO1FBQ0UsaUJBQWdCO1FBQ2hCLGVBdEhLLEVBQUE7TUF5SFA7UUFDRSxpQkFBZ0I7UUFDaEIsZ0JBQWUsRUFBQSIsImZpbGUiOiJzdHlsZV9wcmVmaXhlZC5jc3MifQ== */
