@@ -1,5 +1,8 @@
 const d3 = require('d3');
 const $ = require('jquery');
+const tippy = require('tippy.js');
+const chroma = require('chroma-js');
+
 
 const yearParse = d3.utcParse("%Y");
 
@@ -11,11 +14,13 @@ const cols = {
 };
 
 const svg_m = {
-    top: 15,
+    top: 25,
     right: 15,
     bottom: 5,
     left: 15,
 };
+
+const fontSize = parseInt($('body').css('font-size'));
 
 const numericalize = function (d) {
     for (const k in d) {
@@ -89,26 +94,50 @@ Promise.all([
     const yAxis = d3.axisLeft(scaleKTNE);
     
     let activeSphere = $('#chart nav ul button.active').text();
-    let activeData = bySpheres.filter(d => d.key === activeSphere)[0].values;
+    let stackedActiveData = stack(bySpheres.filter(d => d.key === activeSphere)[0].values);
     
     const expl = d3.select('div#explanation')
         .append('ul');
     
-    expl.selectAll('li')
+    let explLi = expl.selectAll('li')
         .data(measures[activeSphere])
         .enter()
         .append('li')
         .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
         .classed('subsection', d => d.match(/:$/) ? true : false);
     
-    const areaChart = svg.selectAll('path')
-        .data(stack(activeData))
+    const areaChart = svg.selectAll('path.area_path')
+        .data(stackedActiveData)
         .enter()
         .append('path')
+        .classed('area_path', true)
         .attr('d', reshapeD)
         .style('fill', d => {
             return sourcesOrder[d.key].is_vde ? cols.green : cols.black;
-        });
+        })
+        .attr('data-source', d => d.key);
+
+    // const areaLines = svg.selectAll('path.area_line')
+    //     .data(stackedActiveData)
+    //     .enter()
+    //     .append('path')
+    //     .classed('area_line', true)
+    //     .attr('d', (d) => {
+    //         const coords = d3.select(`path.area_path[data-source="${d.key}"]`)
+    //             .attr('d')
+    //             .split(/[MLZ]/)
+    //             .filter(v => v)
+    //             .map(v => JSON.parse(`[${v}]`));
+    //        
+    //         const maxSpace = [...new Array(3)].reduce(function (total=[0, 0], v, i) {
+    //             const diff = coords[coords.length - 1 -i][1] - coords[i][1];
+    //             return (diff > total[0]) 
+    //                 ? [diff, i]
+    //                 : total;
+    //         });
+    //        
+    //         debugger;
+    //     });
 
     const gXAxis = svg.append('g')
         .classed('x_axis', true)
@@ -124,12 +153,12 @@ Promise.all([
         .remove();
 
     gXAxis.selectAll('.tick line')
-        .attr('stroke', cols.bgcol)
+        .attr('stroke', chroma(cols.bgcol).darken(2).hex())
         .attr('y2', scaleKTNE(0) - svg_m.top * 1.5)
         .style('stroke-dasharray', '2,2');
 
     gXAxis.selectAll('.tick text')
-        .attr('y', '-5')
+        .attr('y', '-15')
         .attr('fill', cols.black)
         .attr('text-anchor', function (d, i) {
             switch (i) {
@@ -145,24 +174,18 @@ Promise.all([
         .attr('text-anchor', 'start');
 
     $('nav button').click(function () {
-        console.log(scaleKTNE.domain());
         $('nav button').removeClass('active');
         const $t = $(this);
         $t.addClass('active');
 
         activeSphere = $t.text();
         activeData = bySpheres.filter(d => d.key === activeSphere)[0].values;
-        const stackedActiveData = stack(activeData);
-        
-        // scaleKTNE
-        //     .domain([0, d3.max(stackedActiveData, d => d[d.length-1][1])]);
+        stackedActiveData = stack(activeData);
 
         scaleKTNE
             .domain([0, d3.max(stackedActiveData, d => {
                 return d3.max([].concat(...d));
             }) * 1.1]);
-        
-        console.log(scaleKTNE.domain());
 
         areaChart
             .data(stackedActiveData)
@@ -172,12 +195,43 @@ Promise.all([
 
         gYAxis.transition()
             .duration(1000)
-            .call(yAxis);
+            .call(yAxis)
+            .selectAll('.tick text')
+            .attr('fill', cols.orange)
+            .attr('x', 5)
+            .attr('text-anchor', 'start');
+
+        d3.selectAll('path.domain')
+            .remove();
+
+        explLi = expl.selectAll('li')
+            .data(measures[activeSphere]);
+        
+        explLi.enter()
+            .append('li')
+            .merge(explLi)
+            .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
+            .classed('subsection', d => d.match(/:$/) ? true : false);
+        
+        explLi
+            .exit()
+            .remove();
+        
     });
 
-
-
-
+    $(document).ready(function () {
+        tippy('.area_path', {
+            followCursor: true,
+            animation: 'perspective',
+            arrow: true,
+            performance: true,
+            arrowType: 'round',
+            onShow(tip) {
+                tip.setContent(tip.reference.getAttribute('data-source'));
+            },
+        });
+    });
+    
 });
 
 

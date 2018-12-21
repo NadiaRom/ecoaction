@@ -92,9 +92,15 @@ main {
         padding: 0;
         overflow: visible;
 
-        path {
+        .area_path {
           stroke: $bgcol;
           stroke-opacity: 0.25;
+        }
+
+        .area_line {
+          fill: none;
+          stroke-width: 2px;
+          stroke: $red;
         }
 
         .x_axis .tick text {

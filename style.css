@@ -62,9 +62,13 @@ main #chart {
       margin: 0;
       padding: 0;
       overflow: visible; }
-      main #chart figure svg path {
+      main #chart figure svg .area_path {
         stroke: #f7f7f7;
         stroke-opacity: 0.25; }
+      main #chart figure svg .area_line {
+        fill: none;
+        stroke-width: 2px;
+        stroke: #f26522; }
       main #chart figure svg .x_axis .tick text {
         font-size: 0.85rem; }
       main #chart figure svg .y_axis .tick text {
