@@ -4,9 +4,6 @@ const $ = require('jquery');
 const tippy = require('tippy.js');
 const chroma = require('chroma-js');
 
-
-const yearParse = d3.utcParse("%Y");
-
 const cols = {
     green: '#00a650', 
     black: '#3c353f', 
@@ -32,17 +29,15 @@ const numericalize = function (d) {
     return d;
 };
 
-const scaleYear = d3.scaleTime()
-    .domain([new Date(2012, 0, 1), new Date(2050, 0, 1)]);
+const scaleYear = d3.scalePoint()
+    .domain([2012, 2035, 2050]);
 
-const scaleKTNE = d3.scaleLinear();
+const scaleSource = d3.scalePoint();
 
-const area = d3.area()
-    .x(d => scaleYear(d.x))
-    .y1(d => scaleKTNE(d.y1))
-    .y0(d => scaleKTNE(d.y0));
+const scaleKTNE = d3.scaleLinear()
+    .domain([0, 67000]);
 
-const id2year = ['2012', '2035', '2050'];
+const id2year = [2012, 2035, 2050];
 
 let reshapeD = function (d) {
     const reshaped = d.map(([y0, y1], i) => {
@@ -52,19 +47,19 @@ let reshapeD = function (d) {
 };
 
 Promise.all([
-    d3.csv('data_by_sphere_wide.csv', numericalize),
+    d3.csv('data_by_sphere.csv', numericalize),
     d3.json('measures.json'),
     d3.json('sources_order.json', numericalize),
 ]).then(function ([data, measures, sourcesOrder]) {
+   
     const bySpheres = d3.nest()
         .key(d => d.sphere)
         .entries(data);
     
-    let sphereLi = d3.select('#chart nav ul')
-        .selectAll('li')
+    let sphereLi = d3.select('#chart nav ')
+        .selectAll('button')
         .data(bySpheres.map(d => d.key))
         .enter()
-        .append('li')
         .append('button')
         .text(d => d)
         .attr('class', d => { if (d === 'Всього') return 'active'});
@@ -75,27 +70,69 @@ Promise.all([
 
     const sources = [...Object.keys(sourcesOrder)];
 
-    const stack = d3.stack()
-        .keys(sources)
-        .order(d3.stackOrderNone)
-        .offset(d3.stackOffsetNone);
+    scaleSource
+        .domain(sources)
+        .range([+svg.attr('height') - svg_m.bottom, 0 + svg_m.top]);
+
+    const yAxis = d3.axisLeft(scaleSource);
+
+    const gYAxis = svg.append('g')
+        .attr('id', 'y_axis')
+        .attr('transform', `translate(${svg_m.left}, -3)`)
+        .call(yAxis);
+    
+    gYAxis.selectAll('path, line')
+        .remove();
+
+    gYAxis.selectAll('text')
+        .attr('text-anchor', 'start')
+        .attr('x', 0)
+        .attr('fill', cols.black);
+
+    const getCircleStart = function () {
+        const bbox = (gYAxis).node().getBBox();
+        return bbox.x + bbox.width + fontSize*2;
+    };
+    
+    const getYearWidth = function () {
+        return d3.min([
+            ((+svg.attr('width') - getCircleStart()) / 3) * 0.85,
+            scaleSource(sources[0]) - scaleSource(sources[1]) - fontSize/2
+        ]);
+    };
+
+    let circleStart = getCircleStart(),
+        yearWidth = getYearWidth();
+
+    scaleYear
+        .range([svg_m.left + circleStart, svg_m.left + circleStart + yearWidth*3 + fontSize*4])
+        .padding(fontSize / (yearWidth*3 + fontSize*4));
+    
+    scaleKTNE
+        .range([5, yearWidth]);
+
+    svg.attr('width', scaleYear.range()[1]);
 
     let svgOff = $(svg.node()).offset();
 
-    scaleYear
-        .range([0 + svg_m.left, +svg.attr('width') - svg_m.right]);
-
-    scaleKTNE
-        .domain([0, 75000])
-        .range([+svg.attr('height') - svg_m.bottom, 0 + svg_m.top]);
-
     const xAxis = d3.axisTop(scaleYear)
-        .tickValues([new Date(2012, 0, 1), new Date(2035, 0, 1), new Date(2050, 0, 1)]);
+        .tickValues([2012, 2035, 2050]);
 
-    const yAxis = d3.axisLeft(scaleKTNE);
+    const gXAxis = svg.append('g')
+        .attr('id', 'x_axis')
+        .attr('transform', `translate(0, ${svg_m.top * 1.5})`)
+        .call(xAxis);
+
+    gXAxis.selectAll('path, line')
+        .remove();
+
+    gXAxis.selectAll('text')
+        .attr('text-anchor', 'start')
+        .attr('x', 0)
+        .attr('fill', cols.black);
     
-    let activeSphere = $('#chart nav ul button.active').text();
-    let stackedActiveData = stack(bySpheres.filter(d => d.key === activeSphere)[0].values);
+    let activeSphere = $('#chart button.active').text();
+    let activeData = bySpheres.filter(d => d.key === activeSphere)[0].values;
     
     const expl = d3.select('div#explanation')
         .append('ul');
@@ -107,16 +144,17 @@ Promise.all([
         .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
         .classed('subsection', d => d.match(/:$/) ? true : false);
     
-    const areaChart = svg.selectAll('path.area_path')
-        .data(stackedActiveData)
+    const totalCircles = svg.selectAll('circle')
+        .data(activeData)
         .enter()
-        .append('path')
-        .classed('area_path', true)
-        .attr('d', reshapeD)
-        .style('fill', d => {
-            return sourcesOrder[d.key].is_vde ? cols.green : cols.black;
+        .append('circle')
+        .attr('cx', function (d) {
+            debugger;
         })
-        .attr('data-source', d => d.key);
+        .attr('cy', function (d) {
+            
+        })
+        .attr('r', d => d)
 
     // const areaLines = svg.selectAll('path.area_line')
     //     .data(stackedActiveData)
@@ -140,15 +178,15 @@ Promise.all([
     //         debugger;
     //     });
 
-    const gXAxis = svg.append('g')
-        .classed('x_axis', true)
-        .attr('transform', `translate(0, ${svg_m.top * 1.5})`)
-        .call(xAxis);
-
-    const gYAxis = svg.append('g')
-        .classed('y_axis', true)
-        .attr('transform', `translate(${svg_m.left}, -3)`)
-        .call(yAxis);
+    // const gXAxis = svg.append('g')
+    //     .classed('x_axis', true)
+    //     .attr('transform', `translate(0, ${svg_m.top * 1.5})`)
+    //     .call(xAxis);
+    //
+    // const gYAxis = svg.append('g')
+    //     .classed('y_axis', true)
+    //     .attr('transform', `translate(${svg_m.left}, -3)`)
+    //     .call(yAxis);
     
     d3.selectAll('path.domain')
         .remove();
@@ -170,7 +208,7 @@ Promise.all([
         });
 
     gYAxis.selectAll('.tick text')
-        .attr('fill', cols.orange)
+        .attr('fill', cols.black)
         .attr('x', 5)
         .attr('text-anchor', 'start');
 

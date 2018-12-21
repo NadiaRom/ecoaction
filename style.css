@@ -34,34 +34,28 @@ main #chart {
   main #chart nav {
     grid-column: 1 / -1;
     padding: 0;
-    margin: 0; }
-    main #chart nav ul {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center; }
-      main #chart nav ul li {
-        padding: 0 0 1em 0; }
-        main #chart nav ul li button {
-          width: 100%;
-          text-align: start;
-          border-radius: 0;
-          line-height: 1.5;
-          border: none;
-          background-color: #dedede;
-          padding: 0.5em 0.5em 0.5em 0.5em; }
-        main #chart nav ul li button.active {
-          background-color: #b7b7b7;
-          font-weight: 600; }
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; }
+    main #chart nav button {
+      text-align: start;
+      border-radius: 0;
+      line-height: 1.5;
+      border: none;
+      background-color: #dedede;
+      padding: 0.5em 0.5em 0.5em 0.5em; }
+    main #chart nav button.active {
+      background-color: #b7b7b7;
+      font-weight: 600; }
   main #chart figure {
     padding: 0;
     margin: 0; }
     main #chart figure svg {
       margin: 0;
       padding: 0;
-      overflow: visible; }
+      overflow: hidden;
+      background-color: #c7c7c7; }
       main #chart figure svg .area_path {
         stroke: #f7f7f7;
         stroke-opacity: 0.25; }
@@ -69,10 +63,11 @@ main #chart {
         fill: none;
         stroke-width: 2px;
         stroke: #f26522; }
-      main #chart figure svg .x_axis .tick text {
+      main #chart figure svg #x_axis text {
         font-size: 0.85rem; }
-      main #chart figure svg .y_axis .tick text {
-        font-size: 0.7rem; }
+      main #chart figure svg #y_axis text {
+        font-size: 0.85rem;
+        font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif; }
   main #chart #explanation {
     padding: 0;
     margin: 0; }

@@ -54,34 +54,24 @@ main {
       grid-column: 1 / -1;
       padding: 0;
       margin: 0;
-      ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-        li {
-          padding: 0 0 1em 0;
+      button {
+        text-align: start;
+        border-radius: 0;
+        line-height: 1.5;
+        border: none;
+        background-color: darken($bgcol, 10%);
+        padding: 0.5em 0.5em 0.5em 0.5em;
+      }
 
-          button {
-            width: 100%;
-            text-align: start;
-            border-radius: 0;
-            line-height: 1.5;
-            border: none;
-            background-color: darken($bgcol, 10%);
-            padding: 0.5em 0.5em 0.5em 0.5em;
-          }
-
-          button.active {
-            background-color: darken($bgcol, 25%);
-            font-weight: 600;
-        }
+      button.active {
+        background-color: darken($bgcol, 25%);
+        font-weight: 600;
       }
     }
-  }
 
     figure {
       padding: 0;
@@ -90,7 +80,8 @@ main {
       svg {
         margin: 0;
         padding: 0;
-        overflow: visible;
+        overflow: hidden;
+        background-color: #c7c7c7;
 
         .area_path {
           stroke: $bgcol;
@@ -103,12 +94,13 @@ main {
           stroke: $red;
         }
 
-        .x_axis .tick text {
+        #x_axis text {
           font-size: 0.85rem;
         }
 
-        .y_axis .tick text {
-          font-size: 0.7rem;
+        #y_axis text {
+          font-size: 0.85rem;
+          font-family: $fontfam;
         }
       }
     }
