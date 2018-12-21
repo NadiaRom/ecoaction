@@ -10,13 +10,6 @@ const cols = {
     bgcol: '#f7f7f7',
 };
 
-const svg_m = {
-    top: 25,
-    right: 15,
-    bottom: 5,
-    left: 15,
-};
-
 const fontSize = parseInt($('body').css('font-size'));
 
 const numericalize = function (d) {
@@ -28,22 +21,8 @@ const numericalize = function (d) {
     return d;
 };
 
-const scaleYear = d3.scalePoint()
-    .domain([2012, 2035, 2050]);
-
-const scaleSource = d3.scalePoint();
-
 const scaleKTNE = d3.scaleLinear()
     .domain([0, 67000]);
-
-const id2year = [2012, 2035, 2050];
-
-let reshapeD = function (d) {
-    const reshaped = d.map(([y0, y1], i) => {
-        return {y0: y0 || 0, y1: y1 || 0, x: yearParse(id2year[i])}
-    });
-    return area(reshaped);
-};
 
 Promise.all([
     d3.csv('data_by_sphere.csv', numericalize),
@@ -55,43 +34,20 @@ Promise.all([
         .key(d => d.sphere)
         .entries(data);
     
-    let sphereLi = d3.select('#chart nav ')
+    let sphereButtons = d3.select('#chart nav ')
         .selectAll('button')
         .data(bySpheres.map(d => d.key))
         .enter()
         .append('button')
         .text(d => d)
         .attr('class', d => { if (d === 'Всього') return 'active'});
-
-    const svg = d3.select('main figure svg')
-        .attr('width', function () { return $(this).parent().width(); })
-        .attr('height', function () { return $(window).height()*0.7; });
-
-    const sources = [...Object.keys(sourcesOrder)];
-
-    scaleSource
-        .domain(sources)
-        .range([+svg.attr('height') - svg_m.bottom, 0 + svg_m.top]);
-
-    const yAxis = d3.axisLeft(scaleSource);
-
-    const gYAxis = svg.append('g')
-        .attr('id', 'y_axis')
-        .attr('transform', `translate(${svg_m.left}, -3)`)
-        .call(yAxis);
     
-    gYAxis.selectAll('path, line')
-        .remove();
+    const sources = [...Object.keys(sourcesOrder)];
+    
+    const chart = d3.select('#chart figure');
 
-    gYAxis.selectAll('text')
-        .attr('text-anchor', 'start')
-        .attr('x', 0)
-        .attr('fill', cols.black);
-
-    const getCircleStart = function () {
-        const bbox = (gYAxis).node().getBBox();
-        return bbox.x + bbox.width + fontSize*2;
-    };
+    let activeSphere = $('#chart button.active').text();
+    let activeData = bySpheres.filter(d => d.key === activeSphere)[0].values;
     
     const getYearWidth = function () {
         return d3.min([
@@ -99,39 +55,11 @@ Promise.all([
             scaleSource(sources[0]) - scaleSource(sources[1]) - fontSize/2
         ]);
     };
-
-    let circleStart = getCircleStart(),
-        yearWidth = getYearWidth();
-
-    scaleYear
-        .range([svg_m.left + circleStart, svg_m.left + circleStart + yearWidth*3 + fontSize*4])
-        .padding(fontSize / (yearWidth*3 + fontSize*4));
     
     scaleKTNE
         .range([5, yearWidth]);
-
-    svg.attr('width', scaleYear.range()[1]);
-
-    let svgOff = $(svg.node()).offset();
-
-    const xAxis = d3.axisTop(scaleYear)
-        .tickValues([2012, 2035, 2050]);
-
-    const gXAxis = svg.append('g')
-        .attr('id', 'x_axis')
-        .attr('transform', `translate(0, ${svg_m.top * 1.5})`)
-        .call(xAxis);
-
-    gXAxis.selectAll('path, line')
-        .remove();
-
-    gXAxis.selectAll('text')
-        .attr('text-anchor', 'start')
-        .attr('x', 0)
-        .attr('fill', cols.black);
     
-    let activeSphere = $('#chart button.active').text();
-    let activeData = bySpheres.filter(d => d.key === activeSphere)[0].values;
+    
     
     const expl = d3.select('div#explanation')
         .append('ul');
