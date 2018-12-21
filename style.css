@@ -11,7 +11,7 @@ body {
 header {
   padding: 1em 10% 2em 10%;
   height: 100vh;
-  background: linear-gradient(0.5turn, #3c353f, #00a650, #00a650);
+  background: linear-gradient(0.5turn, #00a650, #00a650, #00a650);
   display: flex;
   flex-direction: column;
   justify-content: center;
