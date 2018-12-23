@@ -39,11 +39,17 @@ header {
 }
 
 main {
+  .data_caption {
+    font-style: italic;
+    color: lighten($fontcol, 20%);
+    font-size: 0.85em;
+  }
+
   #chart {
     min-height: 100vh;
     display: grid;
     grid-template-columns: 1.61fr 1fr;
-    grid-template-rows: auto auto 1fr;
+    grid-template-rows: auto auto 1fr auto;
     padding: 1em 2em 1em 2em;
 
     h3 {
@@ -66,6 +72,7 @@ main {
         border: none;
         background-color: darken($bgcol, 10%);
         padding: 0.5em 0.5em 0.5em 0.5em;
+        cursor: pointer;
       }
 
       button.active {
@@ -78,14 +85,30 @@ main {
       padding: 0;
       margin: 0;
       display: grid;
-      grid-template-columns: auto 1fr;
-      grid-template-rows: 1fr;
+      grid-template-columns: auto 1fr 1fr 1fr;
+      grid-template-rows: auto repeat(auto-fill, 1fr);
+
+      .year {
+        text-align: center;
+      }
+
+      .source_name {
+        grid-column: 1 / 2;
+        display: flex;
+        align-items: center;
+
+      }
+
+      .source_value {
+        text-align: center;
+      }
+
 
       svg {
-        margin: 0;
+        margin: 0 2em 0 2em;
         padding: 0;
         overflow: hidden;
-        background-color: #c7c7c7;
+        cursor: pointer;
 
         .area_path {
           stroke: $bgcol;
@@ -121,9 +144,13 @@ main {
           color: $green;
         }
 
+        li {
+          margin: 0 0 1em 1em;
+        }
+
         li.subsection {
           font-weight: 600;
-          margin-top: 1em;
+          margin: 2em 0 1em 0;
         }
       }
     }

@@ -23,11 +23,15 @@ header {
     font-size: 1em;
     font-weight: 600; }
 
+main .data_caption {
+  font-style: italic;
+  color: #716476;
+  font-size: 0.85em; }
 main #chart {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1.61fr 1fr;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto 1fr auto;
   padding: 1em 2em 1em 2em; }
   main #chart h3 {
     grid-column: 1 / -1;
@@ -45,7 +49,8 @@ main #chart {
       line-height: 1.5;
       border: none;
       background-color: #dedede;
-      padding: 0.5em 0.5em 0.5em 0.5em; }
+      padding: 0.5em 0.5em 0.5em 0.5em;
+      cursor: pointer; }
     main #chart nav button.active {
       background-color: #b7b7b7;
       font-weight: 600; }
@@ -53,13 +58,21 @@ main #chart {
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: 1fr; }
+    grid-template-columns: auto 1fr 1fr 1fr;
+    grid-template-rows: auto repeat(auto-fill, 1fr); }
+    main #chart figure .year {
+      text-align: center; }
+    main #chart figure .source_name {
+      grid-column: 1 / 2;
+      display: flex;
+      align-items: center; }
+    main #chart figure .source_value {
+      text-align: center; }
     main #chart figure svg {
-      margin: 0;
+      margin: 0 2em 0 2em;
       padding: 0;
       overflow: hidden;
-      background-color: #c7c7c7; }
+      cursor: pointer; }
       main #chart figure svg .area_path {
         stroke: #f7f7f7;
         stroke-opacity: 0.25; }
@@ -80,8 +93,10 @@ main #chart {
       main #chart #explanation ul i {
         font-size: 0.5em;
         color: #00a650; }
+      main #chart #explanation ul li {
+        margin: 0 0 1em 1em; }
       main #chart #explanation ul li.subsection {
         font-weight: 600;
-        margin-top: 1em; }
+        margin: 2em 0 1em 0; }
 
 /*# sourceMappingURL=style.css.map */
