@@ -199,7 +199,7 @@ d3.csv('costs.csv', numericalize).then(function (data) {
         svgW = parseFloat(svgs.attr('width'));
 
     const yearScale = d3.scalePoint()
-        .domain(['2012', '2015', '2020', '2025', '2030', '2035', '2040', '2050'])
+        .domain(['2012', '2015', '2020', '2025', '2030', '2035', '2040', '2045', '2050'])
         .range([svg_m.left, svgW - svg_m.right]);
 
     const costScale = d3.scaleLinear()

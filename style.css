@@ -112,7 +112,7 @@ main #costs {
       flex-wrap: wrap; }
     main #costs figure svg path.line {
       stroke-width: 2px;
-      stroke-opacity: 0.85; }
+      stroke-opacity: 0.75; }
     main #costs figure p {
       font-size: 0.85em;
       margin: 0;
