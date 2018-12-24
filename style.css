@@ -30,7 +30,7 @@ main .data_caption {
   font-size: 0.85em; }
   main .data_caption a {
     color: inherit;
-    text-decoration: solid #f26522; }
+    text-decoration-color: #f26522; }
 main #chart {
   min-height: 100vh;
   display: grid;
