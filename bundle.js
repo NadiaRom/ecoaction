@@ -236,7 +236,11 @@ d3.csv('costs.csv', numericalize).then(function (data) {
     const yGAxis = svgs.append('g')
         .classed('y_axis', true)
         .attr('transform', `translate(${svg_m.left} 0)`)
-        .call(yAxis)
+        .call(yAxis);
+
+    yGAxis.selectAll('text')
+        .attr('x', '5')
+        .attr('text-anchor', 'start')
     
 });
 

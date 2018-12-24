@@ -110,9 +110,11 @@ main #costs {
       display: flex;
       align-items: end;
       flex-wrap: wrap; }
-    main #costs figure svg path.line {
-      stroke-width: 2px;
-      stroke-opacity: 0.75; }
+    main #costs figure svg {
+      overflow: visible; }
+      main #costs figure svg path.line {
+        stroke-width: 2px;
+        stroke-opacity: 0.75; }
     main #costs figure p {
       font-size: 0.85em;
       margin: 0;
