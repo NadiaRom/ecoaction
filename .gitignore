@@ -5,3 +5,5 @@
 env/
 node_modules/
 package-lock.json
+*\.txt
+data_from_report.csv

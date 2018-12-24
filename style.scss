@@ -5,6 +5,8 @@ $bgcol: #f7f7f7;
 $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
 $fonttit: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif;
 
+@import 'node_modules/tippy.js/dist/themes/light.css';
+
 body {
   color: $fontcol;
   background-color: $bgcol;
@@ -43,6 +45,11 @@ main {
     font-style: italic;
     color: lighten($fontcol, 20%);
     font-size: 0.85em;
+
+    a {
+      color: inherit;
+      text-decoration: solid $red;
+    }
   }
 
   #chart {
@@ -109,26 +116,6 @@ main {
         padding: 0;
         overflow: hidden;
         cursor: pointer;
-
-        .area_path {
-          stroke: $bgcol;
-          stroke-opacity: 0.25;
-        }
-
-        .area_line {
-          fill: none;
-          stroke-width: 2px;
-          stroke: $red;
-        }
-
-        #x_axis text {
-          font-size: 0.85rem;
-        }
-
-        #y_axis text {
-          font-size: 0.85rem;
-          font-family: $fontfam;
-        }
       }
     }
 
@@ -153,6 +140,19 @@ main {
           margin: 2em 0 1em 0;
         }
       }
+    }
+  }
+
+  #costs {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.61fr 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 1em 2em 1em 2em;
+
+    h3 {
+      grid-column: 1 / -1;
+      padding: 1em 0 1em 0;
     }
   }
 }

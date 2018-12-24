@@ -87,8 +87,7 @@ Promise.all([
         .attr('viewBox', '-50 -50 100 100')
         .attr('width', svgH)
         .attr('height', svgH)
-        .attr('data-source', d => `<p>${d.source} ${d.year}<br>
-                                   ${d[activeSphere]} тис. тон н.е.</p>`);
+        .attr('data-source', d => `${d[activeSphere]} тис. тон н.е.`);
     
     $('#chart').css('grid-template-columns', 'auto 1fr');
     
@@ -123,8 +122,7 @@ Promise.all([
         activeSphere = $t.text();
 
         ktneSvg
-            .attr('data-source', d => `<p>${d.source} ${d.year}<br>
-                                       ${d[activeSphere]} тис. тон н.е.</p>`);
+            .attr('data-source', d => `${d[activeSphere]} тис. тон н.е.`);
 
         ktneCircles
             .transition()
@@ -153,12 +151,16 @@ Promise.all([
     $(document).ready(function () {
         tippy('.source_value svg', {
             animation: 'fade',
+            theme: 'light',
             performance: true,
             onShow(tip) {
                 tip.setContent(tip.reference.getAttribute('data-source'));
             },
         });
     });
+});
+
+d3.csv('scenario.csv', numericalize).then(function (data) {
     
 });
 

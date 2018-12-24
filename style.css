@@ -1,3 +1,4 @@
+@import url(node_modules/tippy.js/dist/themes/light.css);
 body {
   color: #3c353f;
   background-color: #f7f7f7;
@@ -27,6 +28,9 @@ main .data_caption {
   font-style: italic;
   color: #716476;
   font-size: 0.85em; }
+  main .data_caption a {
+    color: inherit;
+    text-decoration: solid #f26522; }
 main #chart {
   min-height: 100vh;
   display: grid;
@@ -73,18 +77,6 @@ main #chart {
       padding: 0;
       overflow: hidden;
       cursor: pointer; }
-      main #chart figure svg .area_path {
-        stroke: #f7f7f7;
-        stroke-opacity: 0.25; }
-      main #chart figure svg .area_line {
-        fill: none;
-        stroke-width: 2px;
-        stroke: #f26522; }
-      main #chart figure svg #x_axis text {
-        font-size: 0.85rem; }
-      main #chart figure svg #y_axis text {
-        font-size: 0.85rem;
-        font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif; }
   main #chart #explanation {
     padding: 0;
     margin: 0; }
@@ -98,5 +90,14 @@ main #chart {
       main #chart #explanation ul li.subsection {
         font-weight: 600;
         margin: 2em 0 1em 0; }
+main #costs {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.61fr 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  padding: 1em 2em 1em 2em; }
+  main #costs h3 {
+    grid-column: 1 / -1;
+    padding: 1em 0 1em 0; }
 
 /*# sourceMappingURL=style.css.map */
