@@ -146,13 +146,42 @@ main {
   #costs {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 1.61fr 1fr;
+    grid-template-columns: 1fr;
     grid-template-rows: auto auto 1fr auto;
     padding: 1em 2em 1em 2em;
 
     h3 {
       grid-column: 1 / -1;
       padding: 1em 0 1em 0;
+    }
+
+    figure {
+      display: grid;
+      padding: 0;
+      margin: 0;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      grid-gap: 1.5em;
+
+      .byType {
+        display: flex;
+        align-items: end;
+        flex-wrap: wrap;
+      }
+
+      svg {
+
+        path.line {
+          stroke-width: 2px;
+          stroke-opacity: 0.85;
+        }
+      }
+
+      p {
+        font-size: 0.85em;
+        margin: 0;
+        padding: 1em 0 1em 0;
+      }
     }
   }
 }

@@ -160,7 +160,82 @@ Promise.all([
     });
 });
 
-d3.csv('scenario.csv', numericalize).then(function (data) {
+d3.csv('costs.csv', numericalize).then(function (data) {
+    const byType = d3.nest()
+        .key(d => d.action)
+        .key(d => d.scenario)
+        .entries(data);
+    
+    const chart = d3.select('#costs figure');
+
+    const sms = chart.selectAll('div.sm')
+        .data(byType)
+        .enter()
+        .append('div')
+        .classed('byType', true);
+    
+    const smHeader = sms.append('p')
+        .text(d => d.key);
+
+    const maxHSize = d3.max(smHeader.nodes().map(n => n.offsetHeight));
+    
+    const svgs = sms.append('svg')
+        .attr('width', function () {
+            return $(this).parent().width();
+        })
+        .attr('height', function () {
+            return $(this).parent().height() - maxHSize;
+        });
+
+    const svg_m = {
+        top: 5,
+        right: 5,
+        bottom: 20,
+        left: 20,
+    };
+    
+    const svgH = parseFloat(svgs.attr('height')),
+        svgW = parseFloat(svgs.attr('width'));
+
+    const yearScale = d3.scalePoint()
+        .domain(['2012', '2015', '2020', '2025', '2030', '2035', '2040', '2050'])
+        .range([svg_m.left, svgW - svg_m.right]);
+
+    const costScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.m_euro)])
+        .range([svgH - svg_m.bottom, svg_m.top]);
+    
+    const xAxis = d3.axisBottom(yearScale);
+    const yAxis = d3.axisLeft(costScale);
+
+    const line = d3.line()
+        .x(d => yearScale(d.year.toString()))
+        .y(d => costScale(d.m_euro));
+
+    const colScen = {
+        Консервативний: cols.orange,
+        Ліберальний: cols.black,
+        Революційний: cols.green,
+    };
+    
+    const scenLines = svgs.selectAll('path')
+        .data(d => d.values)
+        .enter()
+        .append('path')
+        .classed('line', true)
+        .attr('d', d => line(d.values))
+        .style('fill', 'none')
+        .style('stroke', d => colScen[d.key]);
+    
+    const xGAxis = svgs.append('g')
+        .classed('x_axis', true)
+        .attr('transform', `translate(0 ${svgH - svg_m.bottom})`)
+        .call(xAxis);
+
+    const yGAxis = svgs.append('g')
+        .classed('y_axis', true)
+        .attr('transform', `translate(${svg_m.left} 0)`)
+        .call(yAxis)
     
 });
 
