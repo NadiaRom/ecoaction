@@ -240,40 +240,43 @@ Promise.all([
         .append('li')
         .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
         .classed('subsection', d => d.match(/:$/) ? true : false);
+    
+    const updateSvg = function (svg) {
+        svg.selectAll('path.sm')
+            .transition()
+            .duration(1000)
+            .attr('d', d => area(d.values.slice(1)));
 
-    // $('nav button').click(function () {
-    //     $('nav button').removeClass('active');
-    //     const $t = $(this);
-    //     $t.addClass('active');
-    //
-    //     activeSphere = $t.text();
-    //
-    //     ktneSvg
-    //         .attr('data-source', d => `${d[activeSphere]} тис. тон н.е.`);
-    //
-    //     ktneCircles
-    //         .transition()
-    //         .duration(1000)
-    //         .attr('r', d => scaleKTNE(d[activeSphere]));
-    //
-    //     totalCircles.transition()
-    //         .duration(1000)
-    //         .style('opacity', (activeSphere === 'Всього') ? 0 : 1);
-    //
-    //     explLi = expl.selectAll('li')
-    //         .data(measures[activeSphere]);
-    //
-    //     explLi.enter()
-    //         .append('li')
-    //         .merge(explLi)
-    //         .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
-    //         .classed('subsection', d => d.match(/:$/) ? true : false);
-    //
-    //     explLi
-    //         .exit()
-    //         .remove();
-    //
-    // });
+        svg.selectAll('path.sl')
+            .transition()
+            .duration(1000)
+            .attr('d', d => line(d.values.slice(1)));
+    };
+
+    $('nav button').click(function () {
+        $('nav button').removeClass('active');
+        const $t = $(this);
+        $t.addClass('active');
+    
+        activeSphere = $t.text();
+    
+        updateSvg(transSvg);
+        updateSvg(dirtySvg);
+    
+        explLi = expl.selectAll('li')
+            .data(measures[activeSphere]);
+    
+        explLi.enter()
+            .append('li')
+            .merge(explLi)
+            .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
+            .classed('subsection', d => d.match(/:$/) ? true : false);
+    
+        explLi
+            .exit()
+            .remove();
+    
+    });
     
 });
 
