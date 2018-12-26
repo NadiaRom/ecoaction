@@ -75,7 +75,8 @@ main #chart {
       padding: 0;
       z-index: 2;
       background: transparent;
-      pointer-events: none; }
+      pointer-events: none;
+      overflow: visible; }
       main #chart figure svg#dragme line {
         stroke: #6c6c6c; }
     main #chart figure svg#dirt {

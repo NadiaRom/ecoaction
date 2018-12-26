@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 5 9.9999971"
+   height="9.9999971mm"
+   width="5mm"
+   sodipodi:docname="drag.svg"
+   inkscape:version="0.92.3 (5aff6ba, 2018-11-25)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1867"
+     inkscape:window-height="1176"
+     id="namedview889"
+     showgrid="false"
+     inkscape:zoom="26.908133"
+     inkscape:cx="15.394977"
+     inkscape:cy="29.303408"
+     inkscape:window-x="53"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g885" />
+  <defs
+     id="defs2" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="dragger">
+    <g
+       id="g885">
+      <path
+         sodipodi:nodetypes="cscc"
+         transform="translate(-46.433624,-104.47787)"
+         style="opacity:1;vector-effect:none;fill:#d0d0d0;fill-opacity:1;stroke:#2c2c2c;stroke-width:0.26458333;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         d="m 51.433624,114.47787 c -2.761424,0 -5,-2.23858 -5,-5 0,-2.76142 2.238576,-5 5,-5 z"
+         id="path4518"
+         clip-path="none"
+         inkscape:connector-curvature="0" />
+      <path
+         style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#2c2c2c;stroke-width:0.26458332;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         d="M 3.607432,7.12132 1.486112,5 3.607432,2.87868"
+         id="rect4531"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>

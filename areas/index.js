@@ -30,7 +30,8 @@ Promise.all([
     d3.csv('../data/data_report_wide.csv', numericalize),
     d3.json('../data/measures.json'),
     d3.json('../data/sources_order.json', numericalize),
-]).then(function ([data, measures, sourcesOrder]) {
+    d3.xml('../drag.svg'),
+]).then(function ([data, measures, sourcesOrder, dragPointer]) {
     
     const nested = d3.nest()
         .key(d => d.scenario)
@@ -174,7 +175,7 @@ Promise.all([
             .call(yAxis);
     };
 
-    const dragLineW = 3;
+    const dragLineW = 2;
     const maxDrag = svgW - dragLineW;
 
     const dragStart = function(d) {
@@ -205,6 +206,16 @@ Promise.all([
             .on('start', dragStart)
             .on('drag', dragged)
             .on('end', dragEnd));
+
+    dragLine.node().appendChild(dragPointer.documentElement.getElementsByTagName('g')[0]);
+    
+    dragLine.select('#dragger')
+        .attr('transform', function (d) {
+            const scale = 5,
+                bbox = this.getBBox();
+            return `translate(-${bbox.width * scale} ${svgH / 2 - (bbox.height * scale) / 2})
+                    scale(${scale})`
+        });
 
     dragLine.append('line')
         .attr('x1', 0)

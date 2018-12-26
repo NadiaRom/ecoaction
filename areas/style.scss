@@ -114,6 +114,7 @@ main {
         z-index: 2;
         background: transparent;
         pointer-events: none;
+        overflow: visible;
 
         line {
           stroke: lighten($fontcol, 25%)
