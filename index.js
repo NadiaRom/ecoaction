@@ -27,9 +27,9 @@ const scaleKTNE = d3.scalePow()
     .range([0, 47.5]);
 
 Promise.all([
-    d3.csv('data_by_source.csv', numericalize),
-    d3.json('measures.json'),
-    d3.json('sources_order.json', numericalize),
+    d3.csv('data/data_by_source.csv', numericalize),
+    d3.json('data/measures.json'),
+    d3.json('data/sources_order.json', numericalize),
 ]).then(function ([data, measures, sourcesOrder]) {
     
     const sphereButtons = d3.select('#chart nav ')
@@ -160,7 +160,7 @@ Promise.all([
     });
 });
 
-d3.csv('costs.csv', numericalize).then(function (data) {
+d3.csv('data/costs.csv', numericalize).then(function (data) {
     const byType = d3.nest()
         .key(d => d.action)
         .key(d => d.scenario)

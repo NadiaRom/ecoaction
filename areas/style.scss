@@ -1,0 +1,206 @@
+$green: #00a650;
+$red: #f26522;
+$fontcol: #2c2c2c;
+$bgcol: #f7f7f7;
+$fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+$fonttit: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif;
+
+@import '../node_modules/tippy.js/dist/themes/light.css';
+
+body {
+  color: $fontcol;
+  background-color: $bgcol;
+  font-family: $fontfam;
+  margin: 0;
+  padding: 0;
+
+  * {
+    box-sizing: border-box;
+    outline: none;
+  }
+}
+
+header {
+  padding: 1em 10% 2em 10%;
+  background: linear-gradient(0.5turn, $green, $green, $green);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: $bgcol;
+
+  h1 {
+    font-size: 3em;
+    font-family: $fonttit;
+  }
+
+  h2 {
+    font-size: 1em;
+    font-weight: 600;
+  }
+}
+
+main {
+  .data_caption {
+    font-style: italic;
+    color: lighten($fontcol, 20%);
+    font-size: 0.85em;
+
+    a {
+      color: inherit;
+      text-decoration-color: $red;
+    }
+  }
+
+  #chart {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.61fr 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 1em 2em 1em 2em;
+
+    h3 {
+      grid-column: 1 / -1;
+      padding: 1em 0 1em 0;
+    }
+
+    nav {
+      grid-column: 1 / -1;
+      padding: 0;
+      margin: 0 0 1em 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      button {
+        text-align: start;
+        border-radius: 0;
+        line-height: 1.5;
+        border: none;
+        background-color: darken($bgcol, 10%);
+        padding: 0.5em 0.5em 0.5em 0.5em;
+        cursor: pointer;
+      }
+
+      button.active {
+        background-color: darken($bgcol, 25%);
+        font-weight: 600;
+      }
+    }
+
+    figure {
+      padding: 0;
+      margin: 0;
+
+      svg#trans {
+        //background-color: #b5b5b5;
+        padding: 0;
+        margin: 0;
+        z-index: 1;
+        background-color: $bgcol;
+
+        text {
+          fill: $fontcol;
+        }
+
+        line, path.domain {
+          stroke: rgba($fontcol, 0.75)
+        }
+      }
+
+      svg#dragme {
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        z-index: 2;
+        background: transparent;
+        pointer-events: none;
+
+        line {
+          stroke: lighten($fontcol, 25%)
+        }
+      }
+
+      svg#dirt {
+        z-index: -1;
+        position: absolute;
+        //background: linear-gradient(to right, #e66465, #9198e5);;
+        background-color: lighten($fontcol, 10%);
+
+        text {
+          fill: $bgcol;
+          font-family: $fontfam;
+        }
+
+        .tick line, .tick path, line, path.domain {
+          stroke: rgba($bgcol, 0.75);
+        }
+      }
+    }
+
+    #explanation {
+      padding: 0;
+      margin: 0;
+
+      ul {
+        list-style-type: none;
+
+        i {
+          font-size: 0.5em;
+          color: $green;
+        }
+
+        li {
+          margin: 0 0 1em 1em;
+        }
+
+        li.subsection {
+          font-weight: 600;
+          margin: 2em 0 1em 0;
+        }
+      }
+    }
+  }
+
+  #costs {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 1em 2em 1em 2em;
+
+    h3 {
+      grid-column: 1 / -1;
+      padding: 1em 0 1em 0;
+    }
+
+    figure {
+      display: grid;
+      padding: 0;
+      margin: 0;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      grid-gap: 1.5em;
+
+      .byType {
+        display: flex;
+        align-items: end;
+        flex-wrap: wrap;
+      }
+
+      svg {
+        overflow: visible;
+
+        path.line {
+          stroke-width: 2px;
+          stroke-opacity: 0.75;
+        }
+      }
+
+      p {
+        font-size: 0.85em;
+        margin: 0;
+        padding: 1em 0 1em 0;
+      }
+    }
+  }
+}

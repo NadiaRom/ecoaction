@@ -1,0 +1,134 @@
+@import url(../node_modules/tippy.js/dist/themes/light.css);
+body {
+  color: #2c2c2c;
+  background-color: #f7f7f7;
+  font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+  margin: 0;
+  padding: 0; }
+  body * {
+    box-sizing: border-box;
+    outline: none; }
+
+header {
+  padding: 1em 10% 2em 10%;
+  background: linear-gradient(0.5turn, #00a650, #00a650, #00a650);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #f7f7f7; }
+  header h1 {
+    font-size: 3em;
+    font-family: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif; }
+  header h2 {
+    font-size: 1em;
+    font-weight: 600; }
+
+main .data_caption {
+  font-style: italic;
+  color: #5f5f5f;
+  font-size: 0.85em; }
+  main .data_caption a {
+    color: inherit;
+    -webkit-text-decoration-color: #f26522;
+            text-decoration-color: #f26522; }
+main #chart {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.61fr 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  padding: 1em 2em 1em 2em; }
+  main #chart h3 {
+    grid-column: 1 / -1;
+    padding: 1em 0 1em 0; }
+  main #chart nav {
+    grid-column: 1 / -1;
+    padding: 0;
+    margin: 0 0 1em 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; }
+    main #chart nav button {
+      text-align: start;
+      border-radius: 0;
+      line-height: 1.5;
+      border: none;
+      background-color: #dedede;
+      padding: 0.5em 0.5em 0.5em 0.5em;
+      cursor: pointer; }
+    main #chart nav button.active {
+      background-color: #b7b7b7;
+      font-weight: 600; }
+  main #chart figure {
+    padding: 0;
+    margin: 0; }
+    main #chart figure svg#trans {
+      padding: 0;
+      margin: 0;
+      z-index: 1;
+      background-color: #f7f7f7; }
+      main #chart figure svg#trans text {
+        fill: #2c2c2c; }
+      main #chart figure svg#trans line, main #chart figure svg#trans path.domain {
+        stroke: rgba(44, 44, 44, 0.75); }
+    main #chart figure svg#dragme {
+      position: absolute;
+      margin: 0;
+      padding: 0;
+      z-index: 2;
+      background: transparent;
+      pointer-events: none; }
+      main #chart figure svg#dragme line {
+        stroke: #6c6c6c; }
+    main #chart figure svg#dirt {
+      z-index: -1;
+      position: absolute;
+      background-color: #464646; }
+      main #chart figure svg#dirt text {
+        fill: #f7f7f7;
+        font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif; }
+      main #chart figure svg#dirt .tick line, main #chart figure svg#dirt .tick path, main #chart figure svg#dirt line, main #chart figure svg#dirt path.domain {
+        stroke: rgba(247, 247, 247, 0.75); }
+  main #chart #explanation {
+    padding: 0;
+    margin: 0; }
+    main #chart #explanation ul {
+      list-style-type: none; }
+      main #chart #explanation ul i {
+        font-size: 0.5em;
+        color: #00a650; }
+      main #chart #explanation ul li {
+        margin: 0 0 1em 1em; }
+      main #chart #explanation ul li.subsection {
+        font-weight: 600;
+        margin: 2em 0 1em 0; }
+main #costs {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  padding: 1em 2em 1em 2em; }
+  main #costs h3 {
+    grid-column: 1 / -1;
+    padding: 1em 0 1em 0; }
+  main #costs figure {
+    display: grid;
+    padding: 0;
+    margin: 0;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-gap: 1.5em; }
+    main #costs figure .byType {
+      display: flex;
+      align-items: end;
+      flex-wrap: wrap; }
+    main #costs figure svg {
+      overflow: visible; }
+      main #costs figure svg path.line {
+        stroke-width: 2px;
+        stroke-opacity: 0.75; }
+    main #costs figure p {
+      font-size: 0.85em;
+      margin: 0;
+      padding: 1em 0 1em 0; }
+
+/*# sourceMappingURL=data:application/json;base64,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 */
