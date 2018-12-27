@@ -119,16 +119,6 @@ Promise.all([
     const drawChart = function (svg, scenario) {
         const dat = nested[scenario];
 
-        svg.selectAll('line.smline')
-            .data(dat)
-            .enter()
-            .append('line')
-            .classed('smline', true)
-            .attr('y1', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('y2', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('x1', scaleYear(2015))
-            .attr('x2', scaleYear(2050));
-
         const gXAxis = svg.append('g')
             .attr('transform', `translate(0 ${svgH - svgM.bottom})`)
             .call(xAxis);
@@ -141,6 +131,16 @@ Promise.all([
             .attr('y1', -1 * (svgH - svgM.bottom))
             .attr('stroke', chroma(cols.black).alpha(0.4))
             .attr('stroke-dasharray', '2 2');
+
+        svg.selectAll('line.smline')
+            .data(dat)
+            .enter()
+            .append('line')
+            .classed('smline', true)
+            .attr('y1', d => scaleSm(d.key) + scaleSm.bandwidth())
+            .attr('y2', d => scaleSm(d.key) + scaleSm.bandwidth())
+            .attr('x1', scaleYear(2015))
+            .attr('x2', scaleYear(2050));
 
         const sourceAreas = svg.selectAll('path.sm')
             .data(dat)
