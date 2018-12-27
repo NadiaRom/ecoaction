@@ -1,17 +1,18 @@
 @import url(node_modules/tippy.js/dist/themes/light.css);
 body {
-  color: #3c353f;
+  color: #2c2c2c;
   background-color: #f7f7f7;
   font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
   margin: 0;
-  padding: 0; }
+  padding: 0;
+  height: 100%;
+  width: 100%; }
   body * {
     box-sizing: border-box;
     outline: none; }
 
 header {
   padding: 1em 10% 2em 10%;
-  height: 100vh;
   background: linear-gradient(0.5turn, #00a650, #00a650, #00a650);
   display: flex;
   flex-direction: column;
@@ -26,68 +27,89 @@ header {
 
 main .data_caption {
   font-style: italic;
-  color: #716476;
-  font-size: 0.85em; }
+  color: #929292;
+  font-size: 0.85em;
+  padding-left: 1em; }
   main .data_caption a {
-    color: inherit;
-    text-decoration-color: #f26522; }
-main #chart {
+    color: inherit; }
+main #areas {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1.61fr 1fr;
-  grid-template-rows: auto auto 1fr auto;
-  padding: 1em 2em 1em 2em; }
-  main #chart h3 {
-    grid-column: 1 / -1;
-    padding: 1em 0 1em 0; }
-  main #chart nav {
-    grid-column: 1 / -1;
-    padding: 0;
-    margin: 0 0 1em 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center; }
-    main #chart nav button {
-      text-align: start;
-      border-radius: 0;
-      line-height: 1.5;
-      border: none;
-      background-color: #dedede;
-      padding: 0.5em 0.5em 0.5em 0.5em;
-      cursor: pointer; }
-    main #chart nav button.active {
-      background-color: #b7b7b7;
-      font-weight: 600; }
-  main #chart figure {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  padding: 0;
+  margin: 0; }
+  main #areas .h3 {
+    padding: 2rem 0 2rem 0; }
+    main #areas .h3 div {
+      display: flex;
+      justify-content: space-between; }
+      main #areas .h3 div span:first-of-type {
+        color: #464646; }
+      main #areas .h3 div span:last-of-type {
+        color: #f7f7f7; }
+  main #areas figure {
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: auto 1fr 1fr 1fr;
-    grid-template-rows: auto repeat(auto-fill, 1fr); }
-    main #chart figure .year {
-      text-align: center; }
-    main #chart figure .source_name {
-      grid-column: 1 / 2;
-      display: flex;
-      align-items: center; }
-    main #chart figure .source_value {
-      text-align: center; }
-    main #chart figure svg {
-      margin: 0 2em 0 2em;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 1fr;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow: hidden; }
+    main #areas figure .h3 {
+      padding-left: 10%;
+      padding-right: 10%; }
+    main #areas figure .smline {
+      stroke-width: 2px; }
+    main #areas figure svg#trans {
       padding: 0;
-      overflow: hidden;
-      cursor: pointer; }
-  main #chart #explanation {
-    padding: 0;
-    margin: 0; }
-    main #chart #explanation ul {
+      margin: 0;
+      z-index: 1;
+      background-color: #f7f7f7; }
+      main #areas figure svg#trans text {
+        fill: #2c2c2c; }
+      main #areas figure svg#trans line, main #areas figure svg#trans path.domain {
+        stroke: rgba(44, 44, 44, 0.75); }
+    main #areas figure svg#dragme {
+      position: absolute;
+      margin: 0;
+      padding: 0;
+      z-index: 2;
+      background: transparent;
+      pointer-events: none;
+      overflow: visible; }
+      main #areas figure svg#dragme line {
+        stroke: #6c6c6c; }
+    main #areas figure svg#dirt {
+      z-index: -1;
+      position: absolute;
+      background-color: #464646; }
+      main #areas figure svg#dirt text {
+        fill: #f7f7f7;
+        font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+        min-height: 80vh; }
+      main #areas figure svg#dirt .tick line, main #areas figure svg#dirt .tick path, main #areas figure svg#dirt line, main #areas figure svg#dirt path.domain {
+        stroke: rgba(247, 247, 247, 0.75); }
+  main #areas article#explanation {
+    padding: 1em;
+    margin: 0;
+    grid-column: 2 / -1;
+    background-color: #eaeaea; }
+    main #areas article#explanation h4 {
+      padding: 2rem 0 1em 0; }
+    main #areas article#explanation .text {
+      padding: 1em 0 2em 0;
+      min-height: 80vh; }
+    main #areas article#explanation ul {
       list-style-type: none; }
-      main #chart #explanation ul i {
+      main #areas article#explanation ul i {
         font-size: 0.5em;
         color: #00a650; }
-      main #chart #explanation ul li {
+      main #areas article#explanation ul li {
         margin: 0 0 1em 1em; }
-      main #chart #explanation ul li.subsection {
+      main #areas article#explanation ul li.subsection {
         font-weight: 600;
         margin: 2em 0 1em 0; }
 main #costs {

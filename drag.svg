@@ -23,14 +23,14 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1867"
-     inkscape:window-height="1176"
+     inkscape:window-width="1313"
+     inkscape:window-height="744"
      id="namedview889"
      showgrid="false"
      inkscape:zoom="26.908133"
-     inkscape:cx="15.394977"
-     inkscape:cy="29.303408"
-     inkscape:window-x="53"
+     inkscape:cx="10.935359"
+     inkscape:cy="24.84379"
+     inkscape:window-x="1973"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
      inkscape:current-layer="g885" />
@@ -55,9 +55,9 @@
       <path
          sodipodi:nodetypes="cscc"
          transform="translate(-46.433624,-104.47787)"
-         style="opacity:1;vector-effect:none;fill:#d0d0d0;fill-opacity:1;stroke:#2c2c2c;stroke-width:0.26458333;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         style="opacity:1;vector-effect:none;fill:#d0d0d0;fill-opacity:1;stroke:none;stroke-width:0.26458333;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          d="m 51.433624,114.47787 c -2.761424,0 -5,-2.23858 -5,-5 0,-2.76142 2.238576,-5 5,-5 z"
-         id="path4518"
+         id="pipchyk"
          clip-path="none"
          inkscape:connector-curvature="0" />
       <path

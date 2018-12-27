@@ -1,13 +1,16 @@
-const d3 = require('d3');
+const scrollama = require('scrollama');
 const $ = require('jquery');
-const tippy = require('tippy.js');
+const d3 = require('d3');
 const chroma = require('chroma-js');
 
+$('#areas .h3').prependTo('#areas figure');
+
 const cols = {
-    green: '#00a650', 
-    black: '#3c353f', 
+    green: '#00a650',
+    black: '#3c353f',
     orange: '#f26522',
     bgcol: '#f7f7f7',
+    lightblack: '#464646',
 };
 
 const fontSize = parseInt($('body').css('font-size'));
@@ -21,230 +24,235 @@ const numericalize = function (d) {
     return d;
 };
 
-const scaleKTNE = d3.scalePow()
-    .exponent(0.5)
-    .domain([0, 26000])
-    .range([0, 47.5]);
-
 Promise.all([
-    d3.csv('data/data_by_source.csv', numericalize),
-    d3.json('data/measures.json'),
+    d3.csv('data/data_report_wide.csv', numericalize),
     d3.json('data/sources_order.json', numericalize),
-]).then(function ([data, measures, sourcesOrder]) {
-    
-    const sphereButtons = d3.select('#chart nav ')
-        .selectAll('button')
-        .data(Object.keys(data[0]).slice(3))
-        .enter()
-        .append('button')
-        .text(d => d)
-        .attr('class', d => { if (d === 'Всього') return 'active'});
-    
-    const sources = [...Object.keys(sourcesOrder)];
-    
-    const chart = d3.select('#chart figure');
-    
-    const yearHeader = chart.selectAll('div.year')
-        .data(['', '2012', '2035', '2050'])
-        .enter()
-        .append('div')
-        .classed('year', true)
-        .text(d => d);
+    d3.xml('drag.svg'),
+]).then(function ([data, sourcesOrder, dragPointer]) {
 
-    let activeSphere = $('#chart button.active').text();
-    
-    const sourceAxis = chart.selectAll('div.source_name')
-        .data(sources)
-        .enter()
-        .append('div')
-        .classed('source_name', true)
-        .text(d => d);
-    
-    const yearCols = {
-        2012: '2 / 3',
-        2035: '3 / 4',
-        2050: '4 / 5',
-    };
-
-    const sourceCharts = chart.selectAll('div.source_value')
-        .data(data)
-        .enter()
-        .append('div')
-        .classed('source_value', true)
-        .style('grid-row', function (d) {
-            const r = sources.indexOf(d.source) + 2;
-            return `${r} / ${r + 1}`
-        })
-        .style('grid-column', d => yearCols[d.year.toString()]);
-    
-    let svgH = d3.min([
-        $('.source_value').height(),
-        $('.source_value').width(),
-    ]);
-
-    const ktneSvg = sourceCharts
-        .append('svg')
-        .attr('viewBox', '-50 -50 100 100')
-        .attr('width', svgH)
-        .attr('height', svgH)
-        .attr('data-source', d => `${d[activeSphere]} тис. тон н.е.`);
-    
-    $('#chart').css('grid-template-columns', 'auto 1fr');
-    
-    const ktneCircles = ktneSvg.append('circle')
-        .attr('cx', 0)
-        .attr('cy', 0)
-        .attr('r', d => scaleKTNE(d[activeSphere]))
-        .style('fill', d => (d.is_vde > 0) ? cols.green : cols.black);
-    
-    const totalCircles = ktneCircles.clone()
-        .style('fill', 'none')
-        .style('stroke', chroma(cols.black).alpha(0.3))
-        .style('stroke-width', '2px')
-        .style('stroke-dasharray', '2 3')
-        .style('opacity', 0);
-    
-    const expl = d3.select('div#explanation')
-        .append('ul');
-    
-    let explLi = expl.selectAll('li')
-        .data(measures[activeSphere])
-        .enter()
-        .append('li')
-        .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
-        .classed('subsection', d => d.match(/:$/) ? true : false);
-
-    $('nav button').click(function () {
-        $('nav button').removeClass('active');
-        const $t = $(this);
-        $t.addClass('active');
-
-        activeSphere = $t.text();
-
-        ktneSvg
-            .attr('data-source', d => `${d[activeSphere]} тис. тон н.е.`);
-
-        ktneCircles
-            .transition()
-            .duration(1000)
-            .attr('r', d => scaleKTNE(d[activeSphere]));
-
-        totalCircles.transition()
-            .duration(1000)
-            .style('opacity', (activeSphere === 'Всього') ? 0 : 1);
-
-        explLi = expl.selectAll('li')
-            .data(measures[activeSphere]);
-        
-        explLi.enter()
-            .append('li')
-            .merge(explLi)
-            .html(d => d.match(/:$/) ? d : `<i class="fas fa-check"></i> ${d}`)
-            .classed('subsection', d => d.match(/:$/) ? true : false);
-        
-        explLi
-            .exit()
-            .remove();
-        
-    });
-
-    $(document).ready(function () {
-        tippy('.source_value svg', {
-            animation: 'fade',
-            theme: 'light',
-            performance: true,
-            onShow(tip) {
-                tip.setContent(tip.reference.getAttribute('data-source'));
-            },
-        });
-    });
-});
-
-d3.csv('data/costs.csv', numericalize).then(function (data) {
-    const byType = d3.nest()
-        .key(d => d.action)
+    const nested = d3.nest()
         .key(d => d.scenario)
-        .entries(data);
-    
-    const chart = d3.select('#costs figure');
+        .key(d => d.source)
+        .entries(data)
+        .reduce((res, d) => {
+            res[d.key] = d.values;
+            return res;
+        }, {});
 
-    const sms = chart.selectAll('div.sm')
-        .data(byType)
-        .enter()
-        .append('div')
-        .classed('byType', true);
-    
-    const smHeader = sms.append('p')
-        .text(d => d.key);
+    const sources = [...Object.keys(sourcesOrder)];
 
-    const maxHSize = d3.max(smHeader.nodes().map(n => n.offsetHeight));
-    
-    const svgs = sms.append('svg')
-        .attr('width', function () {
-            return $(this).parent().width();
-        })
-        .attr('height', function () {
-            return $(this).parent().height() - maxHSize;
-        });
+    const chart = d3.select('#areas figure .chart');
 
-    const svg_m = {
-        top: 5,
-        right: 5,
-        bottom: 20,
-        left: 20,
+    const svgW = parseFloat($(chart.node()).width()),
+        svgH = parseFloat($(chart.node()).height());
+
+    const svgM = {
+        top: svgH * 0.1,
+        right: svgW * 0.1,
+        bottom: svgW * 0.05,
+        left: svgW * 0.1,
     };
-    
-    const svgH = parseFloat(svgs.attr('height')),
-        svgW = parseFloat(svgs.attr('width'));
 
-    const yearScale = d3.scalePoint()
-        .domain(['2012', '2015', '2020', '2025', '2030', '2035', '2040', '2045', '2050'])
-        .range([svg_m.left, svgW - svg_m.right]);
+    const dirtySvg = chart
+        .append('svg')
+        .attr('id', 'dirt')
+        .attr('width', svgW)
+        .attr('height', svgH);
 
-    const costScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.m_euro)])
-        .range([svgH - svg_m.bottom, svg_m.top]);
-    
-    const xAxis = d3.axisBottom(yearScale);
-    const yAxis = d3.axisLeft(costScale);
+    const draggingSvg = chart
+        .append('svg')
+        .attr('id', 'dragme')
+        .attr('width', svgW)
+        .attr('height', svgH);
+
+    const transSvg = chart
+        .append('svg')
+        .attr('id', 'trans')
+        .attr('width', svgW)
+        .attr('height', svgH);
+
+    let activeSphere = 'Загалом';
+
+    const scaleSm = d3.scaleBand()
+        .domain(sources)
+        .range([svgH - svgM.bottom, svgM.top]);
+
+    const scaleYear = d3.scaleLinear()
+        .domain([2015, 2050])
+        .range([svgM.left, svgW - svgM.right]);
+
+    const scaleKTNE = d3.scaleLinear()
+        .domain([0, 8000])
+        .range([scaleSm.step(), 0]);
+
+    const area = d3.area()
+        .x(d => scaleYear(d.year))
+        .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
+        .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
+        .curve(d3.curveCatmullRom);
 
     const line = d3.line()
-        .x(d => yearScale(d.year.toString()))
-        .y(d => costScale(d.m_euro));
+        .x(d => scaleYear(d.year))
+        .y(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
+        .curve(d3.curveCatmullRom);
 
-    const colScen = {
-        Консервативний: cols.orange,
-        Ліберальний: cols.black,
-        Революційний: cols.green,
+    const xAxis = d3.axisBottom()
+        .scale(scaleYear)
+        .ticks(8)
+        .tickFormat(d => '`' + d.toString().slice(2));
+
+    const yAxis = d3.axisLeft()
+        .scale(scaleKTNE)
+        .ticks(2);
+
+    const drawChart = function (svg, scenario) {
+        const dat = nested[scenario];
+
+        const gXAxis = svg.append('g')
+            .attr('transform', `translate(0 ${svgH - svgM.bottom})`)
+            .call(xAxis);
+
+        gXAxis.selectAll('.tick text')
+            .attr('fill', cols.black)
+            .attr('font-size', '0.85rem');
+
+        gXAxis.selectAll('.tick line')
+            .attr('y1', -1 * (svgH - svgM.bottom))
+            .attr('stroke', chroma(cols.black).alpha(0.4))
+            .attr('stroke-dasharray', '2 2');
+
+        const smLines = svg.selectAll('line.smline')
+            .data(dat)
+            .enter()
+            .append('line')
+            .classed('smline', true)
+            .attr('y1', d => scaleSm(d.key) + scaleSm.bandwidth())
+            .attr('y2', d => scaleSm(d.key) + scaleSm.bandwidth())
+            .attr('x1', scaleYear(2015))
+            .attr('x2', scaleYear(2050));
+
+        const sourceAreas = svg.selectAll('path.sm')
+            .data(dat)
+            .enter()
+            .append('path')
+            .classed('sm', true)
+            .attr('d', d => area(d.values.slice(1)))
+            .style('fill', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange)
+            .style('fill-opacity', 0.5);
+
+        const sourceLine = svg.selectAll('path.sl')
+            .data(dat)
+            .enter()
+            .append('path')
+            .classed('sl', true)
+            .attr('d', d => line(d.values.slice(1)))
+            .style('fill', 'none')
+            .style('stroke-width', 2)
+            .style('stroke', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange);
+
+        const textLabs = svg.selectAll('text.lab')
+            .data(dat)
+            .enter()
+            .append('text')
+            .classed('lab', true)
+            .attr('y', d => scaleSm(d.key) + scaleSm.bandwidth() - fontSize)
+            .attr('x', svgM.left)
+            .text(d => d.key);
+
+        const gYAxis = svg.append('g')
+            .attr('id', 'y_axis')
+            .attr('transform', `translate(${svgW - svgM.left} ${scaleSm('Газ')})`)
+            .call(yAxis);
     };
-    
-    const scenLines = svgs.selectAll('path')
-        .data(d => d.values)
-        .enter()
-        .append('path')
-        .classed('line', true)
-        .attr('d', d => line(d.values))
-        .style('fill', 'none')
-        .style('stroke', d => colScen[d.key]);
-    
-    const xGAxis = svgs.append('g')
-        .classed('x_axis', true)
-        .attr('transform', `translate(0 ${svgH - svg_m.bottom})`)
-        .call(xAxis);
 
-    const yGAxis = svgs.append('g')
-        .classed('y_axis', true)
-        .attr('transform', `translate(${svg_m.left} 0)`)
-        .call(yAxis);
+    const dragStart = function(d) {
+        d3.select(this).raise().classed('active', true);
+    };
 
-    yGAxis.selectAll('text')
-        .attr('x', '5')
-        .attr('text-anchor', 'start')
+    const dragged = function(d) {
+        const dragTo = d3.max([0, d3.min([d3.event.x, svgW])]);
+        let dragPers = (dragTo / svgW) * 100;
+        if (dragPers >= 50) {
+            d3.select('#areas figure')
+                .style('background-image',
+                    `linear-gradient(0.25turn, ${cols.bgcol} ${dragPers}%, ${cols.lightblack} ${100 - dragPers}%)`);
+        } else {
+            d3.select('#areas figure')
+                .style('background-image',
+                    `linear-gradient(0.75turn, ${cols.lightblack} ${100 - dragPers}%, ${cols.bgcol} ${dragPers}%)`);
+        };
+
+        d3.select(this)
+            .attr('transform', `translate(${dragTo} 0)`);
+
+        transSvg.attr('width', dragTo);
+
+
+    };
+
+    const dragEnd = function(d) {
+        d3.select(this).classed('active', false);
+    };
+
+
+    drawChart(dirtySvg, 'Базовий');
+    drawChart(transSvg, 'Революційний');
+
+    const dragLine = draggingSvg.append('g')
+        .style('pointer-events', 'auto')
+        .attr('transform', `translate(${svgW} 0)`)
+        .call(d3.drag()
+            .on('start', dragStart)
+            .on('drag', dragged)
+            .on('end', dragEnd));
+
+    dragLine.node().appendChild(dragPointer.documentElement.getElementsByTagName('g')[0]);
     
+    dragLine.select('#dragger')
+        .attr('transform', function (d) {
+            const scale = 7,
+                bbox = this.getBBox();
+            return `translate(-${bbox.width * scale} ${svgH / 2 - (bbox.height * scale) / 2})
+                    scale(${scale})`
+        })
+        .select('#pipchyk')
+        .style('fill', $('#areas article').css('background-color'));
+
+    const scroller = scrollama();
+
+    scroller.setup({
+        step: '#areas article .text',
+        container: '#areas',
+        graphic: '#areas .fig_container figure',
+        offset: 0.5,
+    })
+        .onStepEnter(function (r) {
+            activeSphere = r.element.getAttribute('data-sphere');
+            updateSvg(transSvg);
+            updateSvg(dirtySvg);
+        });
+
+    const updateSvg = function (svg) {
+        if (activeSphere === 'Загалом') {
+            scaleKTNE.domain([0, 8000]);
+        } else {
+            scaleKTNE.domain([0, 4000]);
+        }
+
+        svg.selectAll('path.sm')
+            .transition()
+            .duration(1000)
+            .attr('d', d => area(d.values.slice(1)));
+
+        svg.selectAll('path.sl')
+            .transition()
+            .duration(1000)
+            .attr('d', d => line(d.values.slice(1)));
+
+        svg.select('g#y_axis')
+            .transition()
+            .duration(1000)
+            .call(yAxis);
+    };
+
 });
-
-
-
-
-
-

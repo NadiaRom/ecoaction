@@ -1,6 +1,6 @@
 $green: #00a650;
 $red: #f26522;
-$fontcol: #2c2c2c;
+$fontcol: #3c353f;
 $bgcol: #f7f7f7;
 $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
 $fonttit: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif;
@@ -13,8 +13,6 @@ body {
   font-family: $fontfam;
   margin: 0;
   padding: 0;
-  height: 100%;
-  width: 100%;
 
   * {
     box-sizing: border-box;
@@ -24,6 +22,7 @@ body {
 
 header {
   padding: 1em 10% 2em 10%;
+  height: 100vh;
   background: linear-gradient(0.5turn, $green, $green, $green);
   display: flex;
   flex-direction: column;
@@ -44,38 +43,48 @@ header {
 main {
   .data_caption {
     font-style: italic;
-    color: lighten($fontcol, 40%);
+    color: lighten($fontcol, 20%);
     font-size: 0.85em;
-    padding-left: 1em;
 
     a {
       color: inherit;
-      //text-decoration-color: $red;
+      text-decoration-color: $red;
     }
   }
 
-  #areas {
+  #chart {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr;
-    padding: 0;
-    margin: 0;
+    grid-template-columns: 1.61fr 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 1em 2em 1em 2em;
 
-    .h3 {
-      padding: 2rem 0 2rem 0;
+    h3 {
+      grid-column: 1 / -1;
+      padding: 1em 0 1em 0;
+    }
 
-      div {
-        display: flex;
-        justify-content: space-between;
+    nav {
+      grid-column: 1 / -1;
+      padding: 0;
+      margin: 0 0 1em 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-        span:first-of-type {
-          color: lighten($fontcol, 10%);
-        }
+      button {
+        text-align: start;
+        border-radius: 0;
+        line-height: 1.5;
+        border: none;
+        background-color: darken($bgcol, 10%);
+        padding: 0.5em 0.5em 0.5em 0.5em;
+        cursor: pointer;
+      }
 
-        span:last-of-type {
-          color: $bgcol;
-        }
+      button.active {
+        background-color: darken($bgcol, 25%);
+        font-weight: 600;
       }
     }
 
@@ -83,84 +92,36 @@ main {
       padding: 0;
       margin: 0;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      grid-template-columns: 1fr;
-      height: 100vh;
-      position: sticky;
-      top: 0;
-      overflow: hidden;
+      grid-template-columns: auto 1fr 1fr 1fr;
+      grid-template-rows: auto repeat(auto-fill, 1fr);
 
-      .h3 {
-        padding-left: 10%;
-        padding-right: 10%;
+      .year {
+        text-align: center;
       }
 
-      .smline {
-        stroke-width: 2px;
+      .source_name {
+        grid-column: 1 / 2;
+        display: flex;
+        align-items: center;
+
       }
 
-      svg#trans {
+      .source_value {
+        text-align: center;
+      }
+
+
+      svg {
+        margin: 0 2em 0 2em;
         padding: 0;
-        margin: 0;
-        z-index: 1;
-        background-color: $bgcol;
-
-        text {
-          fill: $fontcol;
-        }
-
-        line, path.domain {
-          stroke: rgba($fontcol, 0.75)
-        }
-
-      }
-
-      svg#dragme {
-        position: absolute;
-        margin: 0;
-        padding: 0;
-        z-index: 2;
-        background: transparent;
-        pointer-events: none;
-        overflow: visible;
-
-        line {
-          stroke: lighten($fontcol, 25%)
-        }
-      }
-
-      svg#dirt {
-        z-index: -1;
-        position: absolute;
-        //background: linear-gradient(to right, #e66465, #9198e5);;
-        background-color: lighten($fontcol, 10%);
-
-        text {
-          fill: $bgcol;
-          font-family: $fontfam;
-          min-height: 80vh;
-        }
-
-        .tick line, .tick path, line, path.domain {
-          stroke: rgba($bgcol, 0.75);
-        }
+        overflow: hidden;
+        cursor: pointer;
       }
     }
 
-    article#explanation {
-      padding: 1em;
+    #explanation {
+      padding: 0;
       margin: 0;
-      grid-column: 2 / -1;
-      background-color: darken($bgcol, 5%);
-
-      h4 {
-        padding: 2rem 0 1em 0;
-      }
-
-      .text {
-        padding: 1em 0 2em 0;
-        min-height: 80vh;
-      }
 
       ul {
         list-style-type: none;
