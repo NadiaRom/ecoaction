@@ -82,21 +82,19 @@ Promise.all([
         .range([svgM.left, svgW - svgM.right]);
 
     const scaleKTNE = d3.scaleLinear()
-        .domain([0, 20000])
+        .domain([0, 8000])
         .range([scaleSm.step(), 0]);
 
     const area = d3.area()
         .x(d => scaleYear(d.year))
         .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
         .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveStepBefore);
-        // .curve(d3.curveCatmullRom);
+        .curve(d3.curveCatmullRom);
 
     const line = d3.line()
         .x(d => scaleYear(d.year))
         .y(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveStepBefore);
-        // .curve(d3.curveCatmullRom);
+        .curve(d3.curveCatmullRom);
 
     const xAxis = d3.axisBottom()
         .scale(scaleYear)
