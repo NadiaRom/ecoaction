@@ -1,265 +1,4 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const scrollama = require('scrollama');
-const $ = require('jquery');
-const d3 = require('d3');
-const chroma = require('chroma-js');
-
-$('#areas .h3').prependTo('#areas figure');
-
-const cols = {
-    green: '#00a650',
-    black: '#3c353f',
-    orange: '#f26522',
-    bgcol: '#f7f7f7',
-    lightblack: '#464646',
-};
-
-const fontSize = parseInt($('body').css('font-size'));
-
-const numericalize = function (d) {
-    for (const k in d) {
-        if (d[k].search(/[^0-9\.]/) === -1) {
-            d[k] = +d[k];
-        }
-    }
-    return d;
-};
-
-Promise.all([
-    d3.csv('data/data_report_wide.csv', numericalize),
-    d3.json('data/sources_order.json', numericalize),
-    d3.xml('drag.svg'),
-]).then(function ([data, sourcesOrder, dragPointer]) {
-
-    const nested = d3.nest()
-        .key(d => d.scenario)
-        .key(d => d.source)
-        .entries(data)
-        .reduce((res, d) => {
-            res[d.key] = d.values;
-            return res;
-        }, {});
-
-    const sources = [...Object.keys(sourcesOrder)];
-
-    const chart = d3.select('#areas figure .chart');
-
-    const svgW = parseFloat($(chart.node()).width()),
-        svgH = parseFloat($(chart.node()).height());
-
-    const svgM = {
-        top: svgH * 0.1,
-        right: svgW * 0.1,
-        bottom: svgW * 0.05,
-        left: svgW * 0.1,
-    };
-
-    const dirtySvg = chart
-        .append('svg')
-        .attr('id', 'dirt')
-        .attr('width', svgW)
-        .attr('height', svgH);
-
-    const draggingSvg = chart
-        .append('svg')
-        .attr('id', 'dragme')
-        .attr('width', svgW)
-        .attr('height', svgH);
-
-    const transSvg = chart
-        .append('svg')
-        .attr('id', 'trans')
-        .attr('width', svgW)
-        .attr('height', svgH);
-
-    let activeSphere = 'Загалом';
-
-    const scaleSm = d3.scaleBand()
-        .domain(sources)
-        .range([svgH - svgM.bottom, svgM.top]);
-
-    const scaleYear = d3.scaleLinear()
-        .domain([2015, 2050])
-        .range([svgM.left, svgW - svgM.right]);
-
-    const scaleKTNE = d3.scaleLinear()
-        .domain([0, 20000])
-        .range([scaleSm.step(), 0]);
-
-    const area = d3.area()
-        .x(d => scaleYear(d.year))
-        .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
-        .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveStepBefore);
-        // .curve(d3.curveCatmullRom);
-
-    const line = d3.line()
-        .x(d => scaleYear(d.year))
-        .y(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveStepBefore);
-        // .curve(d3.curveCatmullRom);
-
-    const xAxis = d3.axisBottom()
-        .scale(scaleYear)
-        .ticks(8)
-        .tickFormat(d => '`' + d.toString().slice(2));
-
-    const yAxis = d3.axisLeft()
-        .scale(scaleKTNE)
-        .ticks(2);
-
-    const drawChart = function (svg, scenario) {
-        const dat = nested[scenario];
-
-        const gXAxis = svg.append('g')
-            .attr('transform', `translate(0 ${svgH - svgM.bottom})`)
-            .call(xAxis);
-
-        gXAxis.selectAll('.tick text')
-            .attr('fill', cols.black)
-            .attr('font-size', '0.85rem');
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (svgH - svgM.bottom))
-            .attr('stroke', chroma(cols.black).alpha(0.4))
-            .attr('stroke-dasharray', '2 2');
-
-        const smLines = svg.selectAll('line.smline')
-            .data(dat)
-            .enter()
-            .append('line')
-            .classed('smline', true)
-            .attr('y1', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('y2', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('x1', scaleYear(2015))
-            .attr('x2', scaleYear(2050));
-
-        const sourceAreas = svg.selectAll('path.sm')
-            .data(dat)
-            .enter()
-            .append('path')
-            .classed('sm', true)
-            .attr('d', d => area(d.values.slice(1)))
-            .style('fill', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange)
-            .style('fill-opacity', 0.5);
-
-        const sourceLine = svg.selectAll('path.sl')
-            .data(dat)
-            .enter()
-            .append('path')
-            .classed('sl', true)
-            .attr('d', d => line(d.values.slice(1)))
-            .style('fill', 'none')
-            .style('stroke-width', 2)
-            .style('stroke', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange);
-
-        const textLabs = svg.selectAll('text.lab')
-            .data(dat)
-            .enter()
-            .append('text')
-            .classed('lab', true)
-            .attr('y', d => scaleSm(d.key) + scaleSm.bandwidth() - fontSize)
-            .attr('x', svgM.left)
-            .text(d => d.key);
-
-        const gYAxis = svg.append('g')
-            .attr('id', 'y_axis')
-            .attr('transform', `translate(${svgW - svgM.left} ${scaleSm('Газ')})`)
-            .call(yAxis);
-    };
-
-    const dragStart = function(d) {
-        d3.select(this).raise().classed('active', true);
-    };
-
-    const dragged = function(d) {
-        const dragTo = d3.max([0, d3.min([d3.event.x, svgW])]);
-        let dragPers = (dragTo / svgW) * 100;
-        if (dragPers >= 50) {
-            d3.select('#areas figure')
-                .style('background-image',
-                    `linear-gradient(0.25turn, ${cols.bgcol} ${dragPers}%, ${cols.lightblack} ${100 - dragPers}%)`);
-        } else {
-            d3.select('#areas figure')
-                .style('background-image',
-                    `linear-gradient(0.75turn, ${cols.lightblack} ${100 - dragPers}%, ${cols.bgcol} ${dragPers}%)`);
-        };
-
-        d3.select(this)
-            .attr('transform', `translate(${dragTo} 0)`);
-
-        transSvg.attr('width', dragTo);
-
-
-    };
-
-    const dragEnd = function(d) {
-        d3.select(this).classed('active', false);
-    };
-
-
-    drawChart(dirtySvg, 'Базовий');
-    drawChart(transSvg, 'Революційний');
-
-    const dragLine = draggingSvg.append('g')
-        .style('pointer-events', 'auto')
-        .attr('transform', `translate(${svgW} 0)`)
-        .call(d3.drag()
-            .on('start', dragStart)
-            .on('drag', dragged)
-            .on('end', dragEnd));
-
-    dragLine.node().appendChild(dragPointer.documentElement.getElementsByTagName('g')[0]);
-    
-    dragLine.select('#dragger')
-        .attr('transform', function (d) {
-            const scale = 7,
-                bbox = this.getBBox();
-            return `translate(-${bbox.width * scale} ${svgH / 2 - (bbox.height * scale) / 2})
-                    scale(${scale})`
-        })
-        .select('#pipchyk')
-        .style('fill', $('#areas article').css('background-color'));
-
-    const scroller = scrollama();
-
-    scroller.setup({
-        step: '#areas article .text',
-        container: '#areas',
-        graphic: '#areas .fig_container figure',
-        offset: 0.5,
-    })
-        .onStepEnter(function (r) {
-            activeSphere = r.element.getAttribute('data-sphere');
-            updateSvg(transSvg);
-            updateSvg(dirtySvg);
-        });
-
-    const updateSvg = function (svg) {
-        if (activeSphere === 'Загалом') {
-            scaleKTNE.domain([0, 8000]);
-        } else {
-            scaleKTNE.domain([0, 4000]);
-        }
-
-        svg.selectAll('path.sm')
-            .transition()
-            .duration(1000)
-            .attr('d', d => area(d.values.slice(1)));
-
-        svg.selectAll('path.sl')
-            .transition()
-            .duration(1000)
-            .attr('d', d => line(d.values.slice(1)));
-
-        svg.select('g#y_axis')
-            .transition()
-            .duration(1000)
-            .call(yAxis);
-    };
-
-});
-},{"chroma-js":2,"d3":34,"jquery":35,"scrollama":36}],2:[function(require,module,exports){
 /**
  * chroma.js - JavaScript library for color conversions
  *
@@ -3453,7 +3192,7 @@ Promise.all([
 
 })));
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 // https://d3js.org/d3-array/ v1.2.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -4045,7 +3784,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 // https://d3js.org/d3-axis/ v1.0.12 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -4240,7 +3979,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // https://d3js.org/d3-brush/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -4809,7 +4548,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":10,"d3-drag":11,"d3-interpolate":19,"d3-selection":26,"d3-transition":31}],6:[function(require,module,exports){
+},{"d3-dispatch":9,"d3-drag":10,"d3-interpolate":18,"d3-selection":25,"d3-transition":30}],5:[function(require,module,exports){
 // https://d3js.org/d3-chord/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-path')) :
@@ -5041,7 +4780,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3,"d3-path":20}],7:[function(require,module,exports){
+},{"d3-array":2,"d3-path":19}],6:[function(require,module,exports){
 // https://d3js.org/d3-collection/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -5260,7 +4999,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 // https://d3js.org/d3-color/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -5811,7 +5550,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // https://d3js.org/d3-contour/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -6244,7 +5983,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3}],10:[function(require,module,exports){
+},{"d3-array":2}],9:[function(require,module,exports){
 // https://d3js.org/d3-dispatch/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6341,7 +6080,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // https://d3js.org/d3-drag/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch')) :
@@ -6577,7 +6316,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":10,"d3-selection":26}],12:[function(require,module,exports){
+},{"d3-dispatch":9,"d3-selection":25}],11:[function(require,module,exports){
 // https://d3js.org/d3-dsv/ v1.0.10 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6741,7 +6480,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // https://d3js.org/d3-ease/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -7002,7 +6741,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // https://d3js.org/d3-fetch/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dsv')) :
@@ -7106,7 +6845,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dsv":12}],15:[function(require,module,exports){
+},{"d3-dsv":11}],14:[function(require,module,exports){
 // https://d3js.org/d3-force/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-quadtree'), require('d3-collection'), require('d3-dispatch'), require('d3-timer')) :
@@ -7768,7 +7507,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-collection":7,"d3-dispatch":10,"d3-quadtree":22,"d3-timer":30}],16:[function(require,module,exports){
+},{"d3-collection":6,"d3-dispatch":9,"d3-quadtree":21,"d3-timer":29}],15:[function(require,module,exports){
 // https://d3js.org/d3-format/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -8090,7 +7829,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // https://d3js.org/d3-geo/ v1.11.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -11195,7 +10934,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3}],18:[function(require,module,exports){
+},{"d3-array":2}],17:[function(require,module,exports){
 // https://d3js.org/d3-hierarchy/ v1.1.8 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -12487,7 +12226,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 // https://d3js.org/d3-interpolate/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) :
@@ -13061,7 +12800,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8}],20:[function(require,module,exports){
+},{"d3-color":7}],19:[function(require,module,exports){
 // https://d3js.org/d3-path/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13204,7 +12943,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // https://d3js.org/d3-polygon/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13356,7 +13095,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 // https://d3js.org/d3-quadtree/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13793,7 +13532,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 // https://d3js.org/d3-random/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13910,7 +13649,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // https://d3js.org/d3-scale-chromatic/ v1.3.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-interpolate'), require('d3-color')) :
@@ -14410,7 +14149,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8,"d3-interpolate":19}],25:[function(require,module,exports){
+},{"d3-color":7,"d3-interpolate":18}],24:[function(require,module,exports){
 // https://d3js.org/d3-scale/ v2.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-collection'), require('d3-array'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format')) :
@@ -15313,7 +15052,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3,"d3-collection":7,"d3-format":16,"d3-interpolate":19,"d3-time":29,"d3-time-format":28}],26:[function(require,module,exports){
+},{"d3-array":2,"d3-collection":6,"d3-format":15,"d3-interpolate":18,"d3-time":28,"d3-time-format":27}],25:[function(require,module,exports){
 // https://d3js.org/d3-selection/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -16310,7 +16049,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 // https://d3js.org/d3-shape/ v1.2.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-path')) :
@@ -18247,7 +17986,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-path":20}],28:[function(require,module,exports){
+},{"d3-path":19}],27:[function(require,module,exports){
 // https://d3js.org/d3-time-format/ v2.1.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-time')) :
@@ -18933,7 +18672,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-time":29}],29:[function(require,module,exports){
+},{"d3-time":28}],28:[function(require,module,exports){
 // https://d3js.org/d3-time/ v1.0.10 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19308,7 +19047,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 // https://d3js.org/d3-timer/ v1.0.9 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19459,7 +19198,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // https://d3js.org/d3-transition/ v1.1.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dispatch'), require('d3-timer'), require('d3-color'), require('d3-interpolate'), require('d3-selection'), require('d3-ease')) :
@@ -20248,7 +19987,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8,"d3-dispatch":10,"d3-ease":13,"d3-interpolate":19,"d3-selection":26,"d3-timer":30}],32:[function(require,module,exports){
+},{"d3-color":7,"d3-dispatch":9,"d3-ease":12,"d3-interpolate":18,"d3-selection":25,"d3-timer":29}],31:[function(require,module,exports){
 // https://d3js.org/d3-voronoi/ v1.1.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -21249,7 +20988,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 // https://d3js.org/d3-zoom/ v1.7.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -21753,7 +21492,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":10,"d3-drag":11,"d3-interpolate":19,"d3-selection":26,"d3-transition":31}],34:[function(require,module,exports){
+},{"d3-dispatch":9,"d3-drag":10,"d3-interpolate":18,"d3-selection":25,"d3-transition":30}],33:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -21826,7 +21565,7 @@ Object.keys(d3Zoom).forEach(function (key) { exports[key] = d3Zoom[key]; });
 exports.version = version;
 Object.defineProperty(exports, "event", {get: function() { return d3Selection.event; }});
 
-},{"d3-array":3,"d3-axis":4,"d3-brush":5,"d3-chord":6,"d3-collection":7,"d3-color":8,"d3-contour":9,"d3-dispatch":10,"d3-drag":11,"d3-dsv":12,"d3-ease":13,"d3-fetch":14,"d3-force":15,"d3-format":16,"d3-geo":17,"d3-hierarchy":18,"d3-interpolate":19,"d3-path":20,"d3-polygon":21,"d3-quadtree":22,"d3-random":23,"d3-scale":25,"d3-scale-chromatic":24,"d3-selection":26,"d3-shape":27,"d3-time":29,"d3-time-format":28,"d3-timer":30,"d3-transition":31,"d3-voronoi":32,"d3-zoom":33}],35:[function(require,module,exports){
+},{"d3-array":2,"d3-axis":3,"d3-brush":4,"d3-chord":5,"d3-collection":6,"d3-color":7,"d3-contour":8,"d3-dispatch":9,"d3-drag":10,"d3-dsv":11,"d3-ease":12,"d3-fetch":13,"d3-force":14,"d3-format":15,"d3-geo":16,"d3-hierarchy":17,"d3-interpolate":18,"d3-path":19,"d3-polygon":20,"d3-quadtree":21,"d3-random":22,"d3-scale":24,"d3-scale-chromatic":23,"d3-selection":25,"d3-shape":26,"d3-time":28,"d3-time-format":27,"d3-timer":29,"d3-transition":30,"d3-voronoi":31,"d3-zoom":32}],34:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
@@ -32192,7 +31931,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],36:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -32972,4 +32711,242 @@ return scrollama;
 
 })));
 
-},{}]},{},[1]);
+},{}],36:[function(require,module,exports){
+const scrollama = require('scrollama');
+const $ = require('jquery');
+const d3 = require('d3');
+const chroma = require('chroma-js');
+
+$('#consumption .h3').prependTo('#consumption figure');
+
+const cols = {
+    green: '#00a650',
+    black: '#3c353f',
+    orange: '#f26522',
+    bgcol: '#f7f7f7',
+    lightblack: '#464646',
+
+    'Теплова енергія': '#e41a1c',
+    'Газ': '#377eb8',
+    'Електроенергія з ВДЕ': '#4daf4a',
+    'Біопаливо та відходи': '#984ea3',
+    'Електроенергія': '#ff7f00',
+    'Сонячна енергія': '#ffff33',
+    'Вугілля': '#a65628',
+    'Теплова енергія з ВДЕ': '#f781bf',
+    'Нафта та нафтопродукти': '#999999',
+};
+
+const fontSize = parseInt($('body').css('font-size'));
+
+const numericalize = function (d) {
+    for (const k in d) {
+        if (d[k].search(/[^0-9\.]/) === -1) {
+            d[k] = +d[k];
+        }
+    }
+    return d;
+};
+
+Promise.all([
+    d3.csv('../data/data_report_wide.csv', numericalize),
+    d3.json('../data/sources_order.json', numericalize),
+    d3.xml('drag.svg'),
+]).then(function ([data, sourcesOrder, dragPointer]) {
+
+    const nested = d3.nest()
+        .key(d => d.scenario)
+        .key(d => d.source)
+        .entries(data)
+        .reduce((res, d) => {
+            res[d.key] = d.values;
+            return res;
+        }, {});
+
+    const sources = [...Object.keys(sourcesOrder)];
+
+    const chart = d3.select('#consumption figure .chart');
+
+    const svgW = parseFloat($(chart.node()).width()),
+        svgH = parseFloat($(chart.node()).height());
+
+    const svgM = {
+        top: svgH * 0.1,
+        right: 75,
+        bottom: svgW * 0.05,
+        left: svgW * 0.1,
+    };
+
+    const dirtySvg = chart
+        .append('svg')
+        .attr('id', 'dirt')
+        .attr('width', svgW - 1)
+        .attr('height', svgH - 1);
+
+    const draggingSvg = chart
+        .append('svg')
+        .attr('id', 'dragme')
+        .attr('width', svgW)
+        .attr('height', svgH);
+
+    const transSvg = chart
+        .append('svg')
+        .attr('id', 'trans')
+        .attr('width', svgW)
+        .attr('height', svgH);
+
+    let activeSphere = 'Загалом';
+
+    const scaleYear = d3.scaleLinear()
+        .domain([2015, 2050])
+        .range([svgM.left, svgW - svgM.right]);
+
+    const scaleKTNE = d3.scaleLinear()
+        .domain([0, 25000])
+        .range([svgH - svgM.top, svgM.bottom]);
+
+    // const area = d3.area()
+    //     .x(d => scaleYear(d.year))
+    //     .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
+    //     .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
+    //     .curve(d3.curveStepBefore);
+        // .curve(d3.curveCatmullRom);
+
+    const line = d3.line()
+        .x(d => scaleYear(d.year))
+        .y(d => scaleKTNE(d[activeSphere]))
+        .curve(d3.curveCatmullRom);
+
+    const xAxis = d3.axisBottom()
+        .scale(scaleYear)
+        .ticks(8)
+        .tickFormat(d => '`' + d.toString().slice(2));
+
+    const yAxis = d3.axisRight()
+        .scale(scaleKTNE)
+        .ticks(10);
+
+    const drawChart = function (svg, scenario) {
+        const dat = nested[scenario];
+
+        const gXAxis = svg.append('g')
+            .attr('transform', `translate(0 ${svgH - svgM.bottom})`)
+            .call(xAxis);
+
+        gXAxis.selectAll('.tick text')
+            .attr('fill', cols.black)
+            .attr('font-size', '0.85rem');
+
+        gXAxis.selectAll('.tick line')
+            .attr('y1', -1 * (svgH - svgM.bottom))
+            .attr('stroke', chroma(cols.black).alpha(0.4))
+            .attr('stroke-dasharray', '2 2');
+
+        const sourceLine = svg.selectAll('path.sl')
+            .data(dat)
+            .enter()
+            .append('path')
+            .classed('sl', true)
+            .attr('d', d => line(d.values.slice(1)))
+            .style('fill', 'none')
+            .style('stroke-width', 2)
+            .style('stroke', d => cols[d.key]);
+
+        const gYAxis = svg.append('g')
+            .attr('id', 'y_axis')
+            .attr('transform', `translate(${svgW - svgM.right} 0)`)
+            .call(yAxis);
+    };
+
+    const dragStart = function(d) {
+        d3.select(this).raise().classed('active', true);
+    };
+
+    const dragged = function(d) {
+        const dragTo = d3.max([0, d3.min([d3.event.x, svgW])]);
+        let dragPers = (dragTo / svgW) * 100;
+        if (dragPers >= 50) {
+            d3.select('#consumption figure')
+                .style('background-image',
+                    `linear-gradient(0.25turn, ${cols.bgcol} ${dragPers}%, ${cols.lightblack} ${100 - dragPers}%)`);
+        } else {
+            d3.select('#consumption figure')
+                .style('background-image',
+                    `linear-gradient(0.75turn, ${cols.lightblack} ${100 - dragPers}%, ${cols.bgcol} ${dragPers}%)`);
+        };
+
+        d3.select(this)
+            .attr('transform', `translate(${dragTo} 0)`);
+
+        transSvg.attr('width', dragTo);
+
+
+    };
+
+    const dragEnd = function(d) {
+        d3.select(this).classed('active', false);
+    };
+
+
+    drawChart(dirtySvg, 'Базовий');
+    drawChart(transSvg, 'Революційний');
+
+    const dragLine = draggingSvg.append('g')
+        .style('pointer-events', 'auto')
+        .attr('transform', `translate(${svgW} 0)`)
+        .call(d3.drag()
+            .on('start', dragStart)
+            .on('drag', dragged)
+            .on('end', dragEnd));
+
+    dragLine.node().appendChild(dragPointer.documentElement.getElementsByTagName('g')[0]);
+    
+    dragLine.select('#dragger')
+        .attr('transform', function (d) {
+            const scale = 7,
+                bbox = this.getBBox();
+            return `translate(-${bbox.width * scale} ${svgH / 2 - (bbox.height * scale) / 2})
+                    scale(${scale})`
+        })
+        .select('#pipchyk')
+        .style('fill', $('#consumption article').css('background-color'));
+
+    const scroller = scrollama();
+
+    scroller.setup({
+        step: '#consumption article .text',
+        container: '#consumption',
+        graphic: '#consumption .fig_container figure',
+        offset: 0.5,
+    })
+        .onStepEnter(function (r) {
+            activeSphere = r.element.getAttribute('data-sphere');
+            updateSvg(transSvg);
+            updateSvg(dirtySvg);
+        });
+
+    const updateSvg = function (svg) {
+        if (activeSphere === 'Загалом') {
+            scaleKTNE.domain([0, 20000]);
+        } else {
+            scaleKTNE.domain([0, 10000]);
+        }
+
+        svg.selectAll('path.sm')
+            .transition()
+            .duration(1000)
+            .attr('d', d => area(d.values.slice(1)));
+
+        svg.selectAll('path.sl')
+            .transition()
+            .duration(1000)
+            .attr('d', d => line(d.values.slice(1)));
+
+        svg.select('g#y_axis')
+            .transition()
+            .duration(1000)
+            .call(yAxis);
+    };
+
+});
+},{"chroma-js":1,"d3":33,"jquery":34,"scrollama":35}]},{},[36]);

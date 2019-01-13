@@ -3,7 +3,7 @@ const $ = require('jquery');
 const d3 = require('d3');
 const chroma = require('chroma-js');
 
-$('#areas .h3').prependTo('#areas figure');
+$('#consumption .h3').prependTo('#consumption figure');
 
 const cols = {
     green: '#00a650',
@@ -11,6 +11,16 @@ const cols = {
     orange: '#f26522',
     bgcol: '#f7f7f7',
     lightblack: '#464646',
+
+    'Теплова енергія': '#e41a1c',
+    'Газ': '#377eb8',
+    'Електроенергія з ВДЕ': '#4daf4a',
+    'Біопаливо та відходи': '#984ea3',
+    'Електроенергія': '#ff7f00',
+    'Сонячна енергія': '#ffff33',
+    'Вугілля': '#a65628',
+    'Теплова енергія з ВДЕ': '#f781bf',
+    'Нафта та нафтопродукти': '#999999',
 };
 
 const fontSize = parseInt($('body').css('font-size'));
@@ -25,8 +35,8 @@ const numericalize = function (d) {
 };
 
 Promise.all([
-    d3.csv('data/data_report_wide.csv', numericalize),
-    d3.json('data/sources_order.json', numericalize),
+    d3.csv('../data/data_report_wide.csv', numericalize),
+    d3.json('../data/sources_order.json', numericalize),
     d3.xml('drag.svg'),
 ]).then(function ([data, sourcesOrder, dragPointer]) {
 
@@ -41,14 +51,14 @@ Promise.all([
 
     const sources = [...Object.keys(sourcesOrder)];
 
-    const chart = d3.select('#areas figure .chart');
+    const chart = d3.select('#consumption figure .chart');
 
     const svgW = parseFloat($(chart.node()).width()),
         svgH = parseFloat($(chart.node()).height());
 
     const svgM = {
         top: svgH * 0.1,
-        right: svgW * 0.1,
+        right: 75,
         bottom: svgW * 0.05,
         left: svgW * 0.1,
     };
@@ -56,8 +66,8 @@ Promise.all([
     const dirtySvg = chart
         .append('svg')
         .attr('id', 'dirt')
-        .attr('width', svgW)
-        .attr('height', svgH);
+        .attr('width', svgW - 1)
+        .attr('height', svgH - 1);
 
     const draggingSvg = chart
         .append('svg')
@@ -73,39 +83,34 @@ Promise.all([
 
     let activeSphere = 'Загалом';
 
-    const scaleSm = d3.scaleBand()
-        .domain(sources)
-        .range([svgH - svgM.bottom, svgM.top]);
-
     const scaleYear = d3.scaleLinear()
         .domain([2015, 2050])
         .range([svgM.left, svgW - svgM.right]);
 
     const scaleKTNE = d3.scaleLinear()
-        .domain([0, 20000])
-        .range([scaleSm.step(), 0]);
+        .domain([0, 25000])
+        .range([svgH - svgM.top, svgM.bottom]);
 
-    const area = d3.area()
-        .x(d => scaleYear(d.year))
-        .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
-        .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveStepBefore);
+    // const area = d3.area()
+    //     .x(d => scaleYear(d.year))
+    //     .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
+    //     .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
+    //     .curve(d3.curveStepBefore);
         // .curve(d3.curveCatmullRom);
 
     const line = d3.line()
         .x(d => scaleYear(d.year))
-        .y(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveStepBefore);
-        // .curve(d3.curveCatmullRom);
+        .y(d => scaleKTNE(d[activeSphere]))
+        .curve(d3.curveCatmullRom);
 
     const xAxis = d3.axisBottom()
         .scale(scaleYear)
         .ticks(8)
         .tickFormat(d => '`' + d.toString().slice(2));
 
-    const yAxis = d3.axisLeft()
+    const yAxis = d3.axisRight()
         .scale(scaleKTNE)
-        .ticks(2);
+        .ticks(10);
 
     const drawChart = function (svg, scenario) {
         const dat = nested[scenario];
@@ -123,25 +128,6 @@ Promise.all([
             .attr('stroke', chroma(cols.black).alpha(0.4))
             .attr('stroke-dasharray', '2 2');
 
-        const smLines = svg.selectAll('line.smline')
-            .data(dat)
-            .enter()
-            .append('line')
-            .classed('smline', true)
-            .attr('y1', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('y2', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('x1', scaleYear(2015))
-            .attr('x2', scaleYear(2050));
-
-        const sourceAreas = svg.selectAll('path.sm')
-            .data(dat)
-            .enter()
-            .append('path')
-            .classed('sm', true)
-            .attr('d', d => area(d.values.slice(1)))
-            .style('fill', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange)
-            .style('fill-opacity', 0.5);
-
         const sourceLine = svg.selectAll('path.sl')
             .data(dat)
             .enter()
@@ -150,20 +136,11 @@ Promise.all([
             .attr('d', d => line(d.values.slice(1)))
             .style('fill', 'none')
             .style('stroke-width', 2)
-            .style('stroke', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange);
-
-        const textLabs = svg.selectAll('text.lab')
-            .data(dat)
-            .enter()
-            .append('text')
-            .classed('lab', true)
-            .attr('y', d => scaleSm(d.key) + scaleSm.bandwidth() - fontSize)
-            .attr('x', svgM.left)
-            .text(d => d.key);
+            .style('stroke', d => cols[d.key]);
 
         const gYAxis = svg.append('g')
             .attr('id', 'y_axis')
-            .attr('transform', `translate(${svgW - svgM.left} ${scaleSm('Газ')})`)
+            .attr('transform', `translate(${svgW - svgM.right} 0)`)
             .call(yAxis);
     };
 
@@ -175,11 +152,11 @@ Promise.all([
         const dragTo = d3.max([0, d3.min([d3.event.x, svgW])]);
         let dragPers = (dragTo / svgW) * 100;
         if (dragPers >= 50) {
-            d3.select('#areas figure')
+            d3.select('#consumption figure')
                 .style('background-image',
                     `linear-gradient(0.25turn, ${cols.bgcol} ${dragPers}%, ${cols.lightblack} ${100 - dragPers}%)`);
         } else {
-            d3.select('#areas figure')
+            d3.select('#consumption figure')
                 .style('background-image',
                     `linear-gradient(0.75turn, ${cols.lightblack} ${100 - dragPers}%, ${cols.bgcol} ${dragPers}%)`);
         };
@@ -218,14 +195,14 @@ Promise.all([
                     scale(${scale})`
         })
         .select('#pipchyk')
-        .style('fill', $('#areas article').css('background-color'));
+        .style('fill', $('#consumption article').css('background-color'));
 
     const scroller = scrollama();
 
     scroller.setup({
-        step: '#areas article .text',
-        container: '#areas',
-        graphic: '#areas .fig_container figure',
+        step: '#consumption article .text',
+        container: '#consumption',
+        graphic: '#consumption .fig_container figure',
         offset: 0.5,
     })
         .onStepEnter(function (r) {
@@ -236,9 +213,9 @@ Promise.all([
 
     const updateSvg = function (svg) {
         if (activeSphere === 'Загалом') {
-            scaleKTNE.domain([0, 8000]);
+            scaleKTNE.domain([0, 20000]);
         } else {
-            scaleKTNE.domain([0, 4000]);
+            scaleKTNE.domain([0, 10000]);
         }
 
         svg.selectAll('path.sm')

@@ -1,0 +1,183 @@
+@import 'node_modules/tippy.js/dist/themes/light.css';
+body {
+  color: #2c2c2c;
+  background-color: #f7f7f7;
+  font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+body * {
+  box-sizing: border-box;
+  outline: none;
+}
+
+header {
+  padding: 1em 10% 2em 10%;
+  background: linear-gradient(0.5turn, #00a650, #00a650, #00a650);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #f7f7f7;
+}
+header h1 {
+  font-size: 3em;
+  font-family: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif;
+}
+header h2 {
+  font-size: 1em;
+  font-weight: 600;
+}
+
+main .data_caption {
+  font-style: italic;
+  color: #929292;
+  font-size: 0.85em;
+  padding-left: 1em;
+}
+main .data_caption a {
+  color: inherit;
+}
+main #consumption {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  padding: 0;
+  margin: 0;
+}
+main #consumption .h3 {
+  padding: 2rem 0 2rem 0;
+}
+main #consumption .h3 div {
+  display: flex;
+  justify-content: space-between;
+}
+main #consumption .h3 div span:first-of-type {
+  color: #464646;
+}
+main #consumption .h3 div span:last-of-type {
+  color: #f7f7f7;
+}
+main #consumption figure {
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+main #consumption figure .h3 {
+  padding-left: 10%;
+  padding-right: 10%;
+}
+main #consumption figure .smline {
+  stroke-width: 2px;
+}
+main #consumption figure svg#trans {
+  padding: 0;
+  margin: 0;
+  z-index: 1;
+  background-color: #f7f7f7;
+  box-shadow: 6 0 0 5px #f7f7f7;
+}
+main #consumption figure svg#trans text {
+  fill: #2c2c2c;
+}
+main #consumption figure svg#trans line, main #consumption figure svg#trans path.domain {
+  stroke: rgba(44, 44, 44, 0.75);
+}
+main #consumption figure svg#dragme {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  z-index: 2;
+  background: transparent;
+  pointer-events: none;
+  overflow: visible;
+}
+main #consumption figure svg#dragme line {
+  stroke: #6c6c6c;
+}
+main #consumption figure svg#dirt {
+  z-index: -1;
+  position: absolute;
+  background-color: #464646;
+}
+main #consumption figure svg#dirt text {
+  fill: #f7f7f7;
+  font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+  min-height: 80vh;
+}
+main #consumption figure svg#dirt .tick line, main #consumption figure svg#dirt .tick path, main #consumption figure svg#dirt line, main #consumption figure svg#dirt path.domain {
+  stroke: rgba(247, 247, 247, 0.75);
+}
+main #consumption article#explanation {
+  padding: 1em;
+  margin: 0;
+  grid-column: 2/-1;
+  background-color: #eaeaea;
+}
+main #consumption article#explanation h4 {
+  padding: 2rem 0 1em 0;
+}
+main #consumption article#explanation .text {
+  padding: 1em 0 2em 0;
+  min-height: 80vh;
+}
+main #consumption article#explanation ul {
+  list-style-type: none;
+}
+main #consumption article#explanation ul i {
+  font-size: 0.5em;
+  color: #00a650;
+}
+main #consumption article#explanation ul li {
+  margin: 0 0 1em 1em;
+}
+main #consumption article#explanation ul li.subsection {
+  font-weight: 600;
+  margin: 2em 0 1em 0;
+}
+main #costs {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  padding: 1em 2em 1em 2em;
+}
+main #costs h3 {
+  grid-column: 1/-1;
+  padding: 1em 0 1em 0;
+}
+main #costs figure {
+  display: grid;
+  padding: 0;
+  margin: 0;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-gap: 1.5em;
+}
+main #costs figure .byType {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+}
+main #costs figure svg {
+  overflow: visible;
+}
+main #costs figure svg path.line {
+  stroke-width: 2px;
+  stroke-opacity: 0.75;
+}
+main #costs figure p {
+  font-size: 0.85em;
+  margin: 0;
+  padding: 1em 0 1em 0;
+}
+
+/*# sourceMappingURL=style.css.map */
