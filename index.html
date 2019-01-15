@@ -2,7 +2,10 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
     <title>Енергетика майбутнього</title>
+
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800|Roboto+Slab:400,700&amp;subset=cyrillic,cyrillic-ext" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
     <link href="style.css" rel="stylesheet">
@@ -14,7 +17,7 @@
 </header>
 
 <main>
-    <section id="areas">
+    <section id="consumption">
         <div class="h3">
             <h3>Як перейти на ВДЄ у 2050?</h3>
             <div>
@@ -25,7 +28,8 @@
 
         <div class="fig_container">
             <figure>
-                <div class="chart"></div>
+                <div class="chart" id="lines"></div>
+                <div class="chart" id="bars"></div>
                 <div class="data_caption">
                     <p>Дані: Дослідження <a href="https://ua.boell.org/sites/default/files/perehid_ukraini_na_vidnovlyuvanu_energetiku_do_2050_roku.pdf" target="_blank">"Перехід України на відновлювану енергетику до 2050 року"</a></p>
                 </div>

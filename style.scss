@@ -41,6 +41,10 @@ header {
   }
 }
 
+svg text {
+  font-family: $fontfam;
+}
+
 main {
   .data_caption {
     font-style: italic;
@@ -54,10 +58,10 @@ main {
     }
   }
 
-  #areas {
+  #consumption {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr;
     padding: 0;
     margin: 0;
@@ -83,7 +87,7 @@ main {
       padding: 0;
       margin: 0;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr auto auto;
       grid-template-columns: 1fr;
       height: 100vh;
       position: sticky;
@@ -95,54 +99,92 @@ main {
         padding-right: 10%;
       }
 
-      .smline {
-        stroke-width: 2px;
+      #bars {
+        margin: 0 0 2em 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 2em;
+        padding-left: 10%;
+        padding-right: 10%;
+
+        svg {
+          overflow: visible;
+        }
+
+        .e-source {
+          margin: 0 0 1em 0;
+        }
+        
+        p {
+          margin: 0;
+          font-size: 0.85em;
+        }
+
+        [data-vde="vde"] {
+          span.ktne {
+            color: $green;
+          }
+
+          rect {
+            fill: $green;
+          }
+
+          circle {
+            fill: $green;
+            stroke: $green;
+            stroke-width: 2;
+          }
+        }
+
+        [data-vde="dirt"] {
+          span.ktne {
+            color: $red;
+          }
+
+          rect {
+            fill: $red;
+          }
+
+          circle {
+            fill: $red;
+            stroke: $red;
+            stroke-width: 2;
+          }
+        }
+
       }
 
-      svg#trans {
-        padding: 0;
-        margin: 0;
-        z-index: 1;
-        background-color: $bgcol;
+      #lines {
+        margin: 0 0 2em 0;
 
-        text {
-          fill: $fontcol;
+        padding-left: 10%;
+        padding-right: 10%;
+
+        svg {
+          overflow: visible;
         }
 
-        line, path.domain {
-          stroke: rgba($fontcol, 0.75)
+        path.sl {
+          stroke-width: 3;
+          stroke-opacity: 0.75;
         }
 
-      }
+        #year_dragger {
+          cursor: move;
 
-      svg#dragme {
-        position: absolute;
-        margin: 0;
-        padding: 0;
-        z-index: 2;
-        background: transparent;
-        pointer-events: none;
-        overflow: visible;
-
-        line {
-          stroke: lighten($fontcol, 25%)
-        }
-      }
-
-      svg#dirt {
-        z-index: -1;
-        position: absolute;
-        //background: linear-gradient(to right, #e66465, #9198e5);;
-        background-color: lighten($fontcol, 10%);
-
-        text {
-          fill: $bgcol;
-          font-family: $fontfam;
-          min-height: 80vh;
+          line {
+            stroke-width: 2;
+            stroke: lighten($fontcol, 30%);
+          }
         }
 
-        .tick line, .tick path, line, path.domain {
-          stroke: rgba($bgcol, 0.75);
+        #x_axis text {
+          transition: all 0.5s;
+
+          &.active {
+            font-weight: 600;
+            font-size: 1.25rem;
+          }
         }
       }
     }

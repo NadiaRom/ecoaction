@@ -2,8 +2,9 @@ const scrollama = require('scrollama');
 const $ = require('jquery');
 const d3 = require('d3');
 const chroma = require('chroma-js');
+const tippy = require('tippy.js');
 
-$('#areas .h3').prependTo('#areas figure');
+$('#consumption .h3').prependTo('#consumption figure');
 
 const cols = {
     green: '#00a650',
@@ -25,234 +26,301 @@ const numericalize = function (d) {
 };
 
 Promise.all([
+    d3.csv('data/by_vde_wide.csv', numericalize),
     d3.csv('data/data_report_wide.csv', numericalize),
     d3.json('data/sources_order.json', numericalize),
     d3.xml('drag.svg'),
-]).then(function ([data, sourcesOrder, dragPointer]) {
+]).then(function ([data_vde, data_year, sourcesOrder, dragPointer]) {
 
-    const nested = d3.nest()
+    const nest_vde = d3.nest()
         .key(d => d.scenario)
-        .key(d => d.source)
-        .entries(data)
+        .key(d => d.by_vde)
+        .entries(data_vde)
         .reduce((res, d) => {
             res[d.key] = d.values;
             return res;
         }, {});
 
+    let nest_year = d3.nest()
+        .key(d => d.scenario)
+        .key(d => d.year)
+        .entries(data_year);
+    
+    nest_year.map((val, i) => {
+        nest_year[i].values = val.values.reduce((res, d) => {
+            res[d.key] = d.values;
+            return res;
+        }, {});
+    });
+
+    nest_year = nest_year.reduce((res, d) => {
+        res[d.key] = d.values;
+        return res;
+    }, {});
+
     const sources = [...Object.keys(sourcesOrder)];
 
-    const chart = d3.select('#areas figure .chart');
+    let activeSphere = 'Загалом',
+        scenario = 'Революційний',
+        dragYear = 2015;
 
-    const svgW = parseFloat($(chart.node()).width()),
-        svgH = parseFloat($(chart.node()).height());
+    d3.select('#consumption figure #bars')
+        .append('div')
+        .classed('bar_vde', true)
+        .attr('data-vde', 'dirt');
 
-    const svgM = {
-        top: svgH * 0.1,
-        right: svgW * 0.1,
-        bottom: svgW * 0.05,
-        left: svgW * 0.1,
+    d3.select('#consumption figure #bars')
+        .append('div')
+        .classed('bar_vde', true)
+        .attr('data-vde', 'vde');
+
+    d3.select('#consumption figure #bars div[data-vde="dirt"]')
+        .selectAll('div.e-source')
+        .data(nest_year[scenario][dragYear].filter(d => !sourcesOrder[d.source].is_vde))
+        .enter()
+        .append('div')
+        .classed('e-source', true);
+
+    d3.select('#consumption figure #bars div[data-vde="vde"]')
+        .selectAll('div.e-source')
+        .data(nest_year[scenario][dragYear].filter(d => sourcesOrder[d.source].is_vde))
+        .enter()
+        .append('div')
+        .classed('e-source', true);
+
+    const bars = d3.selectAll('#consumption figure #bars div.e-source');
+    
+    const barSpans = bars.append('p')
+        .text(d => d.source + ' ')
+        .append('span')
+        .classed('ktne', true);
+
+    const barW = $('.e-source').width();
+    
+    const barsSvg = bars.append('svg')
+        .attr('height', '4px')
+        .attr('width', barW);
+
+    const linesW = $('#consumption figure .chart#lines').width();
+    const linesH = $('#consumption figure .chart#lines').height();
+
+    const linesSvg = d3.select('#consumption figure .chart#lines')
+        .append('svg')
+        .attr('width', linesW)
+        .attr('height', linesH);
+
+    const linesM = {
+        top: linesH * 0.1,
+        right: linesW * 0.1,
+        bottom: linesW * 0.05,
+        left: linesH * 0,
     };
-
-    const dirtySvg = chart
-        .append('svg')
-        .attr('id', 'dirt')
-        .attr('width', svgW)
-        .attr('height', svgH);
-
-    const draggingSvg = chart
-        .append('svg')
-        .attr('id', 'dragme')
-        .attr('width', svgW)
-        .attr('height', svgH);
-
-    const transSvg = chart
-        .append('svg')
-        .attr('id', 'trans')
-        .attr('width', svgW)
-        .attr('height', svgH);
-
-    let activeSphere = 'Загалом';
-
-    const scaleSm = d3.scaleBand()
-        .domain(sources)
-        .range([svgH - svgM.bottom, svgM.top]);
 
     const scaleYear = d3.scaleLinear()
         .domain([2015, 2050])
-        .range([svgM.left, svgW - svgM.right]);
+        .range([linesM.left, linesW - linesM.right]);
 
     const scaleKTNE = d3.scaleLinear()
-        .domain([0, 8000])
-        .range([scaleSm.step(), 0]);
-
-    const area = d3.area()
-        .x(d => scaleYear(d.year))
-        .y0(d => scaleSm(d.source) + scaleSm.bandwidth() )
-        .y1(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
-        .curve(d3.curveCatmullRom);
+        .domain([0, 55000])
+        .range([linesH - linesM.top, linesM.bottom]);
 
     const line = d3.line()
         .x(d => scaleYear(d.year))
-        .y(d => scaleSm(d.source) + scaleKTNE(d[activeSphere]))
+        .y(d => scaleKTNE(d[activeSphere]))
         .curve(d3.curveCatmullRom);
 
     const xAxis = d3.axisBottom()
         .scale(scaleYear)
         .ticks(8)
-        .tickFormat(d => '`' + d.toString().slice(2));
+        .tickFormat(d => d.toString());
 
-    const yAxis = d3.axisLeft()
-        .scale(scaleKTNE)
-        .ticks(2);
-
-    const drawChart = function (svg, scenario) {
-        const dat = nested[scenario];
-
-        const gXAxis = svg.append('g')
-            .attr('transform', `translate(0 ${svgH - svgM.bottom})`)
-            .call(xAxis);
-
-        gXAxis.selectAll('.tick text')
-            .attr('fill', cols.black)
-            .attr('font-size', '0.85rem');
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (svgH - svgM.bottom))
-            .attr('stroke', chroma(cols.black).alpha(0.4))
-            .attr('stroke-dasharray', '2 2');
-
-        const smLines = svg.selectAll('line.smline')
-            .data(dat)
-            .enter()
-            .append('line')
-            .classed('smline', true)
-            .attr('y1', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('y2', d => scaleSm(d.key) + scaleSm.bandwidth())
-            .attr('x1', scaleYear(2015))
-            .attr('x2', scaleYear(2050));
-
-        const sourceAreas = svg.selectAll('path.sm')
-            .data(dat)
-            .enter()
-            .append('path')
-            .classed('sm', true)
-            .attr('d', d => area(d.values.slice(1)))
-            .style('fill', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange)
-            .style('fill-opacity', 0.5);
-
-        const sourceLine = svg.selectAll('path.sl')
-            .data(dat)
-            .enter()
-            .append('path')
-            .classed('sl', true)
-            .attr('d', d => line(d.values.slice(1)))
-            .style('fill', 'none')
-            .style('stroke-width', 2)
-            .style('stroke', d => (sourcesOrder[d.key].is_vde) ? cols.green : cols.orange);
-
-        const textLabs = svg.selectAll('text.lab')
-            .data(dat)
-            .enter()
-            .append('text')
-            .classed('lab', true)
-            .attr('y', d => scaleSm(d.key) + scaleSm.bandwidth() - fontSize)
-            .attr('x', svgM.left)
-            .text(d => d.key);
-
-        const gYAxis = svg.append('g')
-            .attr('id', 'y_axis')
-            .attr('transform', `translate(${svgW - svgM.left} ${scaleSm('Газ')})`)
-            .call(yAxis);
-    };
-
-    const dragStart = function(d) {
-        d3.select(this).raise().classed('active', true);
-    };
-
-    const dragged = function(d) {
-        const dragTo = d3.max([0, d3.min([d3.event.x, svgW])]);
-        let dragPers = (dragTo / svgW) * 100;
-        if (dragPers >= 50) {
-            d3.select('#areas figure')
-                .style('background-image',
-                    `linear-gradient(0.25turn, ${cols.bgcol} ${dragPers}%, ${cols.lightblack} ${100 - dragPers}%)`);
-        } else {
-            d3.select('#areas figure')
-                .style('background-image',
-                    `linear-gradient(0.75turn, ${cols.lightblack} ${100 - dragPers}%, ${cols.bgcol} ${dragPers}%)`);
-        };
-
-        d3.select(this)
-            .attr('transform', `translate(${dragTo} 0)`);
-
-        transSvg.attr('width', dragTo);
-
-
-    };
-
-    const dragEnd = function(d) {
-        d3.select(this).classed('active', false);
-    };
-
-
-    drawChart(dirtySvg, 'Базовий');
-    drawChart(transSvg, 'Революційний');
-
-    const dragLine = draggingSvg.append('g')
-        .style('pointer-events', 'auto')
-        .attr('transform', `translate(${svgW} 0)`)
-        .call(d3.drag()
-            .on('start', dragStart)
-            .on('drag', dragged)
-            .on('end', dragEnd));
-
-    dragLine.node().appendChild(dragPointer.documentElement.getElementsByTagName('g')[0]);
+    const yAxis = d3.axisRight()
+        .scale(scaleKTNE);
     
-    dragLine.select('#dragger')
-        .attr('transform', function (d) {
-            const scale = 7,
-                bbox = this.getBBox();
-            return `translate(-${bbox.width * scale} ${svgH / 2 - (bbox.height * scale) / 2})
-                    scale(${scale})`
-        })
-        .select('#pipchyk')
-        .style('fill', $('#areas article').css('background-color'));
+    
+    // DRAW CHART------------------------------------------------------------------------------------------
+    let datLines= nest_vde[scenario];
 
-    const scroller = scrollama();
+    const gXAxis = linesSvg.append('g')
+        .attr('id', 'x_axis')
+        .attr('transform', `translate(0 ${scaleKTNE(0)})`)
+        .call(xAxis);
 
-    scroller.setup({
-        step: '#areas article .text',
-        container: '#areas',
-        graphic: '#areas .fig_container figure',
-        offset: 0.5,
-    })
-        .onStepEnter(function (r) {
-            activeSphere = r.element.getAttribute('data-sphere');
-            updateSvg(transSvg);
-            updateSvg(dirtySvg);
+    gXAxis.selectAll('.tick text')
+        .attr('fill', cols.black)
+        .attr('font-size', '0.85rem');
+
+    gXAxis.selectAll('.tick line')
+        .attr('y1', -1 * (linesH - linesM.top - linesM.bottom))
+        .attr('y2', 0)
+        .attr('stroke', chroma(cols.black).alpha(0.4))
+        .attr('stroke-dasharray', '2 2');
+
+
+    const sourceLine = linesSvg.selectAll('path.sl')
+        .data(datLines)
+        .enter()
+        .append('path')
+        .classed('sl', true)
+        .attr('d', d => line(d.values.slice(1)))
+        .style('fill', 'none')
+        .style('stroke', d => (d.key === 'vde') ? cols.green : cols.orange);
+
+    const dots = linesSvg.selectAll('g.circle_g')
+        .data(datLines)
+        .enter()
+        .append('g')
+        .classed('circle_g', true)
+        .selectAll('circle')
+        .data(d => d.values.slice(1))
+        .enter()
+        .append('circle')
+        .attr('cx', d => scaleYear(d.year))
+        .attr('cy', d => scaleKTNE(d[activeSphere]))
+        .attr('r', 5)
+        .attr('class', d => d.by_vde)
+        .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
+
+
+    const gYAxis = linesSvg.append('g')
+        .attr('id', 'y_axis')
+        .attr('transform', `translate(${linesW - linesM.right}, 0)`)
+        .call(yAxis);
+
+    const $xAxisTexts = $('#x_axis .tick text');
+    
+    $xAxisTexts.first().addClass('active');
+    
+    // DRAW BARS ------------------------------------------------------------------------------------------
+    let datYear = nest_year[scenario];
+    const scaleBar = d3.scaleLinear()
+        .range([0, barW]);
+
+    const barsBar = barsSvg.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 0)
+        .attr('height', '4px');
+    
+    const barsCircle = barsSvg.append('circle')
+        .attr('cx', 0)
+        .attr('cy', 2)
+        .attr('r', 5);
+    
+    
+    const updateBar = function () {
+        const dat = {};
+        datYear[dragYear.toString()].map(function (d) {
+            dat[d.source] = d;
         });
 
-    const updateSvg = function (svg) {
-        if (activeSphere === 'Загалом') {
-            scaleKTNE.domain([0, 8000]);
-        } else {
-            scaleKTNE.domain([0, 4000]);
-        }
+        scaleBar.domain([0, d3.max(datYear[dragYear.toString()], d => d[activeSphere])]);
+        
+        const datOrd = barsBar.data().map(d => dat[d.source]);
 
-        svg.selectAll('path.sm')
+        barsBar
+            .data(datOrd)
             .transition()
-            .duration(1000)
-            .attr('d', d => area(d.values.slice(1)));
+            .duration(500)
+            .attr('width', d => scaleBar(d[activeSphere]));
 
-        svg.selectAll('path.sl')
+        barsCircle
+            .data(datOrd)
             .transition()
-            .duration(1000)
-            .attr('d', d => line(d.values.slice(1)));
+            .duration(500)
+            .attr('cx', d => scaleBar(d[activeSphere]));
 
-        svg.select('g#y_axis')
-            .transition()
-            .duration(1000)
-            .call(yAxis);
+        barSpans.data(datOrd)
+            .text(d => `${d3.format(",.2r")(d[activeSphere])} тис. т н.е.`);
     };
+    
+    updateBar();
+
+    
+    
+    // DRAG YEAR ------------------------------------------------------------------------------------------
+
+    const dragger = linesSvg.append('g')
+        .attr('id', 'year_dragger');
+    
+    dragger.append('line')
+        .attr('x1', scaleYear(2015))
+        .attr('x2', scaleYear(2015))
+        .attr('y1', scaleKTNE(0))
+        .attr('y2', document.getElementById('y_axis').getBBox().y);
+    
+
+    const dragStart = function() {
+        d3.select(this).classed('active', true);
+    };
+    
+    const dragged = function() {
+        const dragTo = d3.min([scaleYear(2050), d3.max([scaleYear(2015), d3.event.x])]);
+        dragYear = Math.round(scaleYear.invert(dragTo) / 5) * 5;
+        
+        d3.select(this).select('line')
+            .attr('x1', dragTo)
+            .attr('x2', dragTo);
+    };
+    
+    const dragEnd = function() {
+        d3.select(this)
+            .classed('active', false)
+            .select('line')
+            .transition()
+            .duration(500)
+            .attr('x1', scaleYear(dragYear))
+            .attr('x2', scaleYear(dragYear));
+
+        updateBar();
+
+        $xAxisTexts.removeClass('active')
+            .filter(function () {
+                return this.textContent === dragYear.toString();
+            })
+            .addClass('active');
+    };
+
+    dragger.call(d3.drag()
+        .on('start', dragStart)
+        .on('drag', dragged)
+        .on('end', dragEnd));
+
+    // const scroller = scrollama();
+    //
+    // scroller.setup({
+    //     step: '#consumption article .text',
+    //     container: '#consumption',
+    //     graphic: '#consumption .fig_container figure',
+    //     offset: 0.5,
+    // })
+    //     .onStepEnter(function (r) {
+    //         activeSphere = r.element.getAttribute('data-sphere');
+    //         updateSvg(transSvg);
+    //         updateSvg(dirtySvg);
+    //     });
+    //
+    // const updateSvg = function (svg) {
+    //     if (activeSphere === 'Загалом') {
+    //         scaleKTNE.domain([0, 8000]);
+    //     } else {
+    //         scaleKTNE.domain([0, 4000]);
+    //     }
+    //
+    //     svg.selectAll('path.sm')
+    //         .transition()
+    //         .duration(1000)
+    //         .attr('d', d => area(d.values.slice(1)));
+    //
+    //     svg.selectAll('path.sl')
+    //         .transition()
+    //         .duration(1000)
+    //         .attr('d', d => line(d.values.slice(1)));
+    //
+    //     svg.select('g#y_axis')
+    //         .transition()
+    //         .duration(1000)
+    //         .call(yAxis);
+    // };
 
 });
