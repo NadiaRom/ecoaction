@@ -179,12 +179,17 @@ main {
         }
 
         #x_axis text {
+          cursor: pointer;
           transition: all 0.5s;
 
           &.active {
             font-weight: 600;
             font-size: 1.25rem;
           }
+        }
+
+        circle {
+          cursor: pointer;
         }
       }
     }

@@ -109,10 +109,13 @@ main #consumption {
           stroke-width: 2;
           stroke: #797979; }
       main #consumption figure #lines #x_axis text {
+        cursor: pointer;
         transition: all 0.5s; }
         main #consumption figure #lines #x_axis text.active {
           font-weight: 600;
           font-size: 1.25rem; }
+      main #consumption figure #lines circle {
+        cursor: pointer; }
   main #consumption article#explanation {
     padding: 1em;
     margin: 0;

@@ -122,12 +122,14 @@ Promise.all([
         .range([linesM.left, linesW - linesM.right]);
 
     const scaleKTNE = d3.scaleLinear()
-        .domain([0, 55000])
+        .domain([0, 0])
         .range([linesH - linesM.top, linesM.bottom]);
+    
+    let isFirstDrawLine = true;
 
     const line = d3.line()
         .x(d => scaleYear(d.year))
-        .y(d => scaleKTNE(d[activeSphere]))
+        .y(d => (isFirstDrawLine) ? scaleKTNE(0) : scaleKTNE(d[activeSphere]))
         .curve(d3.curveCatmullRom);
 
     const xAxis = d3.axisBottom()
@@ -157,15 +159,58 @@ Promise.all([
         .attr('stroke', chroma(cols.black).alpha(0.4))
         .attr('stroke-dasharray', '2 2');
 
+    const gYAxis = linesSvg.append('g')
+        .attr('id', 'y_axis')
+        .attr('transform', `translate(${linesW - linesM.right}, 0)`)
+        .call(yAxis);
+
+    const $xAxisTexts = $('#x_axis .tick text');
+
+    $xAxisTexts.first().addClass('active');
+
 
     const sourceLine = linesSvg.selectAll('path.sl')
         .data(datLines)
         .enter()
         .append('path')
         .classed('sl', true)
+        .attr('id', d => `line_${d.key}`)
         .attr('d', d => line(d.values.slice(1)))
         .style('fill', 'none')
         .style('stroke', d => (d.key === 'vde') ? cols.green : cols.orange);
+
+    const textPath = linesSvg.selectAll('g.follow-path')
+        .data(datLines)
+        .enter()
+        .append('g')
+        .attr('transform', `translate(${fontSize / 4} -${fontSize})`)
+        .append('text')
+        .style('fill', cols.black)
+        .append('textPath')
+        .attr('href', d => `#line_${d.key}`)
+        .text(d => (d.key === 'vde') ? 'Зелена енергія' : 'Невідновлювані джерела')
+
+    // Dragger created here, to be before dots
+    const dragger = linesSvg.append('g')
+        .attr('id', 'year_dragger')
+        .attr('transform', `translate(${scaleYear(2015)} 0)`);
+
+    dragger.append('line')
+        .attr('x1', 0)
+        .attr('x2', 0)
+        .attr('y1', scaleKTNE(0))
+        .attr('y2', document.getElementById('y_axis').getBBox().y);
+
+    dragger.append('rect')
+        .attr('x', -5)
+        .attr('y', document.getElementById('y_axis').getBBox().y)
+        .attr('height', scaleKTNE.range()[1])
+        .attr('width', 10)
+        .style('stroke', 'none')
+        .style('fill', cols.bgcol)
+        .style('opacity', 0);
+
+    // continue dots
 
     const dots = linesSvg.selectAll('g.circle_g')
         .data(datLines)
@@ -177,20 +222,12 @@ Promise.all([
         .enter()
         .append('circle')
         .attr('cx', d => scaleYear(d.year))
-        .attr('cy', d => scaleKTNE(d[activeSphere]))
+        .attr('cy', d => scaleKTNE(0))
         .attr('r', 5)
         .attr('class', d => d.by_vde)
         .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
 
-
-    const gYAxis = linesSvg.append('g')
-        .attr('id', 'y_axis')
-        .attr('transform', `translate(${linesW - linesM.right}, 0)`)
-        .call(yAxis);
-
-    const $xAxisTexts = $('#x_axis .tick text');
-    
-    $xAxisTexts.first().addClass('active');
+    isFirstDrawLine = false;
     
     // DRAW BARS ------------------------------------------------------------------------------------------
     let datYear = nest_year[scenario];
@@ -236,21 +273,9 @@ Promise.all([
     };
     
     updateBar();
-
-    
     
     // DRAG YEAR ------------------------------------------------------------------------------------------
-
-    const dragger = linesSvg.append('g')
-        .attr('id', 'year_dragger');
     
-    dragger.append('line')
-        .attr('x1', scaleYear(2015))
-        .attr('x2', scaleYear(2015))
-        .attr('y1', scaleKTNE(0))
-        .attr('y2', document.getElementById('y_axis').getBBox().y);
-    
-
     const dragStart = function() {
         d3.select(this).classed('active', true);
     };
@@ -259,19 +284,17 @@ Promise.all([
         const dragTo = d3.min([scaleYear(2050), d3.max([scaleYear(2015), d3.event.x])]);
         dragYear = Math.round(scaleYear.invert(dragTo) / 5) * 5;
         
-        d3.select(this).select('line')
-            .attr('x1', dragTo)
-            .attr('x2', dragTo);
+        dragger
+            .attr('transform', `translate(${dragTo} 0)`);
     };
     
     const dragEnd = function() {
-        d3.select(this)
-            .classed('active', false)
-            .select('line')
+        d3.select('#lines #year_dragger')
             .transition()
             .duration(500)
-            .attr('x1', scaleYear(dragYear))
-            .attr('x2', scaleYear(dragYear));
+            .attr('transform', `translate(${scaleYear(dragYear)} 0)`);
+        
+        dragger.classed('active', false);
 
         updateBar();
 
@@ -286,44 +309,62 @@ Promise.all([
         .on('start', dragStart)
         .on('drag', dragged)
         .on('end', dragEnd));
+    
+    $xAxisTexts.click(function () {
+        dragYear = this.__data__;
+        dragEnd();
+    });
 
-    // const scroller = scrollama();
-    //
-    // scroller.setup({
-    //     step: '#consumption article .text',
-    //     container: '#consumption',
-    //     graphic: '#consumption .fig_container figure',
-    //     offset: 0.5,
-    // })
-    //     .onStepEnter(function (r) {
-    //         activeSphere = r.element.getAttribute('data-sphere');
-    //         updateSvg(transSvg);
-    //         updateSvg(dirtySvg);
-    //     });
-    //
-    // const updateSvg = function (svg) {
-    //     if (activeSphere === 'Загалом') {
-    //         scaleKTNE.domain([0, 8000]);
-    //     } else {
-    //         scaleKTNE.domain([0, 4000]);
-    //     }
-    //
-    //     svg.selectAll('path.sm')
-    //         .transition()
-    //         .duration(1000)
-    //         .attr('d', d => area(d.values.slice(1)));
-    //
-    //     svg.selectAll('path.sl')
-    //         .transition()
-    //         .duration(1000)
-    //         .attr('d', d => line(d.values.slice(1)));
-    //
-    //     svg.select('g#y_axis')
-    //         .transition()
-    //         .duration(1000)
-    //         .call(yAxis);
-    // };
+    d3.selectAll('#lines circle.dirt, #lines circle.vde')
+        .on('click', function (d) {
+            dragYear = d.year;
+            dragEnd();
+        });
+    
+    
+    // FUNC TO UPDATE LINES -----------------------------------------------------------------------------
+    const updateLines = function () {
+        scaleKTNE.domain([
+            0,
+            Math.round(d3.max(datLines[0].values.concat(datLines[1].values),
+                    d => d[activeSphere]) / 5000
+            ) * 5000
+        ]);
 
+        gYAxis.transition()
+            .duration(500)
+            .call(yAxis);
+
+        sourceLine.data(datLines)
+            .transition()
+            .duration(500)
+            .attr('d', d => line(d.values.slice(1)));
+
+        // textPath.transition()
+        //     .duration(500)
+        //     .attr('href', d => `#line_${d.key}`)
+
+        dots.transition()
+            .duration(500)
+            .attr('cx', d => scaleYear(d.year))
+            .attr('cy', d => scaleKTNE(d[activeSphere]));
+    };
+    
+    // SCROLLAMA -----------------------------------------------------------------------------------------
+
+    const scroller = scrollama();
+    
+    scroller.setup({
+        step: '#consumption article .text',
+        container: '#consumption',
+        graphic: '#consumption .fig_container figure',
+        offset: 0.5,
+    })
+        .onStepEnter(function (r) {
+            activeSphere = r.element.getAttribute('data-sphere');
+            updateLines();
+            updateBar()
+        });
 });
 },{"chroma-js":2,"d3":34,"jquery":35,"scrollama":36,"tippy.js":37}],2:[function(require,module,exports){
 /**
