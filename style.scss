@@ -5,6 +5,12 @@ $bgcol: #f7f7f7;
 $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
 $fonttit: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif;
 
+$medium: 'screen and (min-width: 577px)';
+$xlarge: 'screen and (min-width: 1500px)';
+$large: 'screen and (min-width: 950px)';
+$mobile: 'screen and (max-width: 577px)';
+$max_height_medium: 'screen and (max-height: 850px)';
+
 @import 'node_modules/tippy.js/dist/themes/light.css';
 
 body {
@@ -69,17 +75,13 @@ main {
     .h3 {
       padding: 2rem 0 2rem 0;
 
+      @media #{$max_height_medium} {
+        padding: 0.5rem 0 1rem 0;
+      }
+
       div {
         display: flex;
         justify-content: space-between;
-
-        span:first-of-type {
-          color: lighten($fontcol, 10%);
-        }
-
-        span:last-of-type {
-          color: $bgcol;
-        }
       }
     }
 
@@ -94,9 +96,18 @@ main {
       top: 0;
       overflow: hidden;
 
+      @media #{$max_height_medium} {
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: 1fr minmax(auto, 200px);
+      }
+
       .h3 {
         padding-left: 10%;
         padding-right: 10%;
+
+        @media #{$max_height_medium} {
+          grid-column: 1 / -1;
+        }
       }
 
       #bars {
@@ -117,7 +128,8 @@ main {
         
         p {
           margin: 0;
-          font-size: 0.85em;
+          font-size: 0.75em;
+          line-height: 1;
         }
 
         [data-vde="vde"] {
@@ -152,13 +164,33 @@ main {
           }
         }
 
+        span.ktne {
+          white-space: nowrap;
+        }
+
+        @media #{$max_height_medium} {
+          grid-template-columns: 1fr;
+          grid-column: 2 / 3;
+          grid-gap: 0;
+
+          span.ktne {
+            display: none;
+          }
+        }
+
       }
 
       #lines {
         margin: 0 0 2em 0;
-
         padding-left: 10%;
         padding-right: 10%;
+
+        @media #{$max_height_medium} {
+          grid-column: 1 / 2;
+          grid-row: 2 / 3;
+          padding-left: 2em;
+          padding-right: 2em;
+        }
 
         svg {
           overflow: visible;
@@ -191,6 +223,13 @@ main {
         circle {
           cursor: pointer;
         }
+      }
+    }
+
+    .data_caption {
+      @media #{$max_height_medium} {
+        grid-column: 1 / -1;
+        grid-row: 3 / 4;
       }
     }
 
@@ -271,4 +310,32 @@ main {
       }
     }
   }
+}
+
+span.vde {
+  color: $green;
+}
+
+span.dirt {
+  color: $red;
+}
+
+.tippy-popper {
+
+  div.tippy-tooltip {
+    color: $fontcol;
+    font-size: 1rem;
+    padding: 0.75em !important;
+    box-shadow: 0 0 0.5em 1px darken($bgcol, 10%);
+  }
+
+  .tippy-backdrop {
+    background-color: rgba($bgcol, 0.75);
+  }
+
+  p {
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+  }
+
 }
