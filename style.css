@@ -174,7 +174,11 @@ main .data_caption {
   padding: 1em 2em 1em 2em; }
   #costs h3 {
     grid-column: 1 / -1;
-    padding: 1em 0 1em 0; }
+    padding: 1em 0 1em 0;
+    margin: 1em 0 1em 0; }
+  #costs p {
+    padding: 0;
+    margin: 0 0 1em 0; }
   #costs figure {
     display: grid;
     padding: 0;
@@ -183,7 +187,8 @@ main .data_caption {
     grid-template-rows: auto 1fr;
     grid-gap: 2em; }
     #costs figure .h5 {
-      margin: 1em 0 0 1em; }
+      margin: 1em 0 0 1em;
+      font-size: 1em; }
       #costs figure .h5.dirt {
         grid-column: 1 / 2; }
       #costs figure .h5.vde {
