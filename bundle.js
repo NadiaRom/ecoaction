@@ -404,6 +404,118 @@ Promise.all([
             });
     });
 
+Promise.all([
+    d3.csv('data/costs_agg.csv', numericalize)
+])
+    .then(function ([data]) {
+        const nested = d3.nest()
+            .key(d => d.scenario)
+            .key(d => d.action)
+            .entries(data);
+        
+        const legend = d3.select('#costs #costs-legend')
+            .selectAll('p.legend')
+            .data(nested[1].values.map(d => d.key))
+            .enter()
+            .append('p')
+            .classed('legend', true)
+            .attr('data-expense', d => d);
+
+        const scaleColor = d3.scaleOrdinal()
+            .domain(['Вартість палива', 'Витрати на транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
+            .range(['#e7298a','#d95f02','#7570b3','#1b9e77','#66a61e']);
+        
+        const legendMarks = legend.append('svg')
+            .attr('width', '1em')
+            .attr('height', '1em')
+            .attr('viewBox', '-50 -50 100 100')
+            .append('circle')
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', 45)
+            .style('fill', d => scaleColor(d));
+
+        legend.append('span').text(d => d);
+        
+        const figDivs = d3.select('#costs figure')
+            .selectAll('div.byType')
+            .data(nested)
+            .enter()
+            .append('div')
+            .classed('byType', true)
+            .attr('id', d => (d.key === 'Консервативний') ? 'base-scen' : 'rev-scen');
+        
+        const svgs = figDivs.append('svg')
+            .attr('height', function () {
+                return $(this).parent().height();
+            })
+            .attr('width', function () {
+                return $(this).parent().width();
+            });
+
+        const svgW = parseInt(svgs.attr('width'));
+        const svgH = parseInt(svgs.attr('height'));
+        const svgM = {
+            top: svgH * 0.05,
+            right: svgW * 0.05,
+            bottom: svgH * 0.05,
+            left: svgW * 0.05
+        };
+
+        const scaleYear = d3.scaleLinear()
+            .domain([2015, 2050])
+            .range([svgM.left, svgW - svgM.right]);
+
+        const scaleExpence = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.m_euro)])
+            .range([svgH - svgM.top, svgM.bottom]);
+        
+        const xAxis = d3.axisBottom(scaleYear)
+            .tickValues([2015, 2050])
+            .tickFormat(d => d.toString())
+        
+        const gXAxis = svgs.append('g')
+            .attr('id', 'cost_ax_x');
+        
+        gXAxis.call(xAxis)
+            .attr('transform', `translate(0 ${scaleExpence(0) + fontSize / 2})`);
+
+        gXAxis.selectAll('.tick line')
+            .attr('y1', -1 * (scaleExpence.range()[0]))
+        
+        gXAxis.selectAll('path').remove()
+        
+        const slopeGs = svgs.selectAll('g.slope')
+            .data(d => d.values)
+            .enter()
+            .append('g')
+            .classed('slope', true);
+        
+        const slopeLines = slopeGs
+            .append('line')
+            .attr('x1', d => scaleYear(d.values[0].year))
+            .attr('x2', d => scaleYear(d.values[1].year))
+            .attr('y1', d => scaleExpence(d.values[0].m_euro))
+            .attr('y2', d => scaleExpence(d.values[1].m_euro))
+            .style('stroke', d => scaleColor(d.key));
+
+        const circleR = 5;
+        
+        const slopeCircles = slopeGs.selectAll('circle')
+            .data(d => d.values)
+            .enter()
+            .append('circle')
+            .attr('cx', d => scaleYear(d.year))
+            .attr('cy', d => scaleExpence(d.m_euro))
+            .attr('r', circleR)
+            .style('fill', d => scaleColor(d.action));
+        
+
+
+
+        
+    });
+
 $(document).ready(function () {
     $('#lines').one('mouseover', function () {
         const dragMeTipInstance = document.querySelector('#lines #year_dragger')._tippy;
