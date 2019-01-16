@@ -83,7 +83,7 @@ main #consumption {
         margin: 0 0 1em 0; }
       main #consumption figure #bars p {
         margin: 0;
-        font-size: 0.75em;
+        font-size: 0.85em;
         line-height: 1; }
       main #consumption figure #bars [data-vde="vde"] span.ktne {
         color: #00a650; }
@@ -108,6 +108,8 @@ main #consumption {
           grid-template-columns: 1fr;
           grid-column: 2 / 3;
           grid-gap: 0; }
+          main #consumption figure #bars p {
+            font-size: 0.75rem; }
           main #consumption figure #bars span.ktne {
             display: none; } }
     main #consumption figure #lines {
