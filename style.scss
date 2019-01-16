@@ -293,13 +293,30 @@ main {
     grid-template-rows: auto 1fr;
     grid-gap: 2em;
 
-    h5 {
-      &:first-of-type {
+    .h5 {
+      margin: 1em 0 0 1em;
+
+      &.dirt {
         grid-column: 1 / 2;
       }
 
-      &:last-of-type {
+      &.vde {
         grid-column: 3 / 4;
+      }
+
+      p {
+        margin: 0;
+        padding: 0;
+
+        span {
+          font-weight: 500;
+        }
+      }
+
+      h5 {
+        font-size: 1em;
+        padding: 0;
+        margin: 0;
       }
     }
 
@@ -315,8 +332,14 @@ main {
       }
 
       p.legend {
-        margin: 0 1em 0 1em;
-        padding: 0;
+        margin: 0 0.75em 0 0.75em;
+        padding: 0.5em;
+        box-shadow: 0 0 0 0 transparent;
+        transition: all 0.5s;
+
+        &.active {
+          box-shadow: 0 0 0.5em 0 darken($bgcol, 15%);
+        }
       }
 
     }
@@ -336,8 +359,23 @@ main {
       svg {
         overflow: visible;
 
-        .slope line {
+        .slope {
+          cursor: pointer;
+          line {
+            stroke-width: 3;
+          }
+        }
+
+        line#slope-tip {
+          opacity: 0;
+          stroke: lighten($fontcol, 50%);
+          stroke-dasharray: 2 2;
           stroke-width: 3;
+          transition: all 0.5s;
+
+          &.active {
+            opacity: 1;
+          }
         }
 
         #cost_ax_x {

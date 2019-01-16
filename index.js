@@ -480,15 +480,46 @@ Promise.all([
             .attr('transform', `translate(0 ${scaleExpence(0) + fontSize / 2})`);
 
         gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (scaleExpence.range()[0]))
+            .attr('y1', -1 * (scaleExpence.range()[0]));
         
-        gXAxis.selectAll('path').remove()
+        gXAxis.selectAll('path').remove();
+        
+        const tipLine = svgs.append('line')
+            .attr('id', 'slope-tip')
+            .attr('x1', scaleYear(2015))
+            .attr('x2', scaleYear(2050))
+            .attr('y1', 0)
+            .attr('y2', 0);
         
         const slopeGs = svgs.selectAll('g.slope')
             .data(d => d.values)
             .enter()
             .append('g')
-            .classed('slope', true);
+            .classed('slope', true)
+            .on('mouseover', function (d) {
+                const tipDat = slopeCircles
+                    .filter(val => val.action === d.key);
+                
+                tipLine
+                    .attr('y1', function (val) {
+                        return scaleExpence(tipDat.data()
+                            .filter(d => d.scenario === val.key && d.year === 2050)[0].m_euro);
+                    })
+                    .attr('y2', function () { return this.getAttribute('y1'); })
+                    .classed('active', true);
+                
+                legend.filter(val => val === d.key)
+                    .classed('active', true);
+                
+                tipDat.each(function () {
+                    this._tippy.show(500);
+                })
+            })
+            .on('mouseout', function () {
+                tipLine.classed('active', false);
+                legend.classed('active', false);
+                tippy.hideAllPoppers();
+            });
         
         const slopeLines = slopeGs
             .append('line')
@@ -509,9 +540,15 @@ Promise.all([
             .attr('r', circleR)
             .style('fill', d => scaleColor(d.action));
         
-
-
-
+        const slopeTippy = tippy(document.querySelectorAll('#costs g.slope circle'), {
+            animation: 'fade',
+            content: function (ref) {
+                return `
+                <p>${d3.format(",.2r")(ref.__data__.m_euro)} млн. €</p>
+                `;
+            },
+            trigger: 'manual',
+        });
         
     });
 
