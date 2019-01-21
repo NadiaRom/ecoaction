@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <title>Енергетика майбутнього</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800|Roboto+Slab:400,700&amp;subset=cyrillic,cyrillic-ext" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+<header>
+    <h1>Енергетика майбутнього</h1>
+    <h2>Україна має технічний та економічний потенціал для переходу на відновлювані джерела енергії (ВДЕ). <span class="green">91%</span> зеленої енергетики до 2050 року можна отримати при використанні вже існуючих технологій та зменшенні споживання енергоресурсів на 42% в порівнянні з базовим сценарієм у 2050 році </h2>
+</header>
+
+<main>
+    <section id="consumption">
+        <div class="h3">
+            <h3>Перехід на ВДЕ до 2050-го: як зміниться споживання ресурсів</h3>
+            <div>
+                <span>Революційний сценарій, тис. тон н.е.</span>
+            </div>
+        </div>
+
+        <div class="fig_container">
+            <figure>
+                <div class="chart" id="lines"></div>
+                <div class="chart" id="bars"></div>
+                <div class="data_caption">
+                    <p>Дані: Дослідження <a href="https://ua.boell.org/sites/default/files/perehid_ukraini_na_vidnovlyuvanu_energetiku_do_2050_roku.pdf" target="_blank">"Перехід України на відновлювану енергетику до 2050 року"</a></p>
+                </div>
+            </figure>
+        </div>
+        <article id="explanation">
+            <div class="text" data-sphere="Загалом">
+                <h4>Навіщо переходити на "зелену" енергію?</h4>
+                <ul><li class="subsection">Економічні наслідки:</li><li><i class="fas fa-check"></i> Скорочення потреб в енергоресурсах на 42%</li><li><i class="fas fa-check"></i> Економія до 75% енергоресурсів для опалення завдяки повній реконструкції будинків</li><li><i class="fas fa-check"></i> Економія 30% коштів завдяки енергоефективності та енергозбереженню</li><li><i class="fas fa-check"></i> Енергоємність ВВП України знизиться у 3  рази</li><li><i class="fas fa-check"></i> Не потрібно імпортувати газ, вугілля, ядерне паливо</li><li class="subsection">Соціальні наслідки:</li><li><i class="fas fa-check"></i> Нова енергетична інфраструктура</li><li><i class="fas fa-check"></i> Нові робочі місця в галузі ВДЕ та енергоефективності</li><li><i class="fas fa-check"></i> Нові можливості для розвитку на місцях: локальне виробництво енергії, використання місцевих ресурсів</li><li><i class="fas fa-check"></i> Зменшення кількості працівників у видобувній галузі</li><li><i class="fas fa-check"></i> Скорочення викидів парникових газів 90 %  від рівня 1990 р.</li><li><i class="fas fa-check"></i> Зниження негативного впливу від енергетики на здоров’я людей</li></ul>
+            </div>
+            <div class="text" data-sphere="Населення">
+                <h4>Населення</h4>
+                <ul><li class=""><i class="fas fa-check"></i> Термомодернізація житлових будинків</li><li><i class="fas fa-check"></i> Модернізація систем енергозабезпечення об’єктів ЖКГ</li><li><i class="fas fa-check"></i> Автоматизовані індивідуальні теплові пункти (ІТП)</li><li><i class="fas fa-check"></i> Впровадження когенераційних систем для багатоповерхових будинків</li><li><i class="fas fa-check"></i> Техніка А++, А+++</li><li><i class="fas fa-check"></i> 40-50% населення використовує сонячні панелі на дахах будинків</li><li class=""><i class="fas fa-check"></i> Опалення та гаряча вода за рахунок біопалива та відходів, централізованого ВДЕ-тепла та використання сонячних колекторів</li></ul>
+            </div>
+            <div class="text" data-sphere="Промисловість">
+                <h4>Промисловість</h4>
+                <ul><li class=""><i class="fas fa-check"></i> 88% - енергія з відновлюваних джерел та альтернативних видів палива</li><li><i class="fas fa-check"></i> Електрифікація промисловості</li><li><i class="fas fa-check"></i> Заміна енергоємного обладнання на нове та ефективне</li><li><i class="fas fa-check"></i> Більші інвестиції з боку промислових виробників, зокрема електроенергетичної галузі</li></ul>
+            </div>
+            <div class="text" data-sphere="Сфера послуг">
+                <h4>Сфера послуг</h4>
+                <ul><li class=""><i class="fas fa-check"></i> ВДЕ 88%</li><li><i class="fas fa-check"></i> Заходи з енергоефективності та енергозаощадження</li><li><i class="fas fa-check"></i> Термоізоляція приміщень</li><li><i class="fas fa-check"></i> Використання високоефективних технічних приладів (А++, А+++)</li></ul>
+            </div>
+            <div class="text" data-sphere="Сільське господарство">
+                <h4>Сільське господарство</h4>
+                <ul><li class=""><i class="fas fa-check"></i> Використання ВДЕ для виробництва електроенергії та тепла</li><li><i class="fas fa-check"></i> СГ Транспорт на біопаливі</li><li><i class="fas fa-check"></i> Вирощування енергетичних культур</li><li><i class="fas fa-check"></i> Нові технології використання сільськогосподарських машин та механізмів</li></ul>
+            </div>
+            <div class="text" data-sphere="Транспорт">
+                <h4>Транспорт</h4>
+                <ul><li class=""><i class="fas fa-check"></i> Легкові авто: 90% електромобілі, 10% на біопаливі</li><li><i class="fas fa-check"></i> Електроавтобуси та електропотяги</li><li><i class="fas fa-check"></i> Авіаційний, водний, вантажний транспорт на біопаливі</li></ul>
+            </div>
+        </article>
+    </section>
+    <section id="costs">
+        <h3>Вартість переходу на відновлювані джерела енергії</h3>
+        <p>Після 2030 року витрати за сценарієм переходу будуть меншими, ніж за базового сценарію за рахунок економії на паливі.</p>
+        <figure>
+            <div class="h5 dirt">
+                <h5>Базовий сценарій</h5>
+                <p>млн. Євро</p>
+            </div>
+            <div class="h5 vde">
+                <h5>Перехід на ВДЕ</h5>
+                <p><span class="vde">13.7%</span> економії (порівняно з витратами у 2050 за базовим сценарієм)</p>
+            </div>
+            <div id="costs-legend">
+                <p><strong>Графіки інтерактивні: наведіть на лінію</strong></p>
+            </div>
+        </figure>
+        <div class="data_caption">
+            <p>Дані: Дослідження <a href="https://ua.boell.org/sites/default/files/perehid_ukraini_na_vidnovlyuvanu_energetiku_do_2050_roku.pdf" target="_blank">"Перехід України на відновлювану енергетику до 2050 року"</a></p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+
+</footer>
+<script src="bundle.js" type="text/javascript"></script>
+</body>
+</html>
