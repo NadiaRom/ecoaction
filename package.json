@@ -4,7 +4,9 @@
   "description": "modules for ecoaction viz",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx browserify index.js -o bundle.js && npx postcss style.css -o style_prefixed.css -u autoprefixer",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx watchify index.js -o bundle.js && npx postcss style.css -o style_prefixed.css -w -u autoprefixer"
   },
   "repository": {
     "type": "git",
@@ -27,5 +29,11 @@
     "jquery": "^3.3.1",
     "scrollama": "^1.4.4",
     "tippy.js": "^3.4.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^9.4.5",
+    "browserify": "^16.2.3",
+    "postcss-cli": "^6.1.1",
+    "watchify": "^3.11.0"
   }
 }
