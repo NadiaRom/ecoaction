@@ -1,573 +1,4 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const scrollama = require('scrollama');
-const $ = require('jquery');
-const d3 = require('d3');
-const chroma = require('chroma-js');
-const tippy = require('tippy.js');
-
-$('#consumption .h3').prependTo('#consumption figure');
-
-const cols = {
-    green: '#00a650',
-    black: '#3c353f',
-    orange: '#f26522',
-    bgcol: '#f7f7f7',
-    lightblack: '#464646',
-};
-
-const fontSize = parseInt($('body').css('font-size'));
-
-const numericalize = function (d) {
-    for (const k in d) {
-        if (d[k].search(/[^0-9\.]/) === -1) {
-            d[k] = +d[k];
-        }
-    }
-    return d;
-};
-
-Promise.all([
-    d3.csv('data/by_vde_wide.csv', numericalize),
-    d3.csv('data/data_report_wide.csv', numericalize),
-    d3.json('data/sources_order.json', numericalize),
-    d3.xml('drag.svg'),
-])
-    .then(function ([data_vde, data_year, sourcesOrder, dragPointer]) {
-        const nest_vde = d3.nest()
-            .key(d => d.scenario)
-            .key(d => d.by_vde)
-            .entries(data_vde)
-            .reduce((res, d) => {
-                res[d.key] = d.values;
-                return res;
-            }, {});
-
-        let nest_year = d3.nest()
-            .key(d => d.scenario)
-            .key(d => d.year)
-            .entries(data_year);
-
-        nest_year.map((val, i) => {
-            nest_year[i].values = val.values.reduce((res, d) => {
-                res[d.key] = d.values;
-                return res;
-            }, {});
-        });
-
-        nest_year = nest_year.reduce((res, d) => {
-            res[d.key] = d.values;
-            return res;
-        }, {});
-
-        const sources = [...Object.keys(sourcesOrder)];
-
-        let activeSphere = 'Загалом',
-            scenario = 'Революційний',
-            dragYear = 2015;
-
-        d3.select('#consumption figure #bars')
-            .append('div')
-            .classed('bar_vde', true)
-            .attr('data-vde', 'dirt');
-
-        d3.select('#consumption figure #bars')
-            .append('div')
-            .classed('bar_vde', true)
-            .attr('data-vde', 'vde');
-
-        d3.select('#consumption figure #bars div[data-vde="dirt"]')
-            .selectAll('div.e-source')
-            .data(nest_year[scenario][dragYear].filter(d => !sourcesOrder[d.source].is_vde))
-            .enter()
-            .append('div')
-            .classed('e-source', true);
-
-        d3.select('#consumption figure #bars div[data-vde="vde"]')
-            .selectAll('div.e-source')
-            .data(nest_year[scenario][dragYear].filter(d => sourcesOrder[d.source].is_vde))
-            .enter()
-            .append('div')
-            .classed('e-source', true);
-
-        const bars = d3.selectAll('#consumption figure #bars div.e-source');
-
-        const barSpans = bars
-            .append('p')
-            .text(d => d.source + ' ')
-            .append('span')
-            .classed('ktne', true);
-
-        const barW = $('.e-source').width();
-
-        const barsSvg = bars.append('svg')
-            .attr('height', '4px')
-            .attr('width', barW);
-
-        const linesW = $('#consumption figure .chart#lines').width();
-        const linesH = $('#consumption figure .chart#lines').height();
-
-        const linesSvg = d3.select('#consumption figure .chart#lines')
-            .append('svg')
-            .attr('width', linesW)
-            .attr('height', linesH);
-
-        const linesM = {
-            top: linesH * 0.1,
-            right: linesW * 0.1,
-            bottom: linesW * 0.05,
-            left: linesH * 0,
-        };
-
-        const scaleYear = d3.scaleLinear()
-            .domain([2015, 2050])
-            .range([linesM.left, linesW - linesM.right]);
-
-        const scaleKTNE = d3.scaleLinear()
-            .domain([0, 0])
-            .range([linesH - linesM.top, linesM.bottom]);
-
-        let isFirstDrawLine = true;
-
-        const line = d3.line()
-            .x(d => scaleYear(d.year))
-            .y(d => (isFirstDrawLine) ? scaleKTNE(0) : scaleKTNE(d[activeSphere]))
-            .curve(d3.curveCatmullRom);
-
-        const xAxis = d3.axisBottom()
-            .scale(scaleYear)
-            .ticks(8)
-            .tickFormat(d => d.toString());
-
-        const yAxis = d3.axisRight()
-            .scale(scaleKTNE);
-
-
-        // DRAW CHART------------------------------------------------------------------------------------------
-        let datLines= nest_vde[scenario];
-
-        const gXAxis = linesSvg.append('g')
-            .attr('id', 'x_axis')
-            .attr('transform', `translate(0 ${scaleKTNE(0)})`)
-            .call(xAxis);
-
-        gXAxis.selectAll('.tick text')
-            .attr('fill', cols.black)
-            .attr('font-size', '0.85rem');
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (linesH - linesM.top - linesM.bottom))
-            .attr('y2', 0)
-            .attr('stroke', chroma(cols.black).alpha(0.4))
-            .attr('stroke-dasharray', '2 2');
-
-        const gYAxis = linesSvg.append('g')
-            .attr('id', 'y_axis')
-            .attr('transform', `translate(${linesW - linesM.right}, 0)`)
-            .call(yAxis);
-
-        const $xAxisTexts = $('#x_axis .tick text');
-
-        $xAxisTexts.first().addClass('active');
-
-
-        const sourceLine = linesSvg.selectAll('path.sl')
-            .data(datLines)
-            .enter()
-            .append('path')
-            .classed('sl', true)
-            .attr('id', d => `line_${d.key}`)
-            .attr('d', d => line(d.values.slice(1)))
-            .style('fill', 'none')
-            .style('stroke', d => (d.key === 'vde') ? cols.green : cols.orange);
-
-        const textPath = linesSvg.selectAll('g.follow-path')
-            .data(datLines)
-            .enter()
-            .append('g')
-            .attr('transform', `translate(${fontSize / 2} -${fontSize})`)
-            .append('text')
-            .style('fill', cols.black)
-            .append('textPath')
-            .attr('href', d => `#line_${d.key}`)
-            .text(d => (d.key === 'vde') ? 'Зелена енергія' : 'Невідновлювані джерела')
-
-        // Dragger created here, to be before dots
-        const dragger = linesSvg.append('g')
-            .attr('id', 'year_dragger')
-            .attr('transform', `translate(${scaleYear(2015)} 0)`);
-
-        const dragHelperW = d3.max([linesW*0.05, 10]);
-        const linesTopY = document.getElementById('y_axis').getBBox().y;
-
-        dragger.append('line')
-            .attr('x1', 0)
-            .attr('x2', 0)
-            .attr('y1', scaleKTNE(0))
-            .attr('y2', linesTopY);
-
-
-
-        dragger.append('rect')
-            .attr('x', dragHelperW / 2 * (-1))
-            .attr('y', linesTopY)
-            .attr('height', scaleKTNE.range()[0])
-            .attr('width', dragHelperW)
-            .style('stroke', 'none')
-            .style('fill', cols.bgcol)
-            .style('opacity', 0);
-
-        dragger.append('line')
-            .attr('x1', -5)
-            .attr('x2', 5)
-            .attr('y1', linesTopY)
-            .attr('y2', linesTopY);
-
-        // continue dots
-
-        const dots = linesSvg.selectAll('g.circle_g')
-            .data(datLines)
-            .enter()
-            .append('g')
-            .classed('circle_g', true)
-            .selectAll('circle')
-            .data(d => d.values.slice(1))
-            .enter()
-            .append('circle')
-            .attr('cx', d => scaleYear(d.year))
-            .attr('cy', d => scaleKTNE(0))
-            .attr('r', 5)
-            .attr('class', d => d.by_vde)
-            .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
-
-        isFirstDrawLine = false;
-
-        // DRAW BARS ------------------------------------------------------------------------------------------
-        let datYear = nest_year[scenario];
-        const scaleBar = d3.scaleLinear()
-            .range([0, barW]);
-
-        const barsBar = barsSvg.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', 0)
-            .attr('height', '4px');
-
-        const barsCircle = barsSvg.append('circle')
-            .attr('cx', 0)
-            .attr('cy', 2)
-            .attr('r', 5);
-
-
-        const updateBar = function () {
-            const dat = {};
-            datYear[dragYear.toString()].map(function (d) {
-                dat[d.source] = d;
-            });
-
-            scaleBar.domain([0, d3.max(datYear[dragYear.toString()], d => d[activeSphere])]);
-
-            const datOrd = barsBar.data().map(d => dat[d.source]);
-
-            barsBar
-                .data(datOrd)
-                .transition()
-                .duration(500)
-                .attr('width', d => scaleBar(d[activeSphere]));
-
-            barsCircle
-                .data(datOrd)
-                .transition()
-                .duration(500)
-                .attr('cx', d => scaleBar(d[activeSphere]));
-
-            barSpans.data(datOrd)
-                .text(d => `${d3.format(",.2r")(d[activeSphere])} тис. т н.е.`);
-        };
-
-        updateBar();
-
-        // DRAG YEAR ------------------------------------------------------------------------------------------
-        const lineTipSelection = (window.innerHeight > 850)
-            ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde')
-            : document.querySelectorAll('#lines circle.dirt, #lines circle.vde, .e-source circle');
-
-        const lineTip = tippy(lineTipSelection, {
-            animation: 'fade',
-            onShow: function (tip) {
-                const d = tip.reference.__data__;
-                const is_vde = d.by_vde || (sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt'
-                tip.setContent(`
-            <p><span class="${is_vde}">${d3.format(",.2r")(d[activeSphere])} тис. т н.е.</span></p>
-            `);
-            },
-        });
-
-
-        const dragStart = function() {
-            d3.select(this).classed('active', true);
-        };
-
-        const dragged = function() {
-            const dragTo = d3.min([scaleYear(2050), d3.max([scaleYear(2015), d3.event.x])]);
-            dragYear = Math.round(scaleYear.invert(dragTo) / 5) * 5;
-
-            dragger
-                .attr('transform', `translate(${dragTo} 0)`);
-        };
-
-        const dragEnd = function() {
-            const yearDragger = d3.select('#lines #year_dragger');
-            yearDragger.transition()
-                .duration(500)
-                .attr('transform', `translate(${scaleYear(dragYear)} 0)`);
-
-            yearDragger.classed('active', false);
-
-            updateBar();
-
-            $xAxisTexts.removeClass('active')
-                .filter(function () {
-                    return this.textContent === dragYear.toString();
-                })
-                .addClass('active');
-        };
-
-        dragger.call(d3.drag()
-            .on('start', dragStart)
-            .on('drag', dragged)
-            .on('end', dragEnd));
-
-        $xAxisTexts.click(function () {
-            dragYear = this.__data__;
-            dragEnd();
-        });
-
-        d3.selectAll('#lines circle.dirt, #lines circle.vde')
-            .on('click', function (d) {
-                dragYear = d.year;
-                dragEnd();
-            });
-
-
-        // FUNC TO UPDATE LINES -----------------------------------------------------------------------------
-        const updateLines = function () {
-            scaleKTNE.domain([
-                0,
-                Math.round(d3.max(datLines[0].values.concat(datLines[1].values),
-                        d => d[activeSphere]) / 5000
-                ) * 5000
-            ]);
-
-            gYAxis.transition()
-                .duration(500)
-                .call(yAxis);
-
-            sourceLine.data(datLines)
-                .transition()
-                .duration(500)
-                .attr('d', d => line(d.values.slice(1)));
-
-            // textPath.transition()
-            //     .duration(500)
-            //     .attr('href', d => `#line_${d.key}`)
-
-            dots.transition()
-                .duration(500)
-                .attr('cx', d => scaleYear(d.year))
-                .attr('cy', d => scaleKTNE(d[activeSphere]));
-        };
-
-        // SCROLLAMA -----------------------------------------------------------------------------------------
-
-        const dragMeTip = tippy(document.querySelectorAll('#lines #year_dragger'), {
-            trigger: 'manual',
-            animation: 'fade',
-            placement: 'top',
-            content: `
-        <p>Потягніть лінію, щоб побачити детальні зміни</p>
-        `,
-        })
-
-        const scroller = scrollama();
-        let isContainerEnter = true;
-
-        scroller.setup({
-            step: '#consumption article .text',
-            container: '#consumption',
-            graphic: '#consumption .fig_container figure',
-            offset: 0.5,
-        })
-            .onStepEnter(function (r) {
-                activeSphere = r.element.getAttribute('data-sphere');
-                updateLines();
-                updateBar()
-            });
-    });
-
-Promise.all([
-    d3.csv('data/costs_agg.csv', numericalize)
-])
-    .then(function ([data]) {
-        const nested = d3.nest()
-            .key(d => d.scenario)
-            .key(d => d.action)
-            .entries(data);
-        
-        const legend = d3.select('#costs #costs-legend')
-            .selectAll('p.legend')
-            .data(nested[1].values.map(d => d.key))
-            .enter()
-            .append('p')
-            .classed('legend', true)
-            .attr('data-expense', d => d);
-
-        const scaleColor = d3.scaleOrdinal()
-            .domain(['Вартість палива', 'Витрати на транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
-            .range(['#e7298a','#d95f02','#7570b3','#1b9e77','#66a61e']);
-        
-        const legendMarks = legend.append('svg')
-            .attr('width', '1em')
-            .attr('height', '1em')
-            .attr('viewBox', '-50 -50 100 100')
-            .append('circle')
-            .attr('cx', 0)
-            .attr('cy', 0)
-            .attr('r', 45)
-            .style('fill', d => scaleColor(d));
-
-        legend.append('span').text(d => d);
-        
-        const figDivs = d3.select('#costs figure')
-            .selectAll('div.byType')
-            .data(nested)
-            .enter()
-            .append('div')
-            .classed('byType', true)
-            .attr('id', d => (d.key === 'Консервативний') ? 'base-scen' : 'rev-scen');
-        
-        const svgs = figDivs.append('svg')
-            .attr('height', function () {
-                return $(this).parent().height();
-            })
-            .attr('width', function () {
-                return $(this).parent().width();
-            });
-
-        const svgW = parseInt(svgs.attr('width'));
-        const svgH = parseInt(svgs.attr('height'));
-        const svgM = {
-            top: svgH * 0.05,
-            right: svgW * 0.05,
-            bottom: svgH * 0.05,
-            left: svgW * 0.05
-        };
-
-        const scaleYear = d3.scaleLinear()
-            .domain([2015, 2050])
-            .range([svgM.left, svgW - svgM.right]);
-
-        const scaleExpence = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.m_euro)])
-            .range([svgH - svgM.top, svgM.bottom]);
-        
-        const xAxis = d3.axisBottom(scaleYear)
-            .tickValues([2015, 2050])
-            .tickFormat(d => d.toString())
-        
-        const gXAxis = svgs.append('g')
-            .attr('id', 'cost_ax_x');
-        
-        gXAxis.call(xAxis)
-            .attr('transform', `translate(0 ${scaleExpence(0) + fontSize / 2})`);
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (scaleExpence.range()[0]));
-        
-        gXAxis.selectAll('path').remove();
-        
-        const tipLine = svgs.append('line')
-            .attr('id', 'slope-tip')
-            .attr('x1', scaleYear(2015))
-            .attr('x2', scaleYear(2050))
-            .attr('y1', 0)
-            .attr('y2', 0);
-        
-        const slopeGs = svgs.selectAll('g.slope')
-            .data(d => d.values)
-            .enter()
-            .append('g')
-            .classed('slope', true)
-            .on('mouseover', function (d) {
-                const tipDat = slopeCircles
-                    .filter(val => val.action === d.key);
-                
-                tipLine
-                    .attr('y1', function (val) {
-                        return scaleExpence(tipDat.data()
-                            .filter(d => d.scenario === val.key && d.year === 2050)[0].m_euro);
-                    })
-                    .attr('y2', function () { return this.getAttribute('y1'); })
-                    .classed('active', true);
-                
-                legend.filter(val => val === d.key)
-                    .classed('active', true);
-                
-                tipDat.each(function () {
-                    this._tippy.show(500);
-                })
-            })
-            .on('mouseout', function () {
-                tipLine.classed('active', false);
-                legend.classed('active', false);
-                tippy.hideAllPoppers();
-            });
-        
-        const slopeLines = slopeGs
-            .append('line')
-            .attr('x1', d => scaleYear(d.values[0].year))
-            .attr('x2', d => scaleYear(d.values[1].year))
-            .attr('y1', d => scaleExpence(d.values[0].m_euro))
-            .attr('y2', d => scaleExpence(d.values[1].m_euro))
-            .style('stroke', d => scaleColor(d.key));
-
-        const circleR = 5;
-        
-        const slopeCircles = slopeGs.selectAll('circle')
-            .data(d => d.values)
-            .enter()
-            .append('circle')
-            .attr('cx', d => scaleYear(d.year))
-            .attr('cy', d => scaleExpence(d.m_euro))
-            .attr('r', circleR)
-            .style('fill', d => scaleColor(d.action));
-        
-        const slopeTippy = tippy(document.querySelectorAll('#costs g.slope circle'), {
-            animation: 'fade',
-            content: function (ref) {
-                return `
-                <p>${d3.format(",.2r")(ref.__data__.m_euro)} млн. €</p>
-                `;
-            },
-            trigger: 'manual',
-        });
-        
-    });
-
-$(document).ready(function () {
-    $('#lines').one('mouseover', function () {
-        const dragMeTipInstance = document.querySelector('#lines #year_dragger')._tippy;
-        dragMeTipInstance.show();
-        setTimeout(function() {
-            dragMeTipInstance.hide();
-            isContainerEnter = false;
-        }, 7000);
-    });
-
-    window.addEventListener('scroll', function () {
-        tippy.hideAllPoppers();
-    });
-});
-},{"chroma-js":2,"d3":34,"jquery":35,"scrollama":36,"tippy.js":37}],2:[function(require,module,exports){
 /**
  * chroma.js - JavaScript library for color conversions
  *
@@ -3761,7 +3192,7 @@ $(document).ready(function () {
 
 })));
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 // https://d3js.org/d3-array/ v1.2.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -4353,7 +3784,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 // https://d3js.org/d3-axis/ v1.0.12 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -4548,7 +3979,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // https://d3js.org/d3-brush/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -5117,7 +4548,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":10,"d3-drag":11,"d3-interpolate":19,"d3-selection":26,"d3-transition":31}],6:[function(require,module,exports){
+},{"d3-dispatch":9,"d3-drag":10,"d3-interpolate":18,"d3-selection":25,"d3-transition":30}],5:[function(require,module,exports){
 // https://d3js.org/d3-chord/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-path')) :
@@ -5349,7 +4780,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3,"d3-path":20}],7:[function(require,module,exports){
+},{"d3-array":2,"d3-path":19}],6:[function(require,module,exports){
 // https://d3js.org/d3-collection/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -5568,7 +4999,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 // https://d3js.org/d3-color/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6119,7 +5550,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // https://d3js.org/d3-contour/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -6552,7 +5983,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3}],10:[function(require,module,exports){
+},{"d3-array":2}],9:[function(require,module,exports){
 // https://d3js.org/d3-dispatch/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6649,7 +6080,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // https://d3js.org/d3-drag/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch')) :
@@ -6885,7 +6316,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":10,"d3-selection":26}],12:[function(require,module,exports){
+},{"d3-dispatch":9,"d3-selection":25}],11:[function(require,module,exports){
 // https://d3js.org/d3-dsv/ v1.0.10 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -7049,7 +6480,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // https://d3js.org/d3-ease/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -7310,7 +6741,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // https://d3js.org/d3-fetch/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dsv')) :
@@ -7414,7 +6845,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dsv":12}],15:[function(require,module,exports){
+},{"d3-dsv":11}],14:[function(require,module,exports){
 // https://d3js.org/d3-force/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-quadtree'), require('d3-collection'), require('d3-dispatch'), require('d3-timer')) :
@@ -8076,7 +7507,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-collection":7,"d3-dispatch":10,"d3-quadtree":22,"d3-timer":30}],16:[function(require,module,exports){
+},{"d3-collection":6,"d3-dispatch":9,"d3-quadtree":21,"d3-timer":29}],15:[function(require,module,exports){
 // https://d3js.org/d3-format/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -8398,7 +7829,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // https://d3js.org/d3-geo/ v1.11.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -11503,7 +10934,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3}],18:[function(require,module,exports){
+},{"d3-array":2}],17:[function(require,module,exports){
 // https://d3js.org/d3-hierarchy/ v1.1.8 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -12795,7 +12226,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 // https://d3js.org/d3-interpolate/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) :
@@ -13369,7 +12800,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8}],20:[function(require,module,exports){
+},{"d3-color":7}],19:[function(require,module,exports){
 // https://d3js.org/d3-path/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13512,7 +12943,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 // https://d3js.org/d3-polygon/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13664,7 +13095,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 // https://d3js.org/d3-quadtree/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -14101,7 +13532,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 // https://d3js.org/d3-random/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -14218,7 +13649,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // https://d3js.org/d3-scale-chromatic/ v1.3.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-interpolate'), require('d3-color')) :
@@ -14718,7 +14149,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8,"d3-interpolate":19}],25:[function(require,module,exports){
+},{"d3-color":7,"d3-interpolate":18}],24:[function(require,module,exports){
 // https://d3js.org/d3-scale/ v2.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-collection'), require('d3-array'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format')) :
@@ -15621,7 +15052,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":3,"d3-collection":7,"d3-format":16,"d3-interpolate":19,"d3-time":29,"d3-time-format":28}],26:[function(require,module,exports){
+},{"d3-array":2,"d3-collection":6,"d3-format":15,"d3-interpolate":18,"d3-time":28,"d3-time-format":27}],25:[function(require,module,exports){
 // https://d3js.org/d3-selection/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -16618,7 +16049,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 // https://d3js.org/d3-shape/ v1.2.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-path')) :
@@ -18555,7 +17986,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-path":20}],28:[function(require,module,exports){
+},{"d3-path":19}],27:[function(require,module,exports){
 // https://d3js.org/d3-time-format/ v2.1.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-time')) :
@@ -19241,7 +18672,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-time":29}],29:[function(require,module,exports){
+},{"d3-time":28}],28:[function(require,module,exports){
 // https://d3js.org/d3-time/ v1.0.10 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19616,7 +19047,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 // https://d3js.org/d3-timer/ v1.0.9 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19767,7 +19198,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // https://d3js.org/d3-transition/ v1.1.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dispatch'), require('d3-timer'), require('d3-color'), require('d3-interpolate'), require('d3-selection'), require('d3-ease')) :
@@ -20556,7 +19987,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":8,"d3-dispatch":10,"d3-ease":13,"d3-interpolate":19,"d3-selection":26,"d3-timer":30}],32:[function(require,module,exports){
+},{"d3-color":7,"d3-dispatch":9,"d3-ease":12,"d3-interpolate":18,"d3-selection":25,"d3-timer":29}],31:[function(require,module,exports){
 // https://d3js.org/d3-voronoi/ v1.1.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -21557,7 +20988,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 // https://d3js.org/d3-zoom/ v1.7.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -22061,7 +21492,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":10,"d3-drag":11,"d3-interpolate":19,"d3-selection":26,"d3-transition":31}],34:[function(require,module,exports){
+},{"d3-dispatch":9,"d3-drag":10,"d3-interpolate":18,"d3-selection":25,"d3-transition":30}],33:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -22134,7 +21565,7 @@ Object.keys(d3Zoom).forEach(function (key) { exports[key] = d3Zoom[key]; });
 exports.version = version;
 Object.defineProperty(exports, "event", {get: function() { return d3Selection.event; }});
 
-},{"d3-array":3,"d3-axis":4,"d3-brush":5,"d3-chord":6,"d3-collection":7,"d3-color":8,"d3-contour":9,"d3-dispatch":10,"d3-drag":11,"d3-dsv":12,"d3-ease":13,"d3-fetch":14,"d3-force":15,"d3-format":16,"d3-geo":17,"d3-hierarchy":18,"d3-interpolate":19,"d3-path":20,"d3-polygon":21,"d3-quadtree":22,"d3-random":23,"d3-scale":25,"d3-scale-chromatic":24,"d3-selection":26,"d3-shape":27,"d3-time":29,"d3-time-format":28,"d3-timer":30,"d3-transition":31,"d3-voronoi":32,"d3-zoom":33}],35:[function(require,module,exports){
+},{"d3-array":2,"d3-axis":3,"d3-brush":4,"d3-chord":5,"d3-collection":6,"d3-color":7,"d3-contour":8,"d3-dispatch":9,"d3-drag":10,"d3-dsv":11,"d3-ease":12,"d3-fetch":13,"d3-force":14,"d3-format":15,"d3-geo":16,"d3-hierarchy":17,"d3-interpolate":18,"d3-path":19,"d3-polygon":20,"d3-quadtree":21,"d3-random":22,"d3-scale":24,"d3-scale-chromatic":23,"d3-selection":25,"d3-shape":26,"d3-time":28,"d3-time-format":27,"d3-timer":29,"d3-transition":30,"d3-voronoi":31,"d3-zoom":32}],34:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
@@ -32500,7 +31931,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],36:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -33280,7 +32711,7 @@ return scrollama;
 
 })));
 
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function (global){
 /*!
 * Tippy.js v3.4.1
@@ -37839,4 +37270,576 @@ return tippy;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[1]);
+},{}],37:[function(require,module,exports){
+const scrollama = require('scrollama');
+const $ = require('jquery');
+const d3 = require('d3');
+const chroma = require('chroma-js');
+const tippy = require('tippy.js');
+
+
+const cols = {
+    green: '#00a650',
+    black: '#3c353f',
+    orange: '#f26522',
+    bgcol: '#f7f7f7',
+    lightblack: '#464646',
+};
+
+const fontSize = parseInt($('body').css('font-size'));
+
+const numericalize = function (d) {
+    for (const k in d) {
+        if (d[k].search(/[^0-9\.]/) === -1) {
+            d[k] = +d[k];
+        }
+    }
+    return d;
+};
+
+Promise.all([
+    d3.csv('data/by_vde_wide.csv', numericalize),
+    d3.csv('data/data_report_wide.csv', numericalize),
+    d3.json('data/sources_order.json', numericalize),
+    d3.xml('../drag.svg'),
+])
+    .then(function ([data_vde, data_year, sourcesOrder, dragPointer]) {
+        const nest_vde = d3.nest()
+            .key(d => d.scenario)
+            .key(d => d.by_vde)
+            .entries(data_vde)
+            .reduce((res, d) => {
+                res[d.key] = d.values;
+                return res;
+            }, {});
+
+        let nest_year = d3.nest()
+            .key(d => d.scenario)
+            .key(d => d.year)
+            .entries(data_year);
+
+        nest_year.map((val, i) => {
+            nest_year[i].values = val.values.reduce((res, d) => {
+                res[d.key] = d.values;
+                return res;
+            }, {});
+        });
+
+        nest_year = nest_year.reduce((res, d) => {
+            res[d.key] = d.values;
+            return res;
+        }, {});
+
+        const sources = [...Object.keys(sourcesOrder)];
+
+        let activeSphere = 'Загалом',
+            scenario = 'Революційний',
+            dragYear = 2015;
+
+        d3.select('#consumption figure #bars')
+            .append('div')
+            .classed('bar_vde', true)
+            .attr('data-vde', 'dirt');
+
+        d3.select('#consumption figure #bars')
+            .append('div')
+            .classed('bar_vde', true)
+            .attr('data-vde', 'vde');
+
+        d3.select('#consumption figure #bars div[data-vde="dirt"]')
+            .selectAll('div.e-source')
+            .data(nest_year[scenario][dragYear].filter(d => !sourcesOrder[d.source].is_vde))
+            .enter()
+            .append('div')
+            .classed('e-source', true);
+
+        d3.select('#consumption figure #bars div[data-vde="vde"]')
+            .selectAll('div.e-source')
+            .data(nest_year[scenario][dragYear].filter(d => sourcesOrder[d.source].is_vde))
+            .enter()
+            .append('div')
+            .classed('e-source', true);
+
+        const bars = d3.selectAll('#consumption figure #bars div.e-source');
+
+        const barSpans = bars
+            .append('p')
+            .text(d => d.source + ' ')
+            .append('span')
+            .classed('ktne', true);
+
+        const barW = $('.e-source').width();
+
+        const barsSvg = bars.append('svg')
+            .attr('height', '4px')
+            .attr('width', barW);
+
+        const linesW = $('#consumption figure .chart#lines').width();
+        const linesH = $('#consumption figure .chart#lines').height();
+
+        const linesSvg = d3.select('#consumption figure .chart#lines')
+            .append('svg')
+            .attr('width', linesW)
+            .attr('height', linesH);
+
+        const linesM = {
+            top: linesH * 0.1,
+            right: linesW * 0.1,
+            bottom: linesW * 0.05,
+            left: linesH * 0,
+        };
+
+        const scaleYear = d3.scaleLinear()
+            .domain([2015, 2050])
+            .range([linesM.left, linesW - linesM.right]);
+
+        const scaleKTNE = d3.scaleLinear()
+            .domain([0, 0])
+            .range([linesH - linesM.top, linesM.bottom]);
+
+        const line = d3.line()
+            .x(d => scaleYear(d.year))
+            .y(d => scaleKTNE(d[activeSphere]))
+            .curve(d3.curveCatmullRom);
+
+        const xAxis = d3.axisBottom()
+            .scale(scaleYear)
+            .ticks(8)
+            .tickFormat(d => d.toString());
+
+        const yAxis = d3.axisRight()
+            .scale(scaleKTNE);
+
+
+        // DRAW CHART------------------------------------------------------------------------------------------
+        let datLines= nest_vde[scenario];
+
+        const gXAxis = linesSvg.append('g')
+            .attr('id', 'x_axis')
+            .attr('transform', `translate(0 ${scaleKTNE(0)})`)
+            .call(xAxis);
+
+        gXAxis.selectAll('.tick text')
+            .attr('fill', cols.black)
+            .attr('font-size', '0.85rem');
+
+        gXAxis.selectAll('.tick line')
+            .attr('y1', -1 * (linesH - linesM.top - linesM.bottom))
+            .attr('y2', 0)
+            .attr('stroke', chroma(cols.black).alpha(0.4))
+            .attr('stroke-dasharray', '2 2');
+
+        const gYAxis = linesSvg.append('g')
+            .attr('id', 'y_axis')
+            .attr('transform', `translate(${linesW - linesM.right}, 0)`)
+            .call(yAxis);
+
+        const $xAxisTexts = $('#x_axis .tick text');
+
+        $xAxisTexts.first().addClass('active');
+
+
+        const sourceLine = linesSvg.selectAll('path.sl')
+            .data(datLines)
+            .enter()
+            .append('path')
+            .classed('sl', true)
+            .attr('id', d => `line_${d.key}`)
+            .attr('d', d => line(d.values.slice(1)))
+            .style('fill', 'none')
+            .style('stroke', d => (d.key === 'vde') ? cols.green : cols.orange);
+
+        const textPath = linesSvg.selectAll('g.follow-path')
+            .data(datLines)
+            .enter()
+            .append('g')
+            .attr('transform', `translate(${fontSize / 2} -${fontSize})`)
+            .append('text')
+            .style('fill', cols.black)
+            .append('textPath')
+            .attr('href', d => `#line_${d.key}`)
+            .text(d => (d.key === 'vde') ? 'Зелена енергія' : 'Невідновлювані джерела')
+
+        // Dragger created here, to be before dots
+        const dragger = linesSvg.append('g')
+            .attr('id', 'year_dragger')
+            .attr('transform', `translate(${scaleYear(2015)} 0)`);
+
+        const dragHelperW = d3.max([linesW*0.05, 10]);
+        const linesTopY = document.getElementById('y_axis').getBBox().y;
+
+        dragger.append('line')
+            .attr('x1', 0)
+            .attr('x2', 0)
+            .attr('y1', scaleKTNE(0))
+            .attr('y2', linesTopY);
+
+
+
+        dragger.append('rect')
+            .attr('x', dragHelperW / 2 * (-1))
+            .attr('y', linesTopY)
+            .attr('height', scaleKTNE.range()[0])
+            .attr('width', dragHelperW)
+            .style('stroke', 'none')
+            .style('fill', cols.bgcol)
+            .style('opacity', 0);
+
+        dragger.append('line')
+            .attr('x1', -5)
+            .attr('x2', 5)
+            .attr('y1', linesTopY)
+            .attr('y2', linesTopY);
+
+        // continue dots
+
+        const dots = linesSvg.selectAll('g.circle_g')
+            .data(datLines)
+            .enter()
+            .append('g')
+            .classed('circle_g', true)
+            .selectAll('circle')
+            .data(d => d.values.slice(1))
+            .enter()
+            .append('circle')
+            .attr('cx', d => scaleYear(d.year))
+            .attr('cy', d => scaleKTNE(0))
+            .attr('r', 5)
+            .attr('class', d => d.by_vde)
+            .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
+        
+
+        // DRAW BARS ------------------------------------------------------------------------------------------
+        let datYear = nest_year[scenario];
+        const scaleBar = d3.scaleLinear()
+            .range([0, barW]);
+
+        const barsBar = barsSvg.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 0)
+            .attr('height', '4px');
+
+        const barsCircle = barsSvg.append('circle')
+            .attr('cx', 0)
+            .attr('cy', 2)
+            .attr('r', 5);
+
+
+        const updateBar = function () {
+            const dat = {};
+            datYear[dragYear.toString()].map(function (d) {
+                dat[d.source] = d;
+            });
+
+            scaleBar.domain([0, d3.max(datYear[dragYear.toString()], d => d[activeSphere])]);
+
+            const datOrd = barsBar.data().map(d => dat[d.source]);
+
+            barsBar
+                .data(datOrd)
+                .transition()
+                .duration(500)
+                .attr('width', d => scaleBar(d[activeSphere]));
+
+            barsCircle
+                .data(datOrd)
+                .transition()
+                .duration(500)
+                .attr('cx', d => scaleBar(d[activeSphere]));
+
+            barSpans.data(datOrd)
+                .text(d => `${d3.format(",.2r")(d[activeSphere])} тис. т н.е.`);
+        };
+
+        updateBar();
+
+        // DRAG YEAR ------------------------------------------------------------------------------------------
+        const lineTipSelection = (window.innerHeight > 850)
+            ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde')
+            : document.querySelectorAll('#lines circle.dirt, #lines circle.vde, .e-source circle');
+
+        const lineTip = tippy(lineTipSelection, {
+            animation: 'fade',
+            onShow: function (tip) {
+                const d = tip.reference.__data__;
+                const is_vde = d.by_vde || (sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt'
+                tip.setContent(`
+            <p><span class="${is_vde}">${d3.format(",.2r")(d[activeSphere])} тис. т н.е.</span></p>
+            `);
+            },
+        });
+
+
+        const dragStart = function() {
+            d3.select(this).classed('active', true);
+        };
+
+        const dragged = function() {
+            const dragTo = d3.min([scaleYear(2050), d3.max([scaleYear(2015), d3.event.x])]);
+            dragYear = Math.round(scaleYear.invert(dragTo) / 5) * 5;
+
+            dragger
+                .attr('transform', `translate(${dragTo} 0)`);
+        };
+
+        const dragEnd = function() {
+            const yearDragger = d3.select('#lines #year_dragger');
+            yearDragger.transition()
+                .duration(500)
+                .attr('transform', `translate(${scaleYear(dragYear)} 0)`);
+
+            yearDragger.classed('active', false);
+
+            updateBar();
+
+            $xAxisTexts.removeClass('active')
+                .filter(function () {
+                    return this.textContent === dragYear.toString();
+                })
+                .addClass('active');
+        };
+
+        dragger.call(d3.drag()
+            .on('start', dragStart)
+            .on('drag', dragged)
+            .on('end', dragEnd));
+
+        $xAxisTexts.click(function () {
+            dragYear = this.__data__;
+            dragEnd();
+        });
+
+        d3.selectAll('#lines circle.dirt, #lines circle.vde')
+            .on('click', function (d) {
+                dragYear = d.year;
+                dragEnd();
+            });
+
+
+        // FUNC TO UPDATE LINES -----------------------------------------------------------------------------
+        const updateLines = function () {
+            scaleKTNE.domain([
+                0,
+                Math.round(d3.max(datLines[0].values.concat(datLines[1].values),
+                        d => d[activeSphere]) / 5000
+                ) * 5000
+            ]);
+
+            gYAxis.transition()
+                .duration(500)
+                .call(yAxis);
+
+            sourceLine.data(datLines)
+                .transition()
+                .duration(500)
+                .attr('d', d => line(d.values.slice(1)));
+
+            // textPath.transition()
+            //     .duration(500)
+            //     .attr('href', d => `#line_${d.key}`)
+
+            dots.transition()
+                .duration(500)
+                .attr('cx', d => scaleYear(d.year))
+                .attr('cy', d => scaleKTNE(d[activeSphere]));
+        };
+
+        // SCROLLAMA -----------------------------------------------------------------------------------------
+
+        const dragMeTip = tippy(document.querySelectorAll('#lines #year_dragger'), {
+            trigger: 'manual',
+            animation: 'fade',
+            placement: 'top',
+            content: `
+        <p>Потягніть лінію, щоб побачити детальні зміни</p>
+        `,
+        })
+
+        const scroller = scrollama();
+        let isContainerEnter = true;
+
+        scroller.setup({
+            step: '#consumption article .text',
+            container: '#consumption',
+            graphic: '#consumption .fig_container',
+            offset: 0,
+        })
+            .onContainerEnter(function (r) {
+                updateLines();
+                updateBar();
+            })
+            .onStepEnter(function (r) {
+                if (r.element.id !== 'phantom') {
+                    activeSphere = r.element.getAttribute('data-sphere');
+                    $('#consumption .h3 h3 span').text(activeSphere.toLowerCase());
+                    updateLines();
+                    updateBar();
+                }
+            });
+    });
+
+Promise.all([
+    d3.csv('data/costs_agg.csv', numericalize)
+])
+    .then(function ([data]) {
+        const nested = d3.nest()
+            .key(d => d.scenario)
+            .key(d => d.action)
+            .entries(data);
+        
+        const legend = d3.select('#costs #costs-legend')
+            .selectAll('p.legend')
+            .data(nested[1].values.map(d => d.key))
+            .enter()
+            .append('p')
+            .classed('legend', true)
+            .attr('data-expense', d => d);
+
+        const scaleColor = d3.scaleOrdinal()
+            .domain(['Вартість палива', 'Витрати на транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
+            .range(['#e7298a','#d95f02','#7570b3','#1b9e77','#66a61e']);
+        
+        const legendMarks = legend.append('svg')
+            .attr('width', '1em')
+            .attr('height', '1em')
+            .attr('viewBox', '-50 -50 100 100')
+            .append('circle')
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', 45)
+            .style('fill', d => scaleColor(d));
+
+        legend.append('span').text(d => d);
+        
+        const figDivs = d3.select('#costs figure')
+            .selectAll('div.byType')
+            .data(nested)
+            .enter()
+            .append('div')
+            .classed('byType', true)
+            .attr('id', d => (d.key === 'Консервативний') ? 'base-scen' : 'rev-scen');
+        
+        const svgs = figDivs.append('svg')
+            .attr('height', function () {
+                return $(this).parent().height();
+            })
+            .attr('width', function () {
+                return $(this).parent().width();
+            });
+
+        const svgW = parseInt(svgs.attr('width'));
+        const svgH = parseInt(svgs.attr('height'));
+        const svgM = {
+            top: svgH * 0.05,
+            right: svgW * 0.05,
+            bottom: svgH * 0.05,
+            left: svgW * 0.05
+        };
+
+        const scaleYear = d3.scaleLinear()
+            .domain([2015, 2050])
+            .range([svgM.left, svgW - svgM.right]);
+
+        const scaleExpence = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.m_euro)])
+            .range([svgH - svgM.top, svgM.bottom]);
+        
+        const xAxis = d3.axisBottom(scaleYear)
+            .tickValues([2015, 2050])
+            .tickFormat(d => d.toString())
+        
+        const gXAxis = svgs.append('g')
+            .attr('id', 'cost_ax_x');
+        
+        gXAxis.call(xAxis)
+            .attr('transform', `translate(0 ${scaleExpence(0) + fontSize / 2})`);
+
+        gXAxis.selectAll('.tick line')
+            .attr('y1', -1 * (scaleExpence.range()[0]));
+        
+        gXAxis.selectAll('path').remove();
+        
+        const tipLine = svgs.append('line')
+            .attr('id', 'slope-tip')
+            .attr('x1', scaleYear(2015))
+            .attr('x2', scaleYear(2050))
+            .attr('y1', 0)
+            .attr('y2', 0);
+        
+        const slopeGs = svgs.selectAll('g.slope')
+            .data(d => d.values)
+            .enter()
+            .append('g')
+            .classed('slope', true)
+            .on('mouseover', function (d) {
+                const tipDat = slopeCircles
+                    .filter(val => val.action === d.key);
+                
+                tipLine
+                    .attr('y1', function (val) {
+                        return scaleExpence(tipDat.data()
+                            .filter(d => d.scenario === val.key && d.year === 2050)[0].m_euro);
+                    })
+                    .attr('y2', function () { return this.getAttribute('y1'); })
+                    .classed('active', true);
+                
+                legend.filter(val => val === d.key)
+                    .classed('active', true);
+                
+                tipDat.each(function () {
+                    this._tippy.show(500);
+                })
+            })
+            .on('mouseout', function () {
+                tipLine.classed('active', false);
+                legend.classed('active', false);
+                tippy.hideAllPoppers();
+            });
+        
+        const slopeLines = slopeGs
+            .append('line')
+            .attr('x1', d => scaleYear(d.values[0].year))
+            .attr('x2', d => scaleYear(d.values[1].year))
+            .attr('y1', d => scaleExpence(d.values[0].m_euro))
+            .attr('y2', d => scaleExpence(d.values[1].m_euro))
+            .style('stroke', d => scaleColor(d.key));
+
+        const circleR = 5;
+        
+        const slopeCircles = slopeGs.selectAll('circle')
+            .data(d => d.values)
+            .enter()
+            .append('circle')
+            .attr('cx', d => scaleYear(d.year))
+            .attr('cy', d => scaleExpence(d.m_euro))
+            .attr('r', circleR)
+            .style('fill', d => scaleColor(d.action));
+        
+        const slopeTippy = tippy(document.querySelectorAll('#costs g.slope circle'), {
+            animation: 'fade',
+            content: function (ref) {
+                return `
+                <p>${d3.format(",.2r")(ref.__data__.m_euro)} млн. €</p>
+                `;
+            },
+            trigger: 'manual',
+        });
+        
+    });
+
+$(document).ready(function () {
+    $('#lines').one('mouseover', function () {
+        const dragMeTipInstance = document.querySelector('#lines #year_dragger')._tippy;
+        dragMeTipInstance.show();
+        setTimeout(function() {
+            dragMeTipInstance.hide();
+            isContainerEnter = false;
+        }, 7000);
+    });
+
+    window.addEventListener('scroll', function () {
+        tippy.hideAllPoppers();
+    });
+});
+},{"chroma-js":1,"d3":33,"jquery":34,"scrollama":35,"tippy.js":36}]},{},[37]);

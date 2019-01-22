@@ -11,7 +11,7 @@ $large: 'screen and (min-width: 950px)';
 $mobile: 'screen and (max-width: 577px)';
 $max_height_medium: 'screen and (max-height: 850px)';
 
-@import 'node_modules/tippy.js/dist/themes/light.css';
+@import '../node_modules/tippy.js/dist/themes/light.css';
 
 body {
   color: $fontcol;
@@ -49,6 +49,7 @@ header {
 
 svg text {
   font-family: $fontfam;
+  fill: $fontcol;
 }
 
 main {
@@ -66,58 +67,38 @@ main {
 }
 
 #consumption {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr;
   padding: 0;
   margin: 0;
 
+  .fig_container {
+    min-height: 100vh;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
   .h3 {
-    padding: 2rem 0 2rem 0;
-
-    @media #{$max_height_medium} {
-      padding: 0.5rem 0 1rem 0;
-    }
-
-    div {
-      display: flex;
-      justify-content: space-between;
-    }
+    padding: 1em 10% 1em 10%;
+    font-size: 1rem;
+    grid-row: 1 / 2;
+    grid-auto-column: 1 / -1;
   }
 
   figure {
     padding: 0;
-    margin: 0;
+    margin: 0 10% 0 10%;
     display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    grid-template-columns: 1fr;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    overflow: hidden;
-
-    @media #{$max_height_medium} {
-      grid-template-rows: auto 1fr auto;
-      grid-template-columns: 1fr minmax(auto, 200px);
-    }
-
-    .h3 {
-      padding-left: 10%;
-      padding-right: 10%;
-
-      @media #{$max_height_medium} {
-        grid-column: 1 / -1;
-      }
-    }
+    grid-gap: 2em;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1.61fr 1fr;
 
     #bars {
-      margin: 0 0 2em 0;
+      margin: 0 0 0 0;
+      grid-gap: 1.5em;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 2em;
-      padding-left: 10%;
-      padding-right: 10%;
+      grid-template-columns: 1fr;
 
       svg {
         overflow: visible;
@@ -167,35 +148,13 @@ main {
 
       span.ktne {
         white-space: nowrap;
-      }
-
-      @media #{$max_height_medium} {
-        grid-template-columns: 1fr;
-        grid-column: 2 / 3;
-        grid-gap: 0;
-
-        p {
-          font-size: 0.75rem;
-        }
-
-        span.ktne {
-          display: none;
-        }
+        display: none;
       }
 
     }
 
     #lines {
-      margin: 0 0 2em 0;
-      padding-left: 10%;
-      padding-right: 10%;
-
-      @media #{$max_height_medium} {
-        grid-column: 1 / 2;
-        grid-row: 2 / 3;
-        padding-left: 2em;
-        padding-right: 2em;
-      }
+      margin: 0;
 
       svg {
         overflow: visible;
@@ -231,30 +190,32 @@ main {
     }
   }
 
-  .data_caption {
-    @media #{$max_height_medium} {
-      grid-column: 1 / -1;
-      grid-row: 3 / 4;
-    }
-  }
-
   article#explanation {
-    padding: 1em;
-    margin: 0;
-    grid-column: 2 / -1;
-    background-color: darken($bgcol, 5%);
+    padding: 0;
+    margin: 0 7.5% 0 7.5%;
+    pointer-events: none;
+    z-index: 1;
+    position: relative;
 
     h4 {
-      padding: 2rem 0 1em 0;
+      padding: 0;
+      margin: 1em 0 1em 0;
+      pointer-events: auto;
     }
 
     .text {
-      padding: 1em 0 2em 0;
-      min-height: 80vh;
+      padding: 2em;
+      margin: 100vh 0 120vh 0;
+      background: darken($bgcol, 3%);
+      box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
+      pointer-events: none;
     }
 
     ul {
+      padding: 0;
+      margin: 0;
       list-style-type: none;
+      pointer-events: auto;
 
       i {
         font-size: 0.5em;

@@ -4,7 +4,6 @@ const d3 = require('d3');
 const chroma = require('chroma-js');
 const tippy = require('tippy.js');
 
-$('#consumption .h3').prependTo('#consumption figure');
 
 const cols = {
     green: '#00a650',
@@ -29,7 +28,7 @@ Promise.all([
     d3.csv('data/by_vde_wide.csv', numericalize),
     d3.csv('data/data_report_wide.csv', numericalize),
     d3.json('data/sources_order.json', numericalize),
-    d3.xml('drag.svg'),
+    d3.xml('../drag.svg'),
 ])
     .then(function ([data_vde, data_year, sourcesOrder, dragPointer]) {
         const nest_vde = d3.nest()
@@ -125,11 +124,9 @@ Promise.all([
             .domain([0, 0])
             .range([linesH - linesM.top, linesM.bottom]);
 
-        let isFirstDrawLine = true;
-
         const line = d3.line()
             .x(d => scaleYear(d.year))
-            .y(d => (isFirstDrawLine) ? scaleKTNE(0) : scaleKTNE(d[activeSphere]))
+            .y(d => scaleKTNE(d[activeSphere]))
             .curve(d3.curveCatmullRom);
 
         const xAxis = d3.axisBottom()
@@ -237,8 +234,7 @@ Promise.all([
             .attr('r', 5)
             .attr('class', d => d.by_vde)
             .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
-
-        isFirstDrawLine = false;
+        
 
         // DRAW BARS ------------------------------------------------------------------------------------------
         let datYear = nest_year[scenario];
@@ -393,13 +389,20 @@ Promise.all([
         scroller.setup({
             step: '#consumption article .text',
             container: '#consumption',
-            graphic: '#consumption .fig_container figure',
-            offset: 0.5,
+            graphic: '#consumption .fig_container',
+            offset: 0,
         })
-            .onStepEnter(function (r) {
-                activeSphere = r.element.getAttribute('data-sphere');
+            .onContainerEnter(function (r) {
                 updateLines();
-                updateBar()
+                updateBar();
+            })
+            .onStepEnter(function (r) {
+                if (r.element.id !== 'phantom') {
+                    activeSphere = r.element.getAttribute('data-sphere');
+                    $('#consumption .h3 h3 span').text(activeSphere.toLowerCase());
+                    updateLines();
+                    updateBar();
+                }
             });
     });
 

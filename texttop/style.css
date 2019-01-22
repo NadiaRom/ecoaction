@@ -1,4 +1,4 @@
-@import url(node_modules/tippy.js/dist/themes/light.css);
+@import url(../node_modules/tippy.js/dist/themes/light.css);
 body {
   color: #2c2c2c;
   background-color: #f7f7f7;
@@ -26,7 +26,8 @@ header {
     font-weight: 600; }
 
 svg text {
-  font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif; }
+  font-family: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
+  fill: #2c2c2c; }
 
 main .data_caption {
   font-style: italic;
@@ -37,47 +38,32 @@ main .data_caption {
     color: inherit; }
 
 #consumption {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr;
   padding: 0;
   margin: 0; }
-  #consumption .h3 {
-    padding: 2rem 0 2rem 0; }
-    @media screen and (max-height: 850px) {
-      #consumption .h3 {
-        padding: 0.5rem 0 1rem 0; } }
-    #consumption .h3 div {
-      display: flex;
-      justify-content: space-between; }
-  #consumption figure {
-    padding: 0;
-    margin: 0;
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    grid-template-columns: 1fr;
-    height: 100vh;
+  #consumption .fig_container {
+    min-height: 100vh;
+    width: 100%;
     position: sticky;
     top: 0;
-    overflow: hidden; }
-    @media screen and (max-height: 850px) {
-      #consumption figure {
-        grid-template-rows: auto 1fr auto;
-        grid-template-columns: 1fr minmax(auto, 200px); } }
-    #consumption figure .h3 {
-      padding-left: 10%;
-      padding-right: 10%; }
-      @media screen and (max-height: 850px) {
-        #consumption figure .h3 {
-          grid-column: 1 / -1; } }
+    display: grid;
+    grid-template-rows: auto 1fr auto; }
+  #consumption .h3 {
+    padding: 1em 10% 1em 10%;
+    font-size: 1rem;
+    grid-row: 1 / 2;
+    grid-auto-column: 1 / -1; }
+  #consumption figure {
+    padding: 0;
+    margin: 0 10% 0 10%;
+    display: grid;
+    grid-gap: 2em;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1.61fr 1fr; }
     #consumption figure #bars {
-      margin: 0 0 2em 0;
+      margin: 0 0 0 0;
+      grid-gap: 1.5em;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 2em;
-      padding-left: 10%;
-      padding-right: 10%; }
+      grid-template-columns: 1fr; }
       #consumption figure #bars svg {
         overflow: visible; }
       #consumption figure #bars .e-source {
@@ -103,26 +89,10 @@ main .data_caption {
         stroke: #f26522;
         stroke-width: 2; }
       #consumption figure #bars span.ktne {
-        white-space: nowrap; }
-      @media screen and (max-height: 850px) {
-        #consumption figure #bars {
-          grid-template-columns: 1fr;
-          grid-column: 2 / 3;
-          grid-gap: 0; }
-          #consumption figure #bars p {
-            font-size: 0.75rem; }
-          #consumption figure #bars span.ktne {
-            display: none; } }
+        white-space: nowrap;
+        display: none; }
     #consumption figure #lines {
-      margin: 0 0 2em 0;
-      padding-left: 10%;
-      padding-right: 10%; }
-      @media screen and (max-height: 850px) {
-        #consumption figure #lines {
-          grid-column: 1 / 2;
-          grid-row: 2 / 3;
-          padding-left: 2em;
-          padding-right: 2em; } }
+      margin: 0; }
       #consumption figure #lines svg {
         overflow: visible; }
       #consumption figure #lines path.sl {
@@ -141,22 +111,27 @@ main .data_caption {
           font-size: 1.25rem; }
       #consumption figure #lines circle {
         cursor: pointer; }
-  @media screen and (max-height: 850px) {
-    #consumption .data_caption {
-      grid-column: 1 / -1;
-      grid-row: 3 / 4; } }
   #consumption article#explanation {
-    padding: 1em;
-    margin: 0;
-    grid-column: 2 / -1;
-    background-color: #eaeaea; }
+    padding: 0;
+    margin: 0 7.5% 0 7.5%;
+    pointer-events: none;
+    z-index: 1;
+    position: relative; }
     #consumption article#explanation h4 {
-      padding: 2rem 0 1em 0; }
+      padding: 0;
+      margin: 1em 0 1em 0;
+      pointer-events: auto; }
     #consumption article#explanation .text {
-      padding: 1em 0 2em 0;
-      min-height: 80vh; }
+      padding: 2em;
+      margin: 100vh 0 120vh 0;
+      background: #efefef;
+      box-shadow: 0 0.1em 0.4em -0.1em rgba(120, 120, 120, 0.85);
+      pointer-events: none; }
     #consumption article#explanation ul {
-      list-style-type: none; }
+      padding: 0;
+      margin: 0;
+      list-style-type: none;
+      pointer-events: auto; }
       #consumption article#explanation ul i {
         font-size: 0.5em;
         color: #00a650; }
