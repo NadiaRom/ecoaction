@@ -6,9 +6,9 @@ const tippy = require('tippy.js');
 
 
 const cols = {
-    green: '#00a650',
+    green: '#658b5b',
     black: '#3c353f',
-    orange: '#f26522',
+    orange: '#f16f39',
     bgcol: '#f7f7f7',
     lightblack: '#464646',
 };
