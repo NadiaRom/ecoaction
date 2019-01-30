@@ -507,14 +507,17 @@ main {
       font-weight: 800;
     }
 
+    span[data-cost] {
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
     [data-cost="Вартість палива"] {
       border-bottom: 2px solid rgba(#ee4d30, 1);
-      cursor: pointer;
     }
 
     [data-cost="Капітальні інвестиції"] {
       border-bottom: 2px solid rgba(#1dada6, 1);
-      cursor: pointer;
     }
   }
 }
