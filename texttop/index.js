@@ -3,6 +3,7 @@ const $ = require('jquery');
 const d3 = require('d3');
 const chroma = require('chroma-js');
 const tippy = require('tippy.js');
+// const labella = require('labella');
 
 
 const cols = {
@@ -12,6 +13,9 @@ const cols = {
     bgcol: '#f7f7f7',
     lightblack: '#464646',
 };
+
+const nform = d => d3.format(',.5r')(d).replace(/\..*/, '');
+
 
 const fontSize = parseInt($('body').css('font-size'));
 
@@ -139,7 +143,7 @@ Promise.all([
 
 
         // DRAW CHART------------------------------------------------------------------------------------------
-        let datLines= nest_vde[scenario];
+        let datLines = nest_vde[scenario];
 
         const gXAxis = linesSvg.append('g')
             .attr('id', 'x_axis')
@@ -147,7 +151,6 @@ Promise.all([
             .call(xAxis);
 
         gXAxis.selectAll('.tick text')
-            .attr('fill', cols.black)
             .attr('font-size', '0.85rem');
 
         gXAxis.selectAll('.tick line')
@@ -180,12 +183,11 @@ Promise.all([
             .data(datLines)
             .enter()
             .append('g')
-            .attr('transform', `translate(${fontSize / 2} -${fontSize})`)
+            .attr('transform', `translate(0 -${fontSize})`)
             .append('text')
-            .style('fill', cols.black)
             .append('textPath')
             .attr('href', d => `#line_${d.key}`)
-            .text(d => (d.key === 'vde') ? 'Зелена енергія' : 'Невідновлювані джерела')
+            .text(d => (d.key === 'vde') ? '   Зелена енергія' : '   Невідновлювані джерела')
 
         // Dragger created here, to be before dots
         const dragger = linesSvg.append('g')
@@ -220,12 +222,13 @@ Promise.all([
 
         // continue dots
 
-        const dots = linesSvg.selectAll('g.circle_g')
+        const dotsG = linesSvg.selectAll('g.circle_g')
             .data(datLines)
             .enter()
             .append('g')
-            .classed('circle_g', true)
-            .selectAll('circle')
+            .classed('circle_g', true);
+        
+        const dots = dotsG.selectAll('circle')
             .data(d => d.values.slice(1))
             .enter()
             .append('circle')
@@ -292,7 +295,7 @@ Promise.all([
                 const d = tip.reference.__data__;
                 const is_vde = d.by_vde || (sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt'
                 tip.setContent(`
-            <p><span class="${is_vde}">${d3.format(",.2r")(d[activeSphere])} тис. т н.е.</span></p>
+            <p class="small"><span class="${is_vde}">${d3.format(",.2r")(d[activeSphere])} тис. т н.е.</span></p>
             `);
             },
         });
@@ -348,9 +351,9 @@ Promise.all([
         const updateLines = function () {
             scaleKTNE.domain([
                 0,
-                Math.round(d3.max(datLines[0].values.concat(datLines[1].values),
-                        d => d[activeSphere]) / 5000
-                ) * 5000
+                Math.ceil(d3.max(datLines[0].values.concat(datLines[1].values),
+                        d => d[activeSphere]) / 1000
+                ) * 1000
             ]);
 
             gYAxis.transition()
@@ -361,15 +364,17 @@ Promise.all([
                 .transition()
                 .duration(500)
                 .attr('d', d => line(d.values.slice(1)));
-
-            // textPath.transition()
-            //     .duration(500)
-            //     .attr('href', d => `#line_${d.key}`)
-
-            dots.transition()
+            
+            dotsG.data(datLines);
+            
+            dots.data(d => d.values.slice(1))
+                .transition()
                 .duration(500)
                 .attr('cx', d => scaleYear(d.year))
                 .attr('cy', d => scaleKTNE(d[activeSphere]));
+
+            // dragYear = 2015;
+            // dragEnd();
         };
 
         // SCROLLAMA -----------------------------------------------------------------------------------------
@@ -384,13 +389,12 @@ Promise.all([
         })
 
         const scroller = scrollama();
-        let isContainerEnter = true;
 
         scroller.setup({
             step: '#consumption article .text',
             container: '#consumption',
             graphic: '#consumption .fig_container',
-            offset: 0,
+            offset: 0.8,
         })
             .onContainerEnter(function (r) {
                 updateLines();
@@ -404,50 +408,39 @@ Promise.all([
                     updateBar();
                 }
             });
+        
+        $('#consumption #switch_scenario').click(function (e) {
+            const $t = $(this);
+            scenario = ($t.text() === 'Революційний') ? 'Базовий' : 'Революційний';
+            datYear = nest_year[scenario];
+            datLines = nest_vde[scenario];
+            updateLines();
+            updateBar();
+            $t.text(scenario);
+        })
+        
     });
 
 Promise.all([
-    d3.csv('data/costs_agg.csv', numericalize)
+    d3.csv('data/costs_agg_wide.csv', numericalize)
 ])
     .then(function ([data]) {
         const nested = d3.nest()
-            .key(d => d.scenario)
             .key(d => d.action)
+            .key(d => d.scenario)
             .entries(data);
         
-        const legend = d3.select('#costs #costs-legend')
-            .selectAll('p.legend')
-            .data(nested[1].values.map(d => d.key))
-            .enter()
-            .append('p')
-            .classed('legend', true)
-            .attr('data-expense', d => d);
+        // const scaleColor = d3.scaleOrdinal()
+        //     .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
+        //     .range(['#e7298a','#d95f02','#7570b3','#1b9e77','#66a61e']);
 
         const scaleColor = d3.scaleOrdinal()
-            .domain(['Вартість палива', 'Витрати на транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
-            .range(['#e7298a','#d95f02','#7570b3','#1b9e77','#66a61e']);
-        
-        const legendMarks = legend.append('svg')
-            .attr('width', '1em')
-            .attr('height', '1em')
-            .attr('viewBox', '-50 -50 100 100')
-            .append('circle')
-            .attr('cx', 0)
-            .attr('cy', 0)
-            .attr('r', 45)
-            .style('fill', d => scaleColor(d));
+            .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
+            .range(['#ee4d30','#241d58','#f69a33','#1dada6','#81b652']);
 
-        legend.append('span').text(d => d);
+        let activeYear = '2050';
         
-        const figDivs = d3.select('#costs figure')
-            .selectAll('div.byType')
-            .data(nested)
-            .enter()
-            .append('div')
-            .classed('byType', true)
-            .attr('id', d => (d.key === 'Консервативний') ? 'base-scen' : 'rev-scen');
-        
-        const svgs = figDivs.append('svg')
+        const svg = d3.select('#costs figure svg')
             .attr('height', function () {
                 return $(this).parent().height();
             })
@@ -455,100 +448,301 @@ Promise.all([
                 return $(this).parent().width();
             });
 
-        const svgW = parseInt(svgs.attr('width'));
-        const svgH = parseInt(svgs.attr('height'));
+        const circleR = 5;
+        
+        const svgW = parseInt(svg.attr('width'));
+        const svgH = parseInt(svg.attr('height'));
         const svgM = {
-            top: svgH * 0.05,
-            right: svgW * 0.05,
-            bottom: svgH * 0.05,
-            left: svgW * 0.05
+            top: fontSize * 2.5,
+            right: circleR + 1,
+            bottom: fontSize * 1,
+            left: 1,
         };
 
-        const scaleYear = d3.scaleLinear()
-            .domain([2015, 2050])
-            .range([svgM.left, svgW - svgM.right]);
-
         const scaleExpence = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.m_euro)])
-            .range([svgH - svgM.top, svgM.bottom]);
-        
-        const xAxis = d3.axisBottom(scaleYear)
-            .tickValues([2015, 2050])
-            .tickFormat(d => d.toString())
-        
-        const gXAxis = svgs.append('g')
-            .attr('id', 'cost_ax_x');
-        
-        gXAxis.call(xAxis)
-            .attr('transform', `translate(0 ${scaleExpence(0) + fontSize / 2})`);
+            .domain([0, 60000])
+            .range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
 
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (scaleExpence.range()[0]));
+        const getTextLen = function () {
+            const t = svg.append('text')
+                .text('Енергоспоживання');
+            const w = t.node().getComputedTextLength();
+            t.remove();
+            return w;
+        };
         
+        const labW = getTextLen();
+
+        const labs = svg.append('g')
+            .attr('id', 'labels')
+            .selectAll('text.lab')
+            .data(nested)
+            .enter()
+            .append('text')
+            .classed('lab', true)
+            .text(d => d.key)
+            .attr('data-cost', d => d.key)
+            .style('fill', d => chroma(scaleColor(d.key)).darken(2))
+            .each(function () {
+                const text = d3.select(this),
+                    words = text.text().split(/\s+/).reverse(),
+                    lineH = 1.1;
+
+                let word = null,
+                    line=[],
+                    tspan = text.text(null)
+                        .append('tspan')
+                        .attr('x', 0)
+                        .attr('dy', 0);
+
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(' '));
+                    if (tspan.node().getComputedTextLength() > labW) {
+                        line.pop();
+                        tspan.text(line.join(' '));
+                        line = [word];
+                        tspan = text.append('tspan')
+                            .attr('x', 0)
+                            .attr('dy', `${lineH}em`)
+                            .text(word);
+                    }
+                }
+            });
+        
+        const checkOverlap = function () {
+            labs.sort((a, b) => {
+                return scaleExpence(a.values[0].values[0][activeYear]) < scaleExpence(b.values[0].values[0][activeYear])
+                ? 1 : -1;
+            })
+                .transition()
+                .duration(200)
+                .attr('y', function (d) {
+                    const h0 = this.getBBox().height,
+                        y0 = scaleExpence(d.values[0].values[0][activeYear]);
+                    if (! this.previousSibling) {
+                        this.__data__['y'] = y0;
+                        return y0;
+                    }
+                    const y1 = this.previousSibling.__data__.y;
+                    if (y0 + h0 + fontSize*0.375 <= y1) {
+                        this.__data__['y'] = y0;
+                        return y0;
+                    }
+                    this.__data__['y'] = y1 - fontSize*0.375 - h0;
+                    return d.y;
+                })
+        };
+
+        checkOverlap();
+
+        const textX = svg.select('#labels').node().getBBox().width;
+
+        svgM.left = textX + fontSize * 0.5 + circleR * 2;
+        labs.style('text-anchor', 'start')
+            .attr('x', svgM.left - fontSize*0.5 - circleR * 2);
+        
+        labs.selectAll('tspan')
+            .attr('x', function() { return textX - this.getComputedTextLength(); });
+        
+        const scaleScen = d3.scalePoint()
+            .domain(['Консервативний', 'Революційний'])
+            .range([svgM.left, svgW - svgM.right]);
+        
+        const [x1, x2] = scaleScen.range();
+
+        const xAxis = d3.axisTop(scaleScen);
+            // .tickValues([2015, 2050])
+
+        const rectSepJchart = svg.append('path')
+            .attr('id', 'jsep')
+            // .attr('d', `M${scaleScen.range()[0]} ${scaleExpence.range()[1] - circleR*0.7}
+            //             L${scaleScen.range()[1]} ${scaleExpence.range()[1] - circleR*0.7}`);
+            .attr('d', `M${scaleScen.range()[0]} ${scaleExpence.range()[1]}
+                        L${scaleScen.range()[1]} ${scaleExpence.range()[1]}
+                        L${scaleScen.range()[1]} ${fontSize}
+                        L${scaleScen.range()[0]} ${fontSize}
+                        `);
+
+        const gXAxis = svg.append('g')
+            .attr('id', 'cost_ax_x')
+            .call(xAxis)
+            .attr('transform', `translate(0 ${svgM.bottom})`);
+        //
+        gXAxis.selectAll('.tick line')
+            .attr('y1', (scaleExpence.range()[0]))
+            .attr('y2', 0);
+
         gXAxis.selectAll('path').remove();
         
-        const tipLine = svgs.append('line')
-            .attr('id', 'slope-tip')
-            .attr('x1', scaleYear(2015))
-            .attr('x2', scaleYear(2050))
-            .attr('y1', 0)
-            .attr('y2', 0);
-        
-        const slopeGs = svgs.selectAll('g.slope')
-            .data(d => d.values)
+        const yLabs = svg.selectAll('text.y_lab')
+            .data(scaleExpence.domain())
+            .enter()
+            .append('text')
+            .classed('y_lab', true)
+            .text(d => nform(d))
+            .attr('y', d => scaleExpence(d))
+            .attr('x', x1 + 2);
+
+        const slopeGs = svg.selectAll('g.slope')
+            .data(nested)
             .enter()
             .append('g')
             .classed('slope', true)
-            .on('mouseover', function (d) {
-                const tipDat = slopeCircles
-                    .filter(val => val.action === d.key);
-                
-                tipLine
-                    .attr('y1', function (val) {
-                        return scaleExpence(tipDat.data()
-                            .filter(d => d.scenario === val.key && d.year === 2050)[0].m_euro);
-                    })
-                    .attr('y2', function () { return this.getAttribute('y1'); })
-                    .classed('active', true);
-                
-                legend.filter(val => val === d.key)
-                    .classed('active', true);
-                
-                tipDat.each(function () {
-                    this._tippy.show(500);
-                })
+            .attr('data-cost', d => d.key);
+        
+        $('#costs [data-cost]')
+            .css('cursor', 'pointer')
+            .on('mouseover', function () {
+                const c = $(this).data('cost');
+                $(`g.slope[data-cost="${c}"] circle`)
+                    .each(function() {this._tippy.show(500)});
+                $('#costs svg [data-cost]')
+                    .not(`[data-cost="${c}"]`)
+                    .addClass('blured');
             })
             .on('mouseout', function () {
-                tipLine.classed('active', false);
-                legend.classed('active', false);
                 tippy.hideAllPoppers();
+                $('.blured').removeClass('blured');
             });
-        
-        const slopeLines = slopeGs
-            .append('line')
-            .attr('x1', d => scaleYear(d.values[0].year))
-            .attr('x2', d => scaleYear(d.values[1].year))
-            .attr('y1', d => scaleExpence(d.values[0].m_euro))
-            .attr('y2', d => scaleExpence(d.values[1].m_euro))
-            .style('stroke', d => scaleColor(d.key));
 
-        const circleR = 5;
+        const slopeLines = slopeGs
+            .append('path')
+            .attr('d', d => `M ${x1} ${scaleExpence(d.values[0].values[0][activeYear])} L${x2} ${scaleExpence(d.values[1].values[0][activeYear])}`)
+            .style('stroke', d => scaleColor(d.key));
         
         const slopeCircles = slopeGs.selectAll('circle')
             .data(d => d.values)
             .enter()
             .append('circle')
-            .attr('cx', d => scaleYear(d.year))
-            .attr('cy', d => scaleExpence(d.m_euro))
+            .attr('cx', d => scaleScen(d.key))
+            .attr('cy', d => scaleExpence(d.values[0][activeYear]))
             .attr('r', circleR)
-            .style('fill', d => scaleColor(d.action));
+            .style('fill', d => scaleColor(d.values[0].action));
+
+        const slopeHelpers = slopeLines.clone()
+            .style('stroke-opacity', 0)
+            .style('stroke-width', 10)
+            .style('fill', 'none');
+
+        const bubleH = scaleExpence.range()[1] - fontSize;
+
+        const scaleR = d3.scaleLinear()
+            .domain([0, 116000])
+            .range([0, d3.min([
+                rectSepJchart.node().getBBox().width * 0.6,
+                bubleH
+            ])]);
+
+        const totalBubbles = svg.selectAll('path.t_bubble')
+            .data(d3.nest()
+                .key(d => d.scenario)
+                .entries(data)
+            )
+            .enter()
+            .append('path')
+            .classed('t_bubble', true)
+            .attr('d', function (d) {
+                const r = scaleR(d3.sum(d.values, a => a[activeYear])),
+                    my = d.key === 'Консервативний'
+                        ? r + (bubleH - r) / 2 + fontSize
+                        : (bubleH - r) / 2 + fontSize,
+                    ar = d.key === 'Консервативний' ? -r : r;
+
+                return `M ${scaleScen(d.key)} ${my}
+                        a1,1 0 0,0 0,
+                        ${ar}`
+            })
+            .style('fill', d => d.key === 'Консервативний' ? cols.orange : cols.green)
+            .style('stroke', d => d.key === 'Консервативний' ? cols.orange : cols.green);
+
+        const totalBLab = svg.append('text')
+            .attr('id', 't_bubble_lab')
+            .text('Загалом')
+            .attr('x', textX)
+            .attr('y', bubleH / 2 + fontSize)
+            .style('dominant-baseline', 'middle')
+            .style('text-anchor', 'end');
+
+        const totalBVal = svg.selectAll('text.t_bubble_val')
+            .data(totalBubbles.data())
+            .enter()
+            .append('text')
+            .classed('t_bubble_val', true)
+            .text(d => nform(d3.sum(d.values, a => a[activeYear])))
+            .attr('x', d => scaleScen(d.key))
+            .attr('y', function (_, i) {
+                return totalBubbles.nodes()[i].getBBox().y - fontSize*0.3;
+            })
+            .style('fill', d => d.key === 'Консервативний'
+                ? chroma(cols.orange).darken()
+                : chroma(cols.green).darken()
+            )
+            .style('text-anchor', d => d.key === 'Консервативний' ? 'start' : 'end');
+        
+        const updSlopes = function () {
+            slopeGs.selectAll('path')
+                .transition()
+                .duration(600)
+                .attr('d', d => `M ${x1} ${scaleExpence(d.values[0].values[0][activeYear])}
+                                 L${x2} ${scaleExpence(d.values[1].values[0][activeYear])}`);
+
+            slopeCircles
+                .transition()
+                .duration(600)
+                .attr('cx', d => scaleScen(d.key))
+                .attr('cy', d => scaleExpence(d.values[0][activeYear]));
+
+            totalBubbles
+                .transition()
+                .duration(600)
+                .attr('d', function (d) {
+                    const r = scaleR(d3.sum(d.values, a => a[activeYear])),
+                        my = d.key === 'Консервативний'
+                            ? r + (bubleH - r) / 2 + fontSize
+                            : (bubleH - r) / 2 + fontSize,
+                        ar = d.key === 'Консервативний' ? -r : r;
+                    
+                    return `M ${scaleScen(d.key)} ${my}
+                        a1,1 0 0,0 0,
+                        ${ar}`
+                });
+
+            totalBVal
+                .transition()
+                .duration(600)
+                .text(d => nform(d3.sum(d.values, a => a[activeYear])))
+                .attr('y', function (d) {
+                    const r = scaleR(d3.sum(d.values, a => a[activeYear]));
+                    return (bubleH - r) / 2 + fontSize*0.7;
+                });
+
+            checkOverlap();
+        };
+
+        $('#costs .h3 i').click(function () {
+            const $t = $(this);
+            if ($t.hasClass('active')) {
+                const $sp = $t.siblings('span'),
+                    dir = $t.hasClass('fa-caret-left') ? -1 : 1;
+                activeYear = (parseInt($sp.text()) + 5 * dir).toString();
+                if (activeYear === '2050' || activeYear === '2015') {
+                    $t.removeClass('active');
+                } else if (activeYear === '2045' || activeYear === '2020') {
+                    $t.siblings('i').addClass('active');
+                }
+
+                $sp.text(activeYear);
+                updSlopes();
+            }
+        });
         
         const slopeTippy = tippy(document.querySelectorAll('#costs g.slope circle'), {
             animation: 'fade',
-            content: function (ref) {
-                return `
-                <p>${d3.format(",.2r")(ref.__data__.m_euro)} млн. €</p>
-                `;
+            onShow(tip) {
+                tip.setContent(`
+                <p class="sm">${nform(tip.reference.__data__.values[0][activeYear])} млн. €</p>
+                `)
             },
             trigger: 'manual',
         });

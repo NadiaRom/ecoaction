@@ -1,7 +1,8 @@
 $green: #658b5b;
 $red: #f16f39;
-$fontcol: #2c2c2c;
-$bgcol: #fff;
+$blue: #608cc4;
+$fontcol: rgb(51, 51, 51);
+$bgcol: rgb(238, 242, 245);
 $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
 @font-face {
   font-family: bebas;
@@ -58,7 +59,7 @@ header {
     padding: 1em 0 0 0;
     text-align: center;
     font-weight: 400;
-    color: #608cc4;
+    color: $blue;
     background-color: #faf9e1;
   }
 
@@ -101,9 +102,60 @@ main {
   }
 }
 
+#why {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 3em 1em 2em 1em;
+
+  @media #{$medium} {
+    margin: 3em 10% 2em 10%;
+  }
+
+  @media #{$large} {
+    margin: 3em 20% 2em 20%;
+  }
+
+  h3 {
+    grid-column: 1 / -1;
+    margin: 0 0 1em 0;
+  }
+
+  ul {
+    padding: 0;
+    list-style-type: none;
+    pointer-events: auto;
+
+    &#why_soc {
+      margin: 0 2em 0 0;
+    }
+
+    &#why_ec {
+      margin: 0 0 0 2em;
+    }
+
+    li {
+      margin: 0 0 1.5em 0;
+    }
+  }
+
+  i {
+    font-size: 0.5em;
+    color: $green;
+  }
+}
+
 #consumption {
   padding: 0;
-  margin: 0;
+  margin: 0 1em 0 1em;
+
+  @media #{$medium} {
+    margin: 0 5% 0 10%;
+  }
+
+  @media #{$large} {
+    margin: 0 10% 0 20%;
+  }
+
 
   .fig_container {
     min-height: 100vh;
@@ -115,15 +167,20 @@ main {
   }
 
   .h3 {
-    padding: 1em 10% 1em 10%;
+    padding: 1em 0 1em 0;
     font-size: 1rem;
     grid-row: 1 / 2;
     grid-auto-column: 1 / -1;
   }
 
+  #switch_scenario {
+    border-bottom: 2px solid $blue;
+    cursor: pointer;
+  }
+
   figure {
     padding: 0;
-    margin: 0 10% 0 10%;
+    margin: 0 2em 0 0;
     display: grid;
     grid-gap: 2em;
     grid-template-rows: 1fr;
@@ -215,22 +272,44 @@ main {
 
         &.active {
           font-weight: 600;
-          font-size: 1.25rem;
+          font-size: 1.25em;
+        }
+      }
+
+      #y_axis {
+        path {
+          opacity: 0;
+        }
+
+        line {
+          fill: lighten($fontcol, 85%);
         }
       }
 
       circle {
         cursor: pointer;
       }
+
+      textPath {
+        fill: lighten($fontcol, 20%)
+      }
     }
   }
 
   article#explanation {
     padding: 0;
-    margin: 0 7.5% 0 57.5%;
+    margin: 0 1em 0 1em;
     pointer-events: none;
     z-index: 1;
     position: relative;
+
+    @media #{$medium} {
+      margin: 0 -5% 0 calc(50% + 3em);
+    }
+
+    @media #{$large} {
+      margin: 0 -10% 0 calc(50% + 4em);
+    }
 
     h4 {
       padding: 0;
@@ -272,133 +351,125 @@ main {
 #costs {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto 1fr auto;
-  padding: 1em 2em 1em 2em;
+  grid-template-columns: 1.5fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  padding: 1em 0 0 0;
+  margin: 0 1em 0 1em;
 
-  h3 {
-    grid-column: 1 / -1;
-    padding: 1em 0 1em 0;
-    margin: 1em 0 1em 0;
+  @media #{$medium} {
+    margin: 0 10% 0 10%;
   }
 
-  p {
+  @media #{$large} {
+    margin: 0 20% 0 20%;
+  }
+
+  .h3 {
+    grid-column: 1 / -1;
     padding: 0;
-    margin: 0 0 1em 0;
+    margin: 0 0 2em 0;
+
+    p {
+      padding: 0;
+      margin: 0 0 1em 0;
+    }
+
+    i {
+      color: lighten($fontcol, 40%);
+      transition: color 1s;
+
+      &.active {
+        color: $blue;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .data_caption {
+    grid-column: 1 / -1;
+    margin: 2em 0 0 0;
   }
 
   figure {
-    display: grid;
     padding: 0;
-    margin: 0;
-    grid-template-columns: 1fr 20em 1fr;
-    grid-template-rows: auto 1fr;
-    grid-gap: 2em;
+    margin: 0 2em 2em 0;
 
-    .h5 {
-      margin: 1em 0 0 1em;
-      font-size: 1em;
+    svg {
+      overflow: visible;
+    }
 
-      &.dirt {
-        grid-column: 1 / 2;
-      }
+    path#jsep {
+      //stroke: lighten($fontcol, 30%);
+      //stroke-dasharray: 2px 1px;
+      //stroke-linecap: round;
+      fill: rgba($fontcol, 0.05);
+    }
 
-      &.vde {
-        grid-column: 3 / 4;
-      }
+    path.t_bubble {
+      fill-opacity: 0.5;
+    }
 
-      p {
-        margin: 0;
-        padding: 0;
+    text.lab, #t_bubble_lab, text.t_bubble_val {
+      font-family: $fontfam;
+      font-size: 0.75em;
+      //dominant-baseline: text-after-edge;
+      transition: opacity 0.5s;
+    }
 
-        span {
-          font-weight: 500;
-        }
-      }
+    #t_bubble_lab {
+      fill: lighten($fontcol, 30%);
+    }
 
-      h5 {
-        font-size: 1em;
-        padding: 0;
-        margin: 0;
+    .slope {
+      cursor: pointer;
+      transition: all 0.5s;
+
+      path {
+        stroke-width: 2;
       }
     }
 
-    #costs-legend {
-      grid-column: 2 / 3;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
+    .blured {
+      opacity: 0.33;
+    }
 
-      svg {
-        display: inline;
-        margin: 0 1em 0 0;
+    text.y_lab {
+      font-size: 0.75em;
+      fill: rgba($fontcol, 0.7);
+      dominant-baseline: text-before-edge;
+    }
+
+    #cost_ax_x {
+      text {
+        font-family: $fontfam;
+        font-size: 0.75rem;
+        color: $fontcol;
+        //dominant-baseline: text-after-edge;
       }
 
-      p.legend {
-        margin: 0 0.75em 0 0.75em;
-        padding: 0.5em;
-        box-shadow: 0 0 0 0 transparent;
-        transition: all 0.5s;
-
-        &.active {
-          box-shadow: 0 0 0.5em 0 darken($bgcol, 15%);
-        }
+      line {
+        stroke: lighten($fontcol, 50%);
       }
+    }
+  }
 
+  article {
+    line-height: 1.75;
+    padding: 0;
+    margin: 0 0 0 2em;
+
+    strong {
+      font-weight: 800;
     }
 
-    .byType#base-scen {
-      grid-column: 1 / 2;
-      grid-row: 2 / 3;
+    [data-cost="Вартість палива"] {
+      border-bottom: 2px solid rgba(#ee4d30, 1);
+      cursor: pointer;
     }
 
-    .byType#rev-scen {
-      grid-column: 3 / 4;
-      grid-row: 2 / 3;
-    }
-
-    .byType {
-
-      svg {
-        overflow: visible;
-
-        .slope {
-          cursor: pointer;
-          line {
-            stroke-width: 3;
-          }
-        }
-
-        line#slope-tip {
-          opacity: 0;
-          stroke: lighten($fontcol, 50%);
-          stroke-dasharray: 2 2;
-          stroke-width: 3;
-          transition: all 0.5s;
-
-          &.active {
-            opacity: 1;
-          }
-        }
-
-        #cost_ax_x {
-          text {
-            font-family: $fontfam;
-            font-size: 1rem;
-          }
-
-          line {
-            stroke: lighten($fontcol, 50%);
-          }
-        }
-      }
-
-    }
-
-    p {
-      font-size: 0.85em;
-      margin: 0;
-      padding: 1em 0 1em 0;
+    [data-cost="Капітальні інвестиції"] {
+      border-bottom: 2px solid rgba(#1dada6, 1);
+      cursor: pointer;
     }
   }
 }
@@ -416,7 +487,7 @@ span.dirt {
   div.tippy-tooltip {
     color: $fontcol;
     font-size: 1rem;
-    padding: 0.75em !important;
+    padding: 0.25em !important;
     box-shadow: 0 0 0.5em 1px darken($bgcol, 10%);
   }
 
@@ -427,6 +498,10 @@ span.dirt {
   p {
     margin: 0 0 0 0;
     padding: 0 0 0 0;
+
+    &.sm {
+      font-size: 0.75em;
+    }
   }
 
 }
