@@ -646,8 +646,8 @@ Promise.all([
         const scaleR = d3.scaleLinear()
             .domain([0, 116000])
             .range([0, d3.min([
-                rectSepJchart.node().getBBox().width * 0.6,
-                bubleH
+                rectSepJchart.node().getBBox().width,
+                bubleH - fontSize*3
             ])]);
 
         const totalBubbles = svg.selectAll('path.t_bubble')
