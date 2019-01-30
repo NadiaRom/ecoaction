@@ -92,6 +92,15 @@ main {
   transition: background-color 0.5s;
   &.dark {
     background-color: $fontcol;
+
+    div.tippy-tooltip {
+      color: $bgcol;
+      box-shadow: 0 0 0.5em 1px lighten($fontcol, 10%);
+    }
+
+    .tippy-backdrop {
+      background-color: rgba($fontcol, 0.8);
+    }
   }
 
   .data_caption {
@@ -528,7 +537,7 @@ span.dirt {
   }
 
   .tippy-backdrop {
-    background-color: rgba($bgcol, 0.75);
+    background-color: rgba($bgcol, 0.8);
   }
 
   p {

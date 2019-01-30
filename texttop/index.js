@@ -291,6 +291,7 @@ Promise.all([
 
         const lineTip = tippy(lineTipSelection, {
             animation: 'fade',
+            appendTo: document.querySelector('main'),
             onShow: function (tip) {
                 const d = tip.reference.__data__;
                 const is_vde = d.by_vde || (sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt'
@@ -386,6 +387,7 @@ Promise.all([
 
         const dragMeTip = tippy(document.querySelectorAll('#lines #year_dragger'), {
             trigger: 'manual',
+            appendTo: document.querySelector('main'),
             animation: 'fade',
             placement: 'top',
             content: `
