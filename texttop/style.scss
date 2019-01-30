@@ -1,6 +1,7 @@
-$green: #658b5b;
-$red: #f16f39;
+$green: #3bdf14;
+$red: #ce73e9;
 $blue: #608cc4;
+$calmgreen: #658b5b;
 $fontcol: rgb(51, 51, 51);
 $bgcol: rgb(238, 242, 245);
 $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
@@ -48,7 +49,7 @@ header {
   img {
     width: 100%;
     height: auto;
-    background-color: $green;
+    background-color: $calmgreen;
     padding: 0 0 1.5em 0;
   }
 
@@ -159,17 +160,22 @@ main {
   }
 }
 
+#switch_scenario {
+  border-bottom: 2px solid $blue;
+  cursor: pointer;
+}
+
 #consumption {
   padding: 0;
-  margin: 0 1em 0 1em;
+  margin: 1em 1em 0 1em;
   transition: color 0.5s, fill 0.5s, stroke 0.5s, background-color 0.5s;
 
   @media #{$medium} {
-    margin: 0 5% 0 10%;
+    margin: 1em 5% 0 10%;
   }
 
   @media #{$large} {
-    margin: 0 10% 0 20%;
+    margin: 1em 10% 0 20%;
   }
 
 
@@ -187,11 +193,6 @@ main {
     font-size: 1rem;
     grid-row: 1 / 2;
     grid-auto-column: 1 / -1;
-  }
-
-  #switch_scenario {
-    border-bottom: 2px solid $blue;
-    cursor: pointer;
   }
 
   figure {
@@ -278,7 +279,7 @@ main {
 
         line {
           stroke-width: 2;
-          stroke: lighten($fontcol, 30%);
+          stroke: $blue;
         }
       }
 
@@ -365,20 +366,19 @@ main {
   }
 }
 
-#consumption.dark {
+section.dark {
   color: $bgcol;
 
   text {
     fill: $bgcol
   }
 
-  #year_dragger line {
-      stroke-width: 2;
-      stroke: darken($bgcol, 30%);
+  .tick line {
+    stroke: lighten($fontcol, 50%);
   }
 
   #y_axis line {
-      fill: darken($bgcol, 40%);
+    fill: lighten($fontcol, 50%);
   }
 
   textPath {
@@ -389,8 +389,6 @@ main {
     background: lighten($fontcol, 3%) !important;
     box-shadow: 0 0.1em 0.4em -0.1em rgba(lighten($fontcol, 50%), 0.85) !important;
   }
-
-
 }
 
 #costs {
@@ -399,20 +397,20 @@ main {
   grid-template-columns: 1.5fr 1fr;
   grid-template-rows: auto 1fr auto;
   padding: 1em 0 0 0;
-  margin: 0 1em 0 1em;
+  margin: 1em 1em 0 1em;
 
   @media #{$medium} {
-    margin: 0 10% 0 10%;
+    margin: 1em 10% 0 10%;
   }
 
   @media #{$large} {
-    margin: 0 20% 0 20%;
+    margin: 1em 20% 0 20%;
   }
 
   .h3 {
     grid-column: 1 / -1;
     padding: 0;
-    margin: 0 0 2em 0;
+    margin: 0 0 0 0;
 
     p {
       padding: 0;
@@ -437,17 +435,10 @@ main {
 
   figure {
     padding: 0;
-    margin: 0 2em 2em 0;
+    margin: 0 2em 0 0;
 
     svg {
       overflow: visible;
-    }
-
-    path#jsep {
-      //stroke: lighten($fontcol, 30%);
-      //stroke-dasharray: 2px 1px;
-      //stroke-linecap: round;
-      fill: rgba($fontcol, 0.05);
     }
 
     path.t_bubble {
@@ -513,12 +504,53 @@ main {
     }
 
     [data-cost="Вартість палива"] {
-      border-bottom: 2px solid rgba(#ee4d30, 1);
+      border-bottom: 2px solid rgba(#ff554e, 1);
     }
 
     [data-cost="Капітальні інвестиції"] {
       border-bottom: 2px solid rgba(#1dada6, 1);
     }
+  }
+}
+
+#general, #general2 {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 1em 0 0 0;
+  margin: 0 1em 0 1em;
+  height: 100vh;
+
+  @media #{$medium} {
+    margin: 0 10% 0 10%;
+  }
+
+  @media #{$large} {
+    margin: 0 20% 0 20%;
+  }
+
+  path.line_gen {
+    stroke-width: 5;
+    stroke-opacity: 0.7;
+    fill: none;
+
+    &.nosource {
+      stroke-width: 2;
+      stroke-dasharray: 5 3;
+    }
+  }
+
+  path.area_gen1 {
+    display: none;
+    fill-opacity: 0.4;
+    stroke: none;
+    mix-blend-mode: overlay;
+  }
+
+  path.area_stack {
+    fill-opacity: 0.7;
+    stroke-opacity: 0.75;
+    stroke-width: 2;
+    mix-blend-mode: multiply;
   }
 }
 
