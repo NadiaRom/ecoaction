@@ -89,6 +89,11 @@ svg text {
 }
 
 main {
+  transition: background-color 0.5s;
+  &.dark {
+    background-color: $fontcol;
+  }
+
   .data_caption {
     font-style: italic;
     color: lighten($fontcol, 40%);
@@ -100,6 +105,7 @@ main {
       //text-decoration-color: $red;
     }
   }
+
 }
 
 #why {
@@ -147,6 +153,7 @@ main {
 #consumption {
   padding: 0;
   margin: 0 1em 0 1em;
+  transition: color 0.5s, fill 0.5s, stroke 0.5s, background-color 0.5s;
 
   @media #{$medium} {
     margin: 0 5% 0 10%;
@@ -289,10 +296,10 @@ main {
       circle {
         cursor: pointer;
       }
-
-      textPath {
-        fill: lighten($fontcol, 20%)
-      }
+      //
+      //textPath {
+      //  fill: lighten($fontcol, 20%)
+      //}
     }
   }
 
@@ -346,6 +353,34 @@ main {
       }
     }
   }
+}
+
+#consumption.dark {
+  color: $bgcol;
+
+  text {
+    fill: $bgcol
+  }
+
+  #year_dragger line {
+      stroke-width: 2;
+      stroke: darken($bgcol, 30%);
+  }
+
+  #y_axis line {
+      fill: darken($bgcol, 40%);
+  }
+
+  textPath {
+    fill: darken($bgcol, 20%);
+  }
+
+  .text {
+    background: lighten($fontcol, 3%) !important;
+    box-shadow: 0 0.1em 0.4em -0.1em rgba(lighten($fontcol, 50%), 0.85) !important;
+  }
+
+
 }
 
 #costs {

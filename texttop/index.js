@@ -363,7 +363,12 @@ Promise.all([
             sourceLine.data(datLines)
                 .transition()
                 .duration(500)
-                .attr('d', d => line(d.values.slice(1)));
+                .attr('d', d => line(d.values.slice(1)))
+                .on('end', function () {
+                    textPath.transition()
+                        .duration(500)
+                        .attr('href', d => `#line_${d.key}`);
+                });
             
             dotsG.data(datLines);
             
@@ -407,10 +412,21 @@ Promise.all([
                     updateLines();
                     updateBar();
                 }
+            })
+            .onContainerExit(function (r) {
+                $('#consumption').removeClass('dark');
+                $('main').removeClass('dark');
+                scenario = 'Революційний';
+                datYear = nest_year[scenario];
+                datLines = nest_vde[scenario];
+                $('#consumption #switch_scenario').text('Революційний');
+
             });
         
         $('#consumption #switch_scenario').click(function (e) {
             const $t = $(this);
+            $('#consumption').toggleClass('dark');
+            $('main').toggleClass('dark');
             scenario = ($t.text() === 'Революційний') ? 'Базовий' : 'Революційний';
             datYear = nest_year[scenario];
             datLines = nest_vde[scenario];
