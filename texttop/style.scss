@@ -296,10 +296,11 @@ main {
       circle {
         cursor: pointer;
       }
-      //
-      //textPath {
-      //  fill: lighten($fontcol, 20%)
-      //}
+
+      textPath {
+        white-space: pre;
+        font-size: 0.85em;
+      }
     }
   }
 

@@ -187,7 +187,7 @@ Promise.all([
             .append('text')
             .append('textPath')
             .attr('href', d => `#line_${d.key}`)
-            .text(d => (d.key === 'vde') ? '   Зелена енергія' : '   Невідновлювані джерела')
+            .text(d => (d.key === 'vde') ? '    Зелена енергія' : '    Невідновлювані джерела');
 
         // Dragger created here, to be before dots
         const dragger = linesSvg.append('g')
@@ -365,8 +365,8 @@ Promise.all([
                 .duration(500)
                 .attr('d', d => line(d.values.slice(1)))
                 .on('end', function () {
-                    textPath.transition()
-                        .duration(500)
+                    textPath
+                        .attr('href', null)
                         .attr('href', d => `#line_${d.key}`);
                 });
             
