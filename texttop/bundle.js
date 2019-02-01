@@ -38035,24 +38035,31 @@ Promise.all([
     d3.csv('data/eresources_long.csv', numericalize),
 ])
     .then(function ([data]) {
+        const sourcesList = [
+            "Біопаливо та відходи",
+            "Гідро",
+            "Вітер",
+            "Сонце",
+            "Ресурс для АЕС",
+            "Вугілля",
+            "Газ",
+            "Нафта",
+        ]
+        
         const nested = d3.nest()
-            .key(d => d.source)
             .key(d => d.year)
-            .entries(data);
+            .entries(data
+                .filter(d => ['Всього', 'Імпорт'].indexOf(d.source) === -1)
+                .sort((a, b) => (sourcesList.indexOf(a.source) > sourcesList.indexOf(b.source) ? 1 : -1))
+            );
 
-        const maxKTNE = {
-            // 'Революційний': 105000, //46899
-            // 'Базовий': 170000, //90027
-            'Революційний': 50000, //46899
-            'Базовий': 90000, //90027
-        },
-            svgW = $('#general figure').width(),
+        const svgW = $('#general figure').width(),
             svgH = $('#general figure').height(),
             svgM = {
                 top: fontSize,
-                right: svgW*0.15,
+                right: fontSize,
                 bottom: fontSize * 3,
-                left: svgW * 0.15,
+                left: fontSize,
             };
 
         let scenario = 'Революційний';
@@ -38061,71 +38068,98 @@ Promise.all([
             .attr('width', svgW)
             .attr('height', svgH);
 
-        const scaleYear = d3.scaleLinear()
-            .domain([2015, 2050])
-            .range([svgM.left, svgW - svgM.right]);
+        const scaleYear = d3.scaleBand()
+            .domain(nested.map(d => d.key))
+            .range([svgM.left, svgW - svgM.right])
+            .padding(0.2);
+
+        const scaleSource = d3.scaleBand()
+            .domain(sourcesList)
+            .range([0, scaleYear.bandwidth()])
+            .padding(0.1);
+        
+        const strokeWidth = d3.min([scaleSource.bandwidth() / 4, 2.5])
 
         const scaleKTNE = d3.scaleLinear()
-            .domain([0.0, maxKTNE[scenario]])
-            .range([svgH - svgM.top, svgM.bottom]);
-
-        const line = d3.line()
-            .x(d => scaleYear(d.values[0].year))
-            .y(d => scaleKTNE(d.values[0][scenario]))
-            .curve(d3.curveCatmullRom);
+            .domain([0, 50000])
+            .range([0, svgH / 2 - svgM.top]);
 
         const area = d3.area()
-            .x(d => scaleYear(d.values[0].year))
-            .y0(scaleKTNE(0))
-            .y1(d => scaleKTNE(d.values[0][scenario]))
-            .curve(d3.curveCatmullRom);
+            .x((d, i) => {
+                if (i === 0) {
+                    return scaleYear(d.year) - strokeWidth;
+                } else if (i === 8) {
+                    return scaleYear(d.year) + scaleSource(d.source) + scaleSource.bandwidth() / 2;
+                } else {
+                    return scaleYear(d.year) + scaleSource(d.source);
+                }
+            })
+            .y1(d => svgH/2 + scaleKTNE(d[scenario]))
+            .y0(d => svgH/2 - scaleKTNE(d[scenario]))
+            .curve(d3.curveStep);
 
         const xAxis = d3.axisBottom(scaleYear)
             .ticks(8)
             .tickFormat(d => d.toString());
 
-        const yAxis = d3.axisRight(scaleKTNE)
-            .ticks(10)
-            .tickFormat(d => nform(d));
-
         const gXAxis = svg.append('g')
             .attr('id', 'x_ax_gen')
             .call(xAxis)
-            .attr('transform', `translate(0 ${scaleKTNE(0)})`);
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (svgH - svgM.top - svgM.bottom))
-            .attr('y2', 0)
-            .attr('stroke', chroma(cols.black).alpha(0.4))
-            .attr('stroke-dasharray', '2 2');
-        
-        const gYAxis = svg.append('g')
-            .attr('id', 'y_ax_gen')
-            .call(yAxis)
-            .attr('transform', `translate(${scaleYear.range()[1]} 0)`);
+            .attr('transform', `translate(0 ${svgH - svgM.bottom})`);
 
         const scaleColor = d3.scaleOrdinal()
-            .domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце', 'Всього', 'Імпорт',])
-            .range(['#CE73E9','#B766CF','#ff554e','#9654A9','#3BDF14','#3EEC15','#34C512','#2A9F0E', '#686868', '#909192', ]);
+            .domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце',])
+            .range(['#ce73e9','#ce73e9','#ff554e','#ce73e9','#3bdf14','#3bdf14', '#3bdf14', '#3bdf14',]);
         
-        const lines = svg.selectAll('path.line_gen')
+        const areas = svg.append('defs')
+            .selectAll('clipPath.clip_gen')
             .data(nested)
             .enter()
+            .append('clipPath')
+            .classed('clip_gen', true)
+            .attr('id', d => `y${d.key}`)
             .append('path')
-            .attr('data-source', d => d.key)
-            .classed('line_gen', true)
-            .classed('nosource', d => ['Всього', 'Імпорт'].indexOf(d.key) !== -1)
-            .attr('d', d => line(d.values))
-            .style('stroke', d => scaleColor(d.key));
+            .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]));
         
-        const areas = svg.selectAll('path.area_gen1')
-            .data(nested.filter(d => ['Всього', 'Імпорт'].indexOf(d.key) === -1))
+        const linesG = svg.selectAll('g.year')
+            .data(nested)
+            .enter()
+            .append('g')
+            .classed('year', true)
+            .style('clip-path', d => `url(#y${d.key})`);
+
+        const nSteps = 7;
+        const step = (svgH - svgM.top - svgM.bottom) / nSteps;
+        
+        const lines = linesG.selectAll('path.source')
+            .data(d => d.values)
             .enter()
             .append('path')
-            .classed('area_gen1', true)
-            .attr('data-source', d => d.key)
-            .attr('d', d => area(d.values))
-            .style('fill', d => scaleColor(d.key));
+            .classed('source', true)
+            .attr('d', function (d) {
+                const x = scaleYear(d.year) + scaleSource(d.source),
+                    dx = (scaleSource.bandwidth() - strokeWidth) / 2;
+                let i = 0,
+                    p = `M${x} ${svgM.top} `;
+                while (i < nSteps) {
+                    const dir = (i % 2) ? -1 : 1;
+                    p += `q ${dir * dx} ${step / 2} 0 ${step}`;
+                    i ++;
+                }
+                return p;
+            })
+            .style('stroke', d => scaleColor(d.source))
+            .style('stroke-width', strokeWidth)
+            .style('fill', 'none');
+
+        // const areas = svg.selectAll('path.clip_gen')
+        //     .data(nested)
+        //     .enter()
+        //     .append('path')
+        //     .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]))
+        //     .style('fill', '#000')
+        //     .style('fill-opacity', 0.5);
+        
     });
 
 
