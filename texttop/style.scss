@@ -514,29 +514,31 @@ section.dark {
 }
 
 #general, #general2 {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
   padding: 1em 0 0 0;
-  margin: 0 1em 0 1em;
-  height: 100vh;
 
-  @media #{$medium} {
-    margin: 0 10% 0 10%;
-  }
+  .h3, .data_caption {
+    margin: 0 1em 0 1em;
 
-  @media #{$large} {
-    margin: 0 20% 0 20%;
-  }
-
-  path.line_gen {
-    stroke-width: 5;
-    stroke-opacity: 0.7;
-    fill: none;
-
-    &.nosource {
-      stroke-width: 2;
-      stroke-dasharray: 5 3;
+    @media #{$medium} {
+      margin: 0 10% 0 10%;
     }
+
+    @media #{$large} {
+      margin: 0 20% 0 20%;
+    }
+  }
+
+  figure {
+    height: 25em;
+    margin: 0 1em 0 1em;
+
+    @media #{$large} {
+      margin: 0 10% 0 10%;
+    }
+  }
+
+  path#x_helper {
+    fill: darken($bgcol, 5%);
   }
 
   path.area_stack {
@@ -544,6 +546,13 @@ section.dark {
     stroke-opacity: 0.75;
     stroke-width: 2;
     mix-blend-mode: multiply;
+  }
+
+  #legend_gen {
+    text {
+      font-size: 0.75em;
+      fill: $fontcol;
+    }
   }
 }
 

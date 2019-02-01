@@ -38056,10 +38056,10 @@ Promise.all([
         const svgW = $('#general figure').width(),
             svgH = $('#general figure').height(),
             svgM = {
-                top: fontSize,
-                right: fontSize,
-                bottom: fontSize * 3,
-                left: fontSize,
+                top: fontSize*2,
+                right: 1,
+                bottom: fontSize*2,
+                left: 1,
             };
 
         let scenario = 'Революційний';
@@ -38071,14 +38071,14 @@ Promise.all([
         const scaleYear = d3.scaleBand()
             .domain(nested.map(d => d.key))
             .range([svgM.left, svgW - svgM.right])
-            .padding(0.2);
+            .padding((window.innerWidth < 100) ? 0.2 : 0.5);
 
         const scaleSource = d3.scaleBand()
             .domain(sourcesList)
             .range([0, scaleYear.bandwidth()])
-            .padding(0.1);
+            .padding(0.15);
         
-        const strokeWidth = d3.min([scaleSource.bandwidth() / 4, 2.5])
+        const strokeWidth = d3.min([scaleSource.bandwidth() / 3, 2.5]);
 
         const scaleKTNE = d3.scaleLinear()
             .domain([0, 50000])
@@ -38097,6 +38097,18 @@ Promise.all([
             .y1(d => svgH/2 + scaleKTNE(d[scenario]))
             .y0(d => svgH/2 - scaleKTNE(d[scenario]))
             .curve(d3.curveStep);
+
+        const xHelpers = svg.append('path')
+            .attr('id', 'x_helper')
+            .attr('d', [`M${svgM.left + (scaleYear.step() - scaleYear.bandwidth()) / 2} ${svgM.top}`]
+                .concat(Array(nested.length / 2)
+                    .fill(`l${scaleYear.step()} 0
+                           l0 ${svgH - svgM.top - svgM.bottom}
+                           l${scaleYear.step()} 0
+                           l0 -${svgH - svgM.top - svgM.bottom}
+                           `)
+                ).join(' ')
+            );
 
         const xAxis = d3.axisBottom(scaleYear)
             .ticks(8)
@@ -38128,7 +38140,7 @@ Promise.all([
             .classed('year', true)
             .style('clip-path', d => `url(#y${d.key})`);
 
-        const nSteps = 7;
+        const nSteps = Math.floor((svgH - svgM.top - svgM.bottom) / (fontSize*3)) * 2 + 1;
         const step = (svgH - svgM.top - svgM.bottom) / nSteps;
         
         const lines = linesG.selectAll('path.source')
@@ -38138,7 +38150,7 @@ Promise.all([
             .classed('source', true)
             .attr('d', function (d) {
                 const x = scaleYear(d.year) + scaleSource(d.source),
-                    dx = (scaleSource.bandwidth() - strokeWidth) / 2;
+                    dx = scaleSource.bandwidth() / 2 - strokeWidth / 1.5;
                 let i = 0,
                     p = `M${x} ${svgM.top} `;
                 while (i < nSteps) {
@@ -38152,6 +38164,65 @@ Promise.all([
             .style('stroke-width', strokeWidth)
             .style('fill', 'none');
 
+        const legend = svg.append('g')
+            .attr('id', 'legend_gen')
+            .selectAll('g')
+            .data(nested[0].values)
+            .enter()
+            .append('g')
+            .classed('legend_gen_item', true);
+
+        const legendText = legend.append('text')
+            .text(d => d.source)
+            .each(function (d, i) {
+                const t = d3.select(this).select('text');
+                if (!this.previousSibling) {
+                    t.attr('x', svgM.left)
+                        .attr('y', 1);
+                    return;
+                }
+                const prevBBox = d3.select(this.previousSibling)
+                    .select('text')
+                    .node()
+                    .getBBox();
+                const allPrevNodes = legendText.filter((_, j) => j < i).nodes(),
+                    maxX = d3.max(allPrevNodes.map(e => e.getBBox().x + e.getBBox().width)),
+                    maxY = d3.max(lines.nodes(), e => (e.getBBox().x < prevBBox.x + maxX)
+                        ? svgH / 2 - scaleKTNE(v[scenario])
+                        : 0
+                    );
+
+            })
+            .attr('y', fontSize);
+        
+        // let legendSpaceX = d3.max(legendText.nodes(),
+        //         e => e.getBBox().x + e.getBBox().width),
+        //     legendX = parseFloat(legendText.attr('x'));
+        //
+        // const getLegendSpaceY = function () {
+        //     return d3.max(lines.nodes(),
+        //         e => (e.getBBox().x < legendSpaceX)
+        //             ? svgH / 2 - scaleKTNE(e.__data__[scenario])
+        //             : 0
+        //     );
+        // };
+        // let legendSpaceY = getLegendSpaceY();
+        //
+        // legend.each(function (d, i) {
+        //     const t = d3.select(this).select('text');
+        //     const prev = d3.select(this.previousSibling).select('text');
+        //     if (prev.node() && (parseFloat(prev.attr('x')) + fontSize*1.75) < legendSpaceY) {
+        //         legendX = legendSpaceX + fontSize;
+        //         legendSpaceX = d3.max(legend.filter((_, j) => j < i).nodes(),
+        //             e => legendSpaceX + e.getBBox().width
+        //         ) + fontSize;
+        //         legendSpaceY = getLegendSpaceY();
+        //
+        //         t.attr('x', )
+        //     }
+        // })
+        
+        // // clippath checker
         // const areas = svg.selectAll('path.clip_gen')
         //     .data(nested)
         //     .enter()
@@ -38159,6 +38230,8 @@ Promise.all([
         //     .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]))
         //     .style('fill', '#000')
         //     .style('fill-opacity', 0.5);
+        
+        
         
     });
 
