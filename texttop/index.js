@@ -204,8 +204,6 @@ Promise.all([
             .attr('y1', scaleKTNE.range()[0])
             .attr('y2', linesTopY);
 
-
-
         dragger.append('rect')
             .attr('x', dragHelperW / 2 * (-1))
             .attr('y', linesTopY)
@@ -220,6 +218,24 @@ Promise.all([
             .attr('x2', 5)
             .attr('y1', linesTopY)
             .attr('y2', linesTopY);
+
+        // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
+        const navigation = linesSvg.append('g')
+            .attr('id', 'consumption_nav');
+
+        const dragBBox = dragger.node().getBBox();
+
+        navigation.append('text')
+            .text('Потягніть за лінію, щоб переключити рік')
+            .attr('x', dragBBox.x + dragBBox.width / 2 + fontSize * 2)
+            .attr('y', dragBBox.y + fontSize*2);
+
+        navigation.append('path')
+            .attr('id', 'drag_nav')
+            .attr('d', `M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
+                        q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize * 0.5}
+                         ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize*0.5}
+                        `);
 
         // continue dots
 
@@ -305,6 +321,7 @@ Promise.all([
         });
 
         const dragStart = function() {
+            $('#consumption #consumption_nav').css('opacity', 0);
             d3.select(this).classed('active', true);
         };
 
@@ -385,16 +402,6 @@ Promise.all([
 
         // SCROLLAMA -----------------------------------------------------------------------------------------
 
-        const dragMeTip = tippy(document.querySelectorAll('#lines #year_dragger'), {
-            trigger: 'manual',
-            appendTo: document.querySelector('main'),
-            animation: 'fade',
-            placement: 'top',
-            content: `
-        <p>Потягніть лінію, щоб побачити детальні зміни</p>
-        `,
-        })
-
         const scroller = scrollama();
 
         scroller.setup({
@@ -414,6 +421,11 @@ Promise.all([
                     updateLines();
                     updateBar();
                 }
+                // if (r.index === 0) {
+                //     navigation.style('opacity', 1)
+                // } else if (r.index === 1) {
+                //     navigation.style('opacity', 0)
+                // }
             })
             .onContainerExit(function (r) {
                 $('#consumption').removeClass('dark');
@@ -475,7 +487,7 @@ Promise.all([
         const svgW = parseInt(svg.attr('width'));
         const svgH = parseInt(svg.attr('height'));
         const svgM = {
-            top: fontSize * 1,
+            top: fontSize * 0.5,
             right: circleR + 1,
             bottom: fontSize * 1,
             left: 1,
@@ -835,17 +847,17 @@ Promise.all([
             .y0(d => svgH/2 - scaleKTNE(d[scenario]))
             .curve(d3.curveStep);
 
-        const xHelpers = svg.append('path')
-            .attr('id', 'x_helper')
-            .attr('d', [`M${svgM.left + (scaleYear.step() - scaleYear.bandwidth()) / 2} ${svgM.top}`]
-                .concat(Array(nested.length / 2)
-                    .fill(`l${scaleYear.step()} 0
-                           l0 ${svgH - svgM.top - svgM.bottom}
-                           l${scaleYear.step()} 0
-                           l0 -${svgH - svgM.top - svgM.bottom}
-                           `)
-                ).join(' ')
-            );
+        // const xHelpers = svg.append('path')
+        //     .attr('id', 'x_helper')
+        //     .attr('d', [`M${svgM.left + (scaleYear.step() - scaleYear.bandwidth()) / 2} ${svgM.top}`]
+        //         .concat(Array(nested.length / 2)
+        //             .fill(`l${scaleYear.step()} 0
+        //                    l0 ${svgH - svgM.top - svgM.bottom}
+        //                    l${scaleYear.step()} 0
+        //                    l0 -${svgH - svgM.top - svgM.bottom}
+        //                    `)
+        //         ).join(' ')
+        //     );
 
         const xAxis = d3.axisBottom(scaleYear)
             .ticks(8)
@@ -910,7 +922,7 @@ Promise.all([
                 }
             });
         const $nav = $("#general nav p");
-        $nav.html(`${linesGBCR[0].e.__data__.year}<br/>
+        $nav.html(`${linesGBCR[0].e.__data__.year} рік<br/>
                    ${linesGBCR[0].e.__data__.source}: ${nform(linesGBCR[0].e.__data__[scenario])} тис. т н.е.`);
 
         const navHelper = svg.append('path')
@@ -925,7 +937,7 @@ Promise.all([
             const lineDist = linesGBCR.map(d => Math.abs(d.x - eX));
             const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
 
-            $nav.html(`${closestLine.e.__data__.year}<br/>
+            $nav.html(`${closestLine.e.__data__.year}  рік<br/>
                    ${closestLine.e.__data__.source}: ${nform(closestLine.e.__data__[scenario])} тис. т н.е.`);
             
             const navBCR = $nav.get(0).getBoundingClientRect(),
@@ -1149,15 +1161,6 @@ Promise.all([
 
 
 $(document).ready(function () {
-    $('#lines').one('mouseover', function () {
-        const dragMeTipInstance = document.querySelector('#lines #year_dragger')._tippy;
-        dragMeTipInstance.show();
-        setTimeout(function() {
-            dragMeTipInstance.hide();
-            isContainerEnter = false;
-        }, 7000);
-    });
-
     window.addEventListener('scroll', function () {
         tippy.hideAllPoppers();
     });
