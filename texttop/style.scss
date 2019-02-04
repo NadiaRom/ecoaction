@@ -205,6 +205,12 @@ main {
     font-size: 1rem;
     grid-row: 1 / 2;
     grid-auto-column: 1 / -1;
+
+    #h3_sphere {
+      color: $blue;
+      font-size: 0.85em;
+      text-transform: uppercase;
+    }
   }
 
   figure {
@@ -568,6 +574,10 @@ section.dark {
 
   path#x_helper {
     fill: darken($bgcol, 5%);
+    transition: fill 0.5s;
+    &.dark {
+      fill: lighten($fontcol, 5%);
+    }
   }
 
   path.area_stack {

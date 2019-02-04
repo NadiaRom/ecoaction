@@ -408,7 +408,7 @@ Promise.all([
             .onStepEnter(function (r) {
                 if (r.element.id !== 'phantom') {
                     activeSphere = r.element.getAttribute('data-sphere');
-                    $('#consumption .h3 h3 span').text(activeSphere.toLowerCase());
+                    $('#consumption .h3 #h3_sphere').text(activeSphere.toLowerCase());
                     updateLines();
                     updateBar();
                 }
@@ -618,7 +618,7 @@ Promise.all([
             .on('mouseout', function () {
                 tippy.hideAllPoppers();
                 $('.blured').removeClass('blured');
-                $('#costs .active').removeClass('active');
+                $('#costs [data-cost].active').removeClass('active');
             });
 
         const slopeLines = slopeGs
@@ -867,7 +867,6 @@ Promise.all([
             .attr('id', d => `y${d.key}`)
             .append('path')
             .attr('d', d => area([d.values[0]].concat(d.values)));
-            // .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]));
 
         const linesG = svg.selectAll('g.year')
             .data(nested)
@@ -939,7 +938,14 @@ Promise.all([
                         L${x0} ${curveY}
                         L${x1} ${curveY}
                         L${x1} ${y1}`;
-            })
+            });
+        
+        const updClip = function () {
+            areas.transition()
+                .duration(1000)
+                .attr('d', d => area([d.values[0]].concat(d.values)));
+        };
+        
 
         // const legend = svg.append('g')
         //     .attr('id', 'legend_gen')
@@ -1006,7 +1012,6 @@ Promise.all([
 
         const genTip = tippy(document.querySelectorAll('#general path.source'), {
             animation: 'fade',
-            // offset: '0, 0',
             onShow(tip) {
                 const d = tip.reference.__data__;
                 tip.setContent(`<p class="sm">${d.source}: ${nform(d[scenario])} тис. т н.е.</p>`);
@@ -1015,7 +1020,18 @@ Promise.all([
 
                 });
             },
-            // trigger: 'manual',
+        });
+        
+        $('#general .switch_scenario').click(function (e) {
+            const $t = $(this);
+            if ($t.hasClass('active')) { return; }
+            $('#general, #general #x_helper').toggleClass('dark');
+            $('main').toggleClass('dark');
+            $('#general .switch_scenario').removeClass('active');
+            $t.addClass('active');
+            scenario = $.trim($t.text());
+            updClip();
+            
         });
 
 
