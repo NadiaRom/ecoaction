@@ -923,7 +923,7 @@ Promise.all([
                 const x0 = scaleYear(d.year) + scaleSource(d.source),
                     x1 = (pBCR.x > x0)
                         ? pBCR.x - svgBCR.left + fontSize
-                        : p.BCR.x + pBCR.width - svgBCR.left,
+                        : pBCR.x + pBCR.width - svgBCR.left,
                     y0 = scaleKTNE(d[scenario]) + svgH / 2 + fontSize,
                     y1 = pBCR.y - svgBCR.y,
                     curveY = curveYStart + fontSize * 0.15 * (8 - i);

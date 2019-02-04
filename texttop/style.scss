@@ -576,6 +576,12 @@ section.dark {
     }
   }
 
+  g#x_ax_gen {
+    path, line {
+      display: none;
+    }
+  }
+
   #labels_gen {
     position: absolute;
     display: flex;
