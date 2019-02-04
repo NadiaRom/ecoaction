@@ -462,6 +462,20 @@ section.dark {
 
       path {
         stroke-width: 2;
+        stroke: lighten($fontcol, 45%);
+      }
+
+      circle {
+        fill: lighten($fontcol, 45%);
+      }
+
+      &.active {
+        path {
+          stroke: $blue;
+        }
+        circle {
+          fill: $blue;
+        }
       }
     }
 
@@ -480,6 +494,7 @@ section.dark {
         font-family: $fontfam;
         font-size: 0.75rem;
         color: $fontcol;
+        font-weight: 800;
         //dominant-baseline: text-after-edge;
       }
 
@@ -501,15 +516,16 @@ section.dark {
     span[data-cost] {
       cursor: pointer;
       white-space: nowrap;
+      border-bottom: 2px solid $blue;
     }
 
-    [data-cost="Вартість палива"] {
-      border-bottom: 2px solid rgba(#ff554e, 1);
-    }
-
-    [data-cost="Капітальні інвестиції"] {
-      border-bottom: 2px solid rgba(#1dada6, 1);
-    }
+    //[data-cost="Вартість палива"] {
+    //  border-bottom: 2px solid rgba(#ff554e, 1);
+    //}
+    //
+    //[data-cost="Капітальні інвестиції"] {
+    //  border-bottom: 2px solid rgba(#1dada6, 1);
+    //}
   }
 }
 
@@ -531,6 +547,7 @@ section.dark {
   figure {
     height: 25em;
     margin: 0 1em 0 1em;
+    position: relative;
 
     @media #{$large} {
       margin: 0 10% 0 10%;
@@ -548,11 +565,33 @@ section.dark {
     mix-blend-mode: multiply;
   }
 
+  path.source {
+    pointer-events: visibleStroke;
+  }
+
   #legend_gen {
     text {
       font-size: 0.75em;
       fill: $fontcol;
     }
+  }
+
+  #labels_gen {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.75em;
+    fill: $fontcol;
+
+    p {
+      margin: 0 1em 0 0;
+    }
+  }
+
+  path.lab_arrow {
+    fill: none;
+    stroke: $fontcol;
+    stroke-opacity: 0.25;
   }
 }
 

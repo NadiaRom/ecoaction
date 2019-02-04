@@ -148,7 +148,7 @@ Promise.all([
 
         const gXAxis = linesSvg.append('g')
             .attr('id', 'x_axis')
-            .attr('transform', `translate(0 ${scaleKTNE(0)})`)
+            .attr('transform', `translate(0 ${scaleKTNE.range()[0]})`)
             .call(xAxis);
 
         gXAxis.selectAll('.tick text')
@@ -201,7 +201,7 @@ Promise.all([
         dragger.append('line')
             .attr('x1', 0)
             .attr('x2', 0)
-            .attr('y1', scaleKTNE(0))
+            .attr('y1', scaleKTNE.range()[0])
             .attr('y2', linesTopY);
 
 
@@ -498,7 +498,7 @@ Promise.all([
             .classed('lab', true)
             .text(d => d.key)
             .attr('data-cost', d => d.key)
-            .style('fill', d => chroma(scaleColor(d.key)).darken(2))
+            // .style('fill', d => chroma(scaleColor(d.key)).darken(2))
             .each(function () {
                 const text = d3.select(this),
                     words = text.text().split(/\s+/).reverse(),
@@ -603,7 +603,9 @@ Promise.all([
             .css('cursor', 'pointer')
             .on('mouseover', function () {
                 const c = $(this).data('cost');
-                $(`g.slope[data-cost="${c}"] circle`)
+                $(`g.slope[data-cost="${c}"]`)
+                    .addClass('active')
+                    .find('circle')
                     .each(function() {this._tippy.show(500)});
                 $('#costs svg [data-cost]')
                     .not(`[data-cost="${c}"]`)
@@ -612,12 +614,13 @@ Promise.all([
             .on('mouseout', function () {
                 tippy.hideAllPoppers();
                 $('.blured').removeClass('blured');
+                $('#costs .active').removeClass('active');
             });
 
         const slopeLines = slopeGs
             .append('path')
-            .attr('d', d => `M ${x1} ${scaleExpence(d.values[0].values[0][activeYear])} L${x2} ${scaleExpence(d.values[1].values[0][activeYear])}`)
-            .style('stroke', d => scaleColor(d.key));
+            .attr('d', d => `M ${x1} ${scaleExpence(d.values[0].values[0][activeYear])} L${x2} ${scaleExpence(d.values[1].values[0][activeYear])}`);
+            // .style('stroke', d => scaleColor(d.key));
         
         const slopeCircles = slopeGs.selectAll('circle')
             .data(d => d.values)
@@ -625,8 +628,8 @@ Promise.all([
             .append('circle')
             .attr('cx', d => scaleScen(d.key))
             .attr('cy', d => scaleExpence(d.values[0][activeYear]))
-            .attr('r', circleR)
-            .style('fill', d => scaleColor(d.values[0].action));
+            .attr('r', circleR);
+            // .style('fill', d => scaleColor(d.values[0].action));
 
         const slopeHelpers = slopeLines.clone()
             .style('stroke-opacity', 0)
@@ -772,13 +775,14 @@ Promise.all([
             "Газ",
             "Нафта",
         ]
-        
+
         const nested = d3.nest()
             .key(d => d.year)
             .entries(data
                 .filter(d => ['Всього', 'Імпорт'].indexOf(d.source) === -1)
                 .sort((a, b) => (sourcesList.indexOf(a.source) > sourcesList.indexOf(b.source) ? 1 : -1))
-            );
+            )
+            .sort((a, b) => (parseInt(a.key) > parseInt(b.key)) ? 1 : -1);
 
         const svgW = $('#general figure').width(),
             svgH = $('#general figure').height(),
@@ -804,7 +808,7 @@ Promise.all([
             .domain(sourcesList)
             .range([0, scaleYear.bandwidth()])
             .padding(0.15);
-        
+
         const strokeWidth = d3.min([scaleSource.bandwidth() / 3, 2.5]);
 
         const scaleKTNE = d3.scaleLinear()
@@ -849,7 +853,7 @@ Promise.all([
         const scaleColor = d3.scaleOrdinal()
             .domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце',])
             .range(['#ce73e9','#ce73e9','#ff554e','#ce73e9','#3bdf14','#3bdf14', '#3bdf14', '#3bdf14',]);
-        
+
         const areas = svg.append('defs')
             .selectAll('clipPath.clip_gen')
             .data(nested)
@@ -858,8 +862,9 @@ Promise.all([
             .classed('clip_gen', true)
             .attr('id', d => `y${d.key}`)
             .append('path')
-            .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]));
-        
+            .attr('d', d => area([d.values[0]].concat(d.values)));
+            // .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]));
+
         const linesG = svg.selectAll('g.year')
             .data(nested)
             .enter()
@@ -869,7 +874,7 @@ Promise.all([
 
         const nSteps = Math.floor((svgH - svgM.top - svgM.bottom) / (fontSize*3)) * 2 + 1;
         const step = (svgH - svgM.top - svgM.bottom) / nSteps;
-        
+
         const lines = linesG.selectAll('path.source')
             .data(d => d.values)
             .enter()
@@ -891,64 +896,101 @@ Promise.all([
             .style('stroke-width', strokeWidth)
             .style('fill', 'none');
 
-        const legend = svg.append('g')
-            .attr('id', 'legend_gen')
-            .selectAll('g')
+        const legend = d3.select('#general figure #labels_gen')
+            .style('top', `${d3.max(lines.data(), d => svgH / 2 + scaleKTNE(d[scenario])) + fontSize *1.5}px`);
+
+        legend.selectAll('p.lab')
             .data(nested[0].values)
             .enter()
-            .append('g')
-            .classed('legend_gen_item', true);
+            .append('p')
+            .classed('lab_gen', true)
+            .attr('data-source', d => d.source)
+            .text(d => d.source);
 
-        const legendText = legend.append('text')
-            .text(d => d.source)
-            .each(function (d, i) {
-                const t = d3.select(this).select('text');
-                if (!this.previousSibling) {
-                    t.attr('x', svgM.left)
-                        .attr('y', 1);
-                    return;
-                }
-                const prevBBox = d3.select(this.previousSibling)
-                    .select('text')
-                    .node()
-                    .getBBox();
-                const allPrevNodes = legendText.filter((_, j) => j < i).nodes(),
-                    maxX = d3.max(allPrevNodes.map(e => e.getBBox().x + e.getBBox().width)),
-                    maxY = d3.max(lines.nodes(), e => (e.getBBox().x < prevBBox.x + maxX)
-                        ? svgH / 2 - scaleKTNE(v[scenario])
-                        : 0
-                    );
+        const svgBCR = svg.node().getBoundingClientRect(),
+            linesOnWay = lines.nodes().filter(e => e.getBBox().x < legend.node().getBoundingClientRect().width),
+            curveYStart = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375;
 
+        const labArrows = svg.append('g')
+            .attr('id', 'lab_arrows')
+            .selectAll('path.lab_arrow')
+            .data(nested[0].values)
+            .enter()
+            .append('path')
+            .classed('lab_arrow', true)
+            .attr('d', function (d, i) {
+                const pBCR = $(`#general p.lab_gen[data-source="${d.source}"]`).get(0).getBoundingClientRect();
+                const x0 = scaleYear(d.year) + scaleSource(d.source),
+                    x1 = (pBCR.x > x0)
+                        ? pBCR.x - svgBCR.left + fontSize
+                        : p.BCR.x + pBCR.width - svgBCR.left,
+                    y0 = scaleKTNE(d[scenario]) + svgH / 2 + fontSize,
+                    y1 = pBCR.y - svgBCR.y,
+                    curveY = curveYStart + fontSize * 0.15 * (8 - i);
+                    // linesOnWay = lines.nodes().filter(e => (e.getBBox().x > x0 && e.getBBox().x < x1)
+                    //                                     || (e.getBBox().x < x0 && e.getBBox().x > x1)),
+                    // curveY = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375 + fontSize * 0.2 * (8 - i);
+
+                return `M${x0} ${y0}
+                        L${x0} ${curveY}
+                        L${x1} ${curveY}
+                        L${x1} ${y1}`;
             })
-            .attr('y', fontSize);
-        
-        // let legendSpaceX = d3.max(legendText.nodes(),
-        //         e => e.getBBox().x + e.getBBox().width),
-        //     legendX = parseFloat(legendText.attr('x'));
+
+        // const legend = svg.append('g')
+        //     .attr('id', 'legend_gen')
+        //     .selectAll('g')
+        //     .data(nested[0].values)
+        //     .enter()
+        //     .append('g')
+        //     .classed('legend_gen_item', true);
         //
-        // const getLegendSpaceY = function () {
-        //     return d3.max(lines.nodes(),
-        //         e => (e.getBBox().x < legendSpaceX)
-        //             ? svgH / 2 - scaleKTNE(e.__data__[scenario])
-        //             : 0
-        //     );
+        // const legendText = legend.append('text')
+        //     .text(d => d.source)
+        //     .attr('x', scaleYear(2015) + fontSize/2 + 1)
+        //     .attr('y', fontSize);
+        //
+        // let maxX = 0, maxY = 9999;
+        //
+        // const getMaxY = function (mx) {
+        //     let yNext = true, year = 2015;
+        //     while (yNext) {
+        //         yNext = scaleYear(year + 5) < mx;
+        //         year = yNext ? year + 5 : year;
+        //     }
+        //     const maxYLocal = d3.max(nested.filter(d => d.key === year.toString())[0].values, d => d[scenario]);
+        //     maxY = d3.min([mx, svgH / 2 - scaleKTNE(maxYLocal)]);
         // };
-        // let legendSpaceY = getLegendSpaceY();
         //
         // legend.each(function (d, i) {
-        //     const t = d3.select(this).select('text');
-        //     const prev = d3.select(this.previousSibling).select('text');
-        //     if (prev.node() && (parseFloat(prev.attr('x')) + fontSize*1.75) < legendSpaceY) {
-        //         legendX = legendSpaceX + fontSize;
-        //         legendSpaceX = d3.max(legend.filter((_, j) => j < i).nodes(),
-        //             e => legendSpaceX + e.getBBox().width
-        //         ) + fontSize;
-        //         legendSpaceY = getLegendSpaceY();
+        //         const t = d3.select(this).select('text');
+        //         if (!this.previousSibling) {
+        //             maxX = this.getBBox().x + this.getBBox().width;
+        //             getMaxY(maxX);
+        //             return;
+        //         }
+        //         const prevBBox = d3.select(this.previousSibling)
+        //             .select('text')
+        //             .node()
+        //             .getBBox();
         //
-        //         t.attr('x', )
-        //     }
-        // })
-        
+        //         let maxXLocal = d3.max([prevBBox.x + this.getBBox().width, maxX]);
+        //         getMaxY(maxXLocal);
+        //         console.log(maxXLocal);
+        //
+        //         if ((prevBBox.y + prevBBox.height*2 + fontSize*2) > maxY) {
+        //             t.attr('x', maxXLocal + fontSize * 1.5)
+        //                 .attr('y', fontSize);
+        //             maxX = this.getBBox().width + this.getBBox().x;
+        //             getMaxY(maxX);
+        //         } else {
+        //             maxX = maxXLocal;
+        //             t.attr('x', prevBBox.x)
+        //                 .attr('y', prevBBox.y + prevBBox.height + fontSize);
+        //         }
+        //     });
+
+
         // // clippath checker
         // const areas = svg.selectAll('path.clip_gen')
         //     .data(nested)
@@ -957,9 +999,23 @@ Promise.all([
         //     .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]))
         //     .style('fill', '#000')
         //     .style('fill-opacity', 0.5);
-        
-        
-        
+
+        const genTip = tippy(document.querySelectorAll('#general path.source'), {
+            animation: 'fade',
+            // offset: '0, 0',
+            onShow(tip) {
+                const d = tip.reference.__data__;
+                tip.setContent(`<p class="sm">${d.source}: ${nform(d[scenario])} тис. т н.е.</p>`);
+                tip.set({
+                    distance: (svgH / 2 - scaleKTNE(d[scenario])) * (-1) + svgM.top + fontSize*0.5,
+
+                });
+            },
+            // trigger: 'manual',
+        });
+
+
+
     });
 
 

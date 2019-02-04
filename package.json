@@ -24,7 +24,7 @@
   "homepage": "https://github.com/NadiaRom/ecoaction#readme",
   "dependencies": {
     "chroma-js": "^2.0.2",
-    "d3": "^5.7.0",
+    "d3": "^5.8.0",
     "intersection-observer": "^0.5.1",
     "jquery": "^3.3.1",
     "labella": "^1.1.4",
