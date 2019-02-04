@@ -37692,20 +37692,24 @@ Promise.all([
                 scenario = 'Революційний';
                 datYear = nest_year[scenario];
                 datLines = nest_vde[scenario];
-                $('#consumption #switch_scenario').text('Революційний');
+                $('#consumption .switch_scenario').removeClass('active')
+                    .first()
+                    .addClass('active');
 
             });
         
-        $('#consumption #switch_scenario').click(function (e) {
+        $('#consumption .switch_scenario').click(function (e) {
             const $t = $(this);
+            if ($t.hasClass('active')) { return; };
             $('#consumption').toggleClass('dark');
             $('main').toggleClass('dark');
-            scenario = ($t.text() === 'Революційний') ? 'Базовий' : 'Революційний';
+            $('#consumption .switch_scenario').removeClass('active');
+            $t.addClass('active');
+            scenario = $.trim($t.text());
             datYear = nest_year[scenario];
             datLines = nest_vde[scenario];
             updateLines();
             updateBar();
-            $t.text(scenario);
         })
         
     });

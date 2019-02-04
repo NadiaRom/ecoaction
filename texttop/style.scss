@@ -1,6 +1,6 @@
 $green: #3bdf14;
 $red: #ce73e9;
-$blue: #608cc4;
+$blue: #00afc9;
 $calmgreen: #658b5b;
 $fontcol: rgb(51, 51, 51);
 $bgcol: rgb(238, 242, 245);
@@ -60,7 +60,7 @@ header {
     padding: 1em 0 0 0;
     text-align: center;
     font-weight: 400;
-    color: $blue;
+    color: #608cc4;
     background-color: #faf9e1;
   }
 
@@ -160,9 +160,21 @@ main {
   }
 }
 
-#switch_scenario {
-  border-bottom: 2px solid $blue;
+.switch_scenario {
+  background-color: lighten($fontcol, 50%);
+  padding: 0.1em 0.6em 0.1em 0.6em;
   cursor: pointer;
+  color: white;
+  font-size: 0.9em;
+  transition: background-color 0.5s;
+
+  &:first-of-type {
+    margin-right: 1em;
+  }
+
+  &.active {
+    background-color: $blue;
+  }
 }
 
 #consumption {
