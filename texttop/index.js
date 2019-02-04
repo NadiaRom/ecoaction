@@ -280,7 +280,7 @@ Promise.all([
                 .attr('cx', d => scaleBar(d[activeSphere]));
 
             barSpans.data(datOrd)
-                .text(d => `${d3.format(",.2r")(d[activeSphere])} тис. т н.е.`);
+                .text(d => `${nform(d[activeSphere])} тис. т н.е.`);
         };
 
         updateBar();
@@ -295,9 +295,11 @@ Promise.all([
             appendTo: document.querySelector('main'),
             onShow: function (tip) {
                 const d = tip.reference.__data__;
-                const is_vde = d.by_vde || (sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt'
+                const is_vde = (d.source) 
+                    ? ((sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt')
+                    : d.by_vde;
                 tip.setContent(`
-            <p class="small"><span class="${is_vde}">${d3.format(",.2r")(d[activeSphere])} тис. т н.е.</span></p>
+            <p class="small"><span class="${is_vde}">${nform(d[activeSphere])} тис. т н.е.</span></p>
             `);
             },
         });
@@ -791,9 +793,9 @@ Promise.all([
         const svgW = $('#general figure').width(),
             svgH = $('#general figure').height(),
             svgM = {
-                top: fontSize*2,
+                top: 1,
                 right: 1,
-                bottom: fontSize*2,
+                bottom: 1,
                 left: 1,
             };
 
@@ -899,107 +901,96 @@ Promise.all([
             .style('stroke-width', strokeWidth)
             .style('fill', 'none');
 
-        const legend = d3.select('#general figure #labels_gen')
-            .style('top', `${d3.max(lines.data(), d => svgH / 2 + scaleKTNE(d[scenario])) + fontSize *1.5}px`);
-
-        legend.selectAll('p.lab')
-            .data(nested[0].values)
-            .enter()
-            .append('p')
-            .classed('lab_gen', true)
-            .attr('data-source', d => d.source)
-            .text(d => d.source);
-
         const svgBCR = svg.node().getBoundingClientRect(),
-            linesOnWay = lines.nodes().filter(e => e.getBBox().x < legend.node().getBoundingClientRect().width),
-            curveYStart = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375;
-
-        const labArrows = svg.append('g')
-            .attr('id', 'lab_arrows')
-            .selectAll('path.lab_arrow')
-            .data(nested[0].values)
-            .enter()
-            .append('path')
-            .classed('lab_arrow', true)
-            .attr('d', function (d, i) {
-                const pBCR = $(`#general p.lab_gen[data-source="${d.source}"]`).get(0).getBoundingClientRect();
-                const x0 = scaleYear(d.year) + scaleSource(d.source),
-                    x1 = (pBCR.x > x0)
-                        ? pBCR.x - svgBCR.left + fontSize
-                        : pBCR.x + pBCR.width - svgBCR.left,
-                    y0 = scaleKTNE(d[scenario]) + svgH / 2 + fontSize,
-                    y1 = pBCR.y - svgBCR.y,
-                    curveY = curveYStart + fontSize * 0.15 * (8 - i);
-                    // linesOnWay = lines.nodes().filter(e => (e.getBBox().x > x0 && e.getBBox().x < x1)
-                    //                                     || (e.getBBox().x < x0 && e.getBBox().x > x1)),
-                    // curveY = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375 + fontSize * 0.2 * (8 - i);
-
-                return `M${x0} ${y0}
-                        L${x0} ${curveY}
-                        L${x1} ${curveY}
-                        L${x1} ${y1}`;
+            lineW = lines.node().getBoundingClientRect().width,
+            linesGBCR = lines.nodes().map(e => {
+                return {
+                    x: e.getBoundingClientRect().left - svgBCR.left + lineW / 2,
+                    e: e,
+                }
             });
+        const $nav = $("#general nav p");
+        $nav.html(`${linesGBCR[0].e.__data__.year}<br/>
+                   ${linesGBCR[0].e.__data__.source}: ${nform(linesGBCR[0].e.__data__[scenario])} тис. т н.е.`);
+
+        const navHelper = svg.append('path')
+            .attr('id', 'nav_helper')
+            .attr('d', `M${linesGBCR[0].e.getBoundingClientRect().x - svgBCR.x + lineW / 2}
+                         ${svgH / 2 - scaleKTNE(linesGBCR[0].e.__data__[scenario]) - 2}
+                        V 0
+                         `);
         
+        $(svg.node()).on('mouseover', function (e) {
+            const eX = e.originalEvent.clientX - svgBCR.left;
+            const lineDist = linesGBCR.map(d => Math.abs(d.x - eX));
+            const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
+
+            $nav.html(`${closestLine.e.__data__.year}<br/>
+                   ${closestLine.e.__data__.source}: ${nform(closestLine.e.__data__[scenario])} тис. т н.е.`);
+            
+            const navBCR = $nav.get(0).getBoundingClientRect(),
+                maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
+            
+            let perfectMargin = closestLine.x + lineW/2 - navBCR.width / 2;
+            perfectMargin = (perfectMargin < 0) ? 0 : perfectMargin;
+            perfectMargin = (perfectMargin > maxMargin) ? maxMargin : perfectMargin;
+            $nav.css('margin-left', `${perfectMargin}px`);
+            
+            const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2
+            navHelper.transition()
+                .duration(200)
+                .attr('d', `M${closestLine.x}
+                             ${(navHelperY > 0) ? navHelperY : 0}
+                            V 0
+                           `);
+        });
+
+        // const legend = d3.select('#general figure #labels_gen')
+        //     .style('top', `${d3.max(lines.data(), d => svgH / 2 + scaleKTNE(d[scenario])) + fontSize *1.5}px`);
+        //
+        // legend.selectAll('p.lab')
+        //     .data(nested[0].values)
+        //     .enter()
+        //     .append('p')
+        //     .classed('lab_gen', true)
+        //     .attr('data-source', d => d.source)
+        //     .text(d => d.source);
+        //
+        // const svgBCR = svg.node().getBoundingClientRect(),
+        //     linesOnWay = lines.nodes().filter(e => e.getBBox().x < legend.node().getBoundingClientRect().width),
+        //     curveYStart = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375;
+        //
+        // const labArrows = svg.append('g')
+        //     .attr('id', 'lab_arrows')
+        //     .selectAll('path.lab_arrow')
+        //     .data(nested[0].values)
+        //     .enter()
+        //     .append('path')
+        //     .classed('lab_arrow', true)
+        //     .attr('d', function (d, i) {
+        //         const pBCR = $(`#general p.lab_gen[data-source="${d.source}"]`).get(0).getBoundingClientRect();
+        //         const x0 = scaleYear(d.year) + scaleSource(d.source),
+        //             x1 = (pBCR.x > x0)
+        //                 ? pBCR.x - svgBCR.left + fontSize
+        //                 : pBCR.x + pBCR.width - svgBCR.left,
+        //             y0 = scaleKTNE(d[scenario]) + svgH / 2 + fontSize,
+        //             y1 = pBCR.y - svgBCR.y,
+        //             curveY = curveYStart + fontSize * 0.15 * (8 - i);
+        //             // linesOnWay = lines.nodes().filter(e => (e.getBBox().x > x0 && e.getBBox().x < x1)
+        //             //                                     || (e.getBBox().x < x0 && e.getBBox().x > x1)),
+        //             // curveY = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375 + fontSize * 0.2 * (8 - i);
+        //
+        //         return `M${x0} ${y0}
+        //                 L${x0} ${curveY}
+        //                 L${x1} ${curveY}
+        //                 L${x1} ${y1}`;
+        //     });
+        //
         const updClip = function () {
             areas.transition()
                 .duration(1000)
                 .attr('d', d => area([d.values[0]].concat(d.values)));
         };
-        
-
-        // const legend = svg.append('g')
-        //     .attr('id', 'legend_gen')
-        //     .selectAll('g')
-        //     .data(nested[0].values)
-        //     .enter()
-        //     .append('g')
-        //     .classed('legend_gen_item', true);
-        //
-        // const legendText = legend.append('text')
-        //     .text(d => d.source)
-        //     .attr('x', scaleYear(2015) + fontSize/2 + 1)
-        //     .attr('y', fontSize);
-        //
-        // let maxX = 0, maxY = 9999;
-        //
-        // const getMaxY = function (mx) {
-        //     let yNext = true, year = 2015;
-        //     while (yNext) {
-        //         yNext = scaleYear(year + 5) < mx;
-        //         year = yNext ? year + 5 : year;
-        //     }
-        //     const maxYLocal = d3.max(nested.filter(d => d.key === year.toString())[0].values, d => d[scenario]);
-        //     maxY = d3.min([mx, svgH / 2 - scaleKTNE(maxYLocal)]);
-        // };
-        //
-        // legend.each(function (d, i) {
-        //         const t = d3.select(this).select('text');
-        //         if (!this.previousSibling) {
-        //             maxX = this.getBBox().x + this.getBBox().width;
-        //             getMaxY(maxX);
-        //             return;
-        //         }
-        //         const prevBBox = d3.select(this.previousSibling)
-        //             .select('text')
-        //             .node()
-        //             .getBBox();
-        //
-        //         let maxXLocal = d3.max([prevBBox.x + this.getBBox().width, maxX]);
-        //         getMaxY(maxXLocal);
-        //         console.log(maxXLocal);
-        //
-        //         if ((prevBBox.y + prevBBox.height*2 + fontSize*2) > maxY) {
-        //             t.attr('x', maxXLocal + fontSize * 1.5)
-        //                 .attr('y', fontSize);
-        //             maxX = this.getBBox().width + this.getBBox().x;
-        //             getMaxY(maxX);
-        //         } else {
-        //             maxX = maxXLocal;
-        //             t.attr('x', prevBBox.x)
-        //                 .attr('y', prevBBox.y + prevBBox.height + fontSize);
-        //         }
-        //     });
-
 
         // // clippath checker
         // const areas = svg.selectAll('path.clip_gen')
@@ -1009,18 +1000,6 @@ Promise.all([
         //     .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]))
         //     .style('fill', '#000')
         //     .style('fill-opacity', 0.5);
-
-        const genTip = tippy(document.querySelectorAll('#general path.source'), {
-            animation: 'fade',
-            onShow(tip) {
-                const d = tip.reference.__data__;
-                tip.setContent(`<p class="sm">${d.source}: ${nform(d[scenario])} тис. т н.е.</p>`);
-                tip.set({
-                    distance: (svgH / 2 - scaleKTNE(d[scenario])) * (-1) + svgM.top + fontSize*0.5,
-
-                });
-            },
-        });
         
         $('#general .switch_scenario').click(function (e) {
             const $t = $(this);
@@ -1033,6 +1012,25 @@ Promise.all([
             updClip();
             
         });
+
+        const scroller = scrollama();
+        scroller.setup({
+            step: '#general figure',
+            container: '#general',
+            graphic: '#general svg',
+            offset: 0.8,
+        })
+            .onContainerExit(function () {
+                if ($('main').hasClass('dark')) {
+                    $('#general').toggleClass('dark');
+                    $('main').toggleClass('dark');
+                    $('#general .switch_scenario').removeClass('active');
+                    const $t = $('#general .switch_scenario').first()
+                    $t.addClass('active');
+                    scenario = $.trim($t.text());
+                    updClip();
+                }
+            });
 
 
 
