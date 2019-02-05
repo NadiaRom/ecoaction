@@ -156,7 +156,15 @@ main {
 
   i {
     font-size: 0.5em;
-    color: $green;
+    transition: all 0.5s;
+
+    &.fa-check {
+      color: $green;
+    }
+
+    &.fa-times {
+      color: $red;
+    }
   }
 }
 
@@ -386,7 +394,15 @@ main {
 
       i {
         font-size: 0.5em;
-        color: $green;
+        transition: all 0.5s;
+
+        &.fa-check {
+          color: $green;
+        }
+
+        &.fa-times {
+          color: $red;
+        }
       }
 
       li {

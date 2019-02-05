@@ -401,6 +401,7 @@ Promise.all([
         };
 
         // SCROLLAMA -----------------------------------------------------------------------------------------
+        const $textLiMarks = $('#consumption .text li i');
 
         const scroller = scrollama();
 
@@ -437,11 +438,15 @@ Promise.all([
                     .first()
                     .addClass('active');
 
+                $textLiMarks.removeClass('fa-times').addClass('fa-check')
+
             });
+
+
         
         $('#consumption .switch_scenario').click(function (e) {
             const $t = $(this);
-            if ($t.hasClass('active')) { return; };
+            if ($t.hasClass('active')) { return; }
             $('#consumption').toggleClass('dark');
             $('main').toggleClass('dark');
             $('#consumption .switch_scenario').removeClass('active');
@@ -451,7 +456,11 @@ Promise.all([
             datLines = nest_vde[scenario];
             updateLines();
             updateBar();
-        })
+            const markClasses = (scenario === 'Революційний')
+                ? ['fa-check', 'fa-times']
+                : ['fa-times', 'fa-check'];
+            $textLiMarks.removeClass(markClasses[1]).addClass(markClasses[0])
+        });
         
     });
 
