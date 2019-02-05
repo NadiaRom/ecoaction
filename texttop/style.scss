@@ -116,6 +116,10 @@ main {
     }
   }
 
+  p.instruction {
+    font-size: 0.85em;
+    font-weight: 600;
+  }
 }
 
 #why {
@@ -248,6 +252,13 @@ main {
         margin: 0 0 0.75em 0;
         font-size: 0.75em;
         line-height: 1;
+      }
+
+      p#bar_year {
+        font-size: 1em;
+        color: $blue;
+        font-weight: 600;
+        margin: 0;
       }
 
       [data-vde="vde"] {
@@ -627,10 +638,6 @@ section.dark {
     stroke-opacity: 0.75;
     stroke-width: 2;
     mix-blend-mode: multiply;
-  }
-
-  path.source {
-    pointer-events: visibleStroke;
   }
 
   #legend_gen {

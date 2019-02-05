@@ -257,6 +257,7 @@ Promise.all([
         
 
         // DRAW BARS ------------------------------------------------------------------------------------------
+        const $hYear = $('#consumption #bar_year')
         let datYear = nest_year[scenario];
         const scaleBar = d3.scaleLinear()
             .range([0, barW]);
@@ -297,6 +298,8 @@ Promise.all([
 
             barSpans.data(datOrd)
                 .text(d => `${nform(d[activeSphere])} тис. т н.е.`);
+            
+            $hYear.text(dragYear);
         };
 
         updateBar();
@@ -856,18 +859,6 @@ Promise.all([
             .y0(d => svgH/2 - scaleKTNE(d[scenario]))
             .curve(d3.curveStep);
 
-        // const xHelpers = svg.append('path')
-        //     .attr('id', 'x_helper')
-        //     .attr('d', [`M${svgM.left + (scaleYear.step() - scaleYear.bandwidth()) / 2} ${svgM.top}`]
-        //         .concat(Array(nested.length / 2)
-        //             .fill(`l${scaleYear.step()} 0
-        //                    l0 ${svgH - svgM.top - svgM.bottom}
-        //                    l${scaleYear.step()} 0
-        //                    l0 -${svgH - svgM.top - svgM.bottom}
-        //                    `)
-        //         ).join(' ')
-        //     );
-
         const xAxis = d3.axisBottom(scaleYear)
             .ticks(8)
             .tickFormat(d => d.toString());
@@ -941,30 +932,37 @@ Promise.all([
                         V 0
                          `);
         
-        $(svg.node()).on('mouseover', function (e) {
-            const eX = e.originalEvent.clientX - svgBCR.left;
-            const lineDist = linesGBCR.map(d => Math.abs(d.x - eX));
-            const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
+        const transparentRect = svg.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', svgW)
+            .attr('height', svgH)
+            .style('opacity', 0)
+            .on('mousemove', function () {
+                const eX = d3.event.clientX - svgBCR.left;
+                const lineDist = linesGBCR.map(d => Math.abs(d.x - eX));
+                const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
 
-            $nav.html(`${closestLine.e.__data__.year}  рік<br/>
+                $nav.html(`${closestLine.e.__data__.year}  рік<br/>
                    ${closestLine.e.__data__.source}: ${nform(closestLine.e.__data__[scenario])} тис. т н.е.`);
-            
-            const navBCR = $nav.get(0).getBoundingClientRect(),
-                maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
-            
-            let perfectMargin = closestLine.x + lineW/2 - navBCR.width / 2;
-            perfectMargin = (perfectMargin < 0) ? 0 : perfectMargin;
-            perfectMargin = (perfectMargin > maxMargin) ? maxMargin : perfectMargin;
-            $nav.css('margin-left', `${perfectMargin}px`);
-            
-            const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2
-            navHelper.transition()
-                .duration(200)
-                .attr('d', `M${closestLine.x}
+
+                const navBCR = $nav.get(0).getBoundingClientRect(),
+                    maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
+
+                let perfectMargin = closestLine.x + lineW/2 - navBCR.width / 2;
+                perfectMargin = (perfectMargin < 0) ? 0 : perfectMargin;
+                perfectMargin = (perfectMargin > maxMargin) ? maxMargin : perfectMargin;
+                $nav.css('margin-left', `${perfectMargin}px`);
+
+                const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2
+                navHelper.transition()
+                    .duration(150)
+                    .ease(d3.easeLinear)
+                    .attr('d', `M${closestLine.x}
                              ${(navHelperY > 0) ? navHelperY : 0}
                             V 0
                            `);
-        });
+            });
 
         // const legend = d3.select('#general figure #labels_gen')
         //     .style('top', `${d3.max(lines.data(), d => svgH / 2 + scaleKTNE(d[scenario])) + fontSize *1.5}px`);
@@ -1052,125 +1050,121 @@ Promise.all([
                     updClip();
                 }
             });
-
-
-
     });
 
-
-Promise.all([
-    d3.csv('data/eresources_wide.csv', numericalize),
-])
-    .then(function ([data]) {
-        const nested = d3.nest()
-            .key(d => d.scenario)
-            .entries(data)
-            .reduce((res, d) => {
-                res[d.key] = d.values;
-                return res;
-            }, {});;
-
-        const maxKTNE = {
-                'Революційний': 105000, //46899
-                'Базовий': 170000, //90027
-            },
-
-            svgW = $('#general2 figure').width(),
-            svgH = $('#general2 figure').height(),
-            svgM = {
-                top: fontSize,
-                right: svgW*0.15,
-                bottom: fontSize * 3,
-                left: svgW * 0.15,
-            };
-
-        let scenario = 'Революційний';
-
-        const svg = d3.select('#general2 figure svg')
-            .attr('width', svgW)
-            .attr('height', svgH);
-
-        const scaleYear = d3.scaleLinear()
-            .domain([2015, 2050])
-            .range([svgM.left, svgW - svgM.right]);
-
-        const scaleKTNE = d3.scaleLinear()
-            .domain([0.0, maxKTNE[scenario]])
-            .range([svgH - svgM.top, svgM.bottom]);
-
-        const stack = d3.stack()
-            .keys(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце',]);
-
-        const area = d3.area()
-            .x(d => scaleYear(d.data.year))
-            .y0(d => scaleKTNE(d[0]))
-            .y1(d => scaleKTNE(d[1]))
-            .curve(d3.curveCatmullRom);
-        //
-        // const line = d3.line()
-        //     .x(d => scaleYear(d.values[0].year))
-        //     .y(d => scaleKTNE(d.values[0][scenario]))
-        //     .curve(d3.curveCatmullRom);
-
-        // const area = d3.area()
-        //     .x(d => scaleYear(d.values[0].year))
-        //     .y0(scaleKTNE(0))
-        //     .y1(d => scaleKTNE(d.values[0][scenario]))
-        //     .curve(d3.curveCatmullRom);
-
-        const xAxis = d3.axisBottom(scaleYear)
-            .ticks(8)
-            .tickFormat(d => d.toString());
-
-        const yAxis = d3.axisRight(scaleKTNE)
-            .ticks(10)
-            .tickFormat(d => nform(d));
-
-        const gXAxis = svg.append('g')
-            .attr('id', 'x_ax_gen')
-            .call(xAxis)
-            .attr('transform', `translate(0 ${scaleKTNE(0)})`);
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (svgH - svgM.top - svgM.bottom))
-            .attr('y2', 0)
-            .attr('stroke', chroma(cols.black).alpha(0.4))
-            .attr('stroke-dasharray', '2 2');
-
-        const gYAxis = svg.append('g')
-            .attr('id', 'y_ax_gen')
-            .call(yAxis)
-            .attr('transform', `translate(${scaleYear.range()[1]} 0)`);
-
-        const scaleColor = d3.scaleOrdinal()
-            .domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце', 'Всього', 'Імпорт',])
-            .range(['#CE73E9','#B766CF','#ff554e','#9654A9','#3BDF14','#3EEC15','#34C512','#2A9F0E', '#686868', '#909192', ]);
-
-        // const lines = svg.selectAll('path.line_gen')
-        //     .data(nested)
-        //     .enter()
-        //     .append('path')
-        //     .attr('data-source', d => d.key)
-        //     .classed('line_gen', true)
-        //     .classed('nosource', d => ['Всього', 'Імпорт'].indexOf(d.key) !== -1)
-        //     .attr('d', d => line(d.values))
-        //     .style('stroke', d => scaleColor(d.key));
-
-        const areas = svg.selectAll('path.area_gen1')
-            .data(stack(nested[scenario]))
-            .enter()
-            .append('path')
-            .classed('area_stack', true)
-            .attr('data-source', d => d.key)
-            .attr('d', area)
-            .style('fill', d => scaleColor(d.key))
-            .style('stroke', d => scaleColor(d.key));
-    });
-
-
-
-$(document).ready(function () {
-    window.addEventListener('scroll', function () {
-        tippy.hideAllPoppers();
-    });
-});
+// Promise.all([
+//     d3.csv('data/eresources_wide.csv', numericalize),
+// ])
+//     .then(function ([data]) {
+//         const nested = d3.nest()
+//             .key(d => d.scenario)
+//             .entries(data)
+//             .reduce((res, d) => {
+//                 res[d.key] = d.values;
+//                 return res;
+//             }, {});;
+//
+//         const maxKTNE = {
+//                 'Революційний': 105000, //46899
+//                 'Базовий': 170000, //90027
+//             },
+//
+//             svgW = $('#general2 figure').width(),
+//             svgH = $('#general2 figure').height(),
+//             svgM = {
+//                 top: fontSize,
+//                 right: svgW*0.15,
+//                 bottom: fontSize * 3,
+//                 left: svgW * 0.15,
+//             };
+//
+//         let scenario = 'Революційний';
+//
+//         const svg = d3.select('#general2 figure svg')
+//             .attr('width', svgW)
+//             .attr('height', svgH);
+//
+//         const scaleYear = d3.scaleLinear()
+//             .domain([2015, 2050])
+//             .range([svgM.left, svgW - svgM.right]);
+//
+//         const scaleKTNE = d3.scaleLinear()
+//             .domain([0.0, maxKTNE[scenario]])
+//             .range([svgH - svgM.top, svgM.bottom]);
+//
+//         const stack = d3.stack()
+//             .keys(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце',]);
+//
+//         const area = d3.area()
+//             .x(d => scaleYear(d.data.year))
+//             .y0(d => scaleKTNE(d[0]))
+//             .y1(d => scaleKTNE(d[1]))
+//             .curve(d3.curveCatmullRom);
+//         //
+//         // const line = d3.line()
+//         //     .x(d => scaleYear(d.values[0].year))
+//         //     .y(d => scaleKTNE(d.values[0][scenario]))
+//         //     .curve(d3.curveCatmullRom);
+//
+//         // const area = d3.area()
+//         //     .x(d => scaleYear(d.values[0].year))
+//         //     .y0(scaleKTNE(0))
+//         //     .y1(d => scaleKTNE(d.values[0][scenario]))
+//         //     .curve(d3.curveCatmullRom);
+//
+//         const xAxis = d3.axisBottom(scaleYear)
+//             .ticks(8)
+//             .tickFormat(d => d.toString());
+//
+//         const yAxis = d3.axisRight(scaleKTNE)
+//             .ticks(10)
+//             .tickFormat(d => nform(d));
+//
+//         const gXAxis = svg.append('g')
+//             .attr('id', 'x_ax_gen')
+//             .call(xAxis)
+//             .attr('transform', `translate(0 ${scaleKTNE(0)})`);
+//
+//         gXAxis.selectAll('.tick line')
+//             .attr('y1', -1 * (svgH - svgM.top - svgM.bottom))
+//             .attr('y2', 0)
+//             .attr('stroke', chroma(cols.black).alpha(0.4))
+//             .attr('stroke-dasharray', '2 2');
+//
+//         const gYAxis = svg.append('g')
+//             .attr('id', 'y_ax_gen')
+//             .call(yAxis)
+//             .attr('transform', `translate(${scaleYear.range()[1]} 0)`);
+//
+//         const scaleColor = d3.scaleOrdinal()
+//             .domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце', 'Всього', 'Імпорт',])
+//             .range(['#CE73E9','#B766CF','#ff554e','#9654A9','#3BDF14','#3EEC15','#34C512','#2A9F0E', '#686868', '#909192', ]);
+//
+//         // const lines = svg.selectAll('path.line_gen')
+//         //     .data(nested)
+//         //     .enter()
+//         //     .append('path')
+//         //     .attr('data-source', d => d.key)
+//         //     .classed('line_gen', true)
+//         //     .classed('nosource', d => ['Всього', 'Імпорт'].indexOf(d.key) !== -1)
+//         //     .attr('d', d => line(d.values))
+//         //     .style('stroke', d => scaleColor(d.key));
+//
+//         const areas = svg.selectAll('path.area_gen1')
+//             .data(stack(nested[scenario]))
+//             .enter()
+//             .append('path')
+//             .classed('area_stack', true)
+//             .attr('data-source', d => d.key)
+//             .attr('d', area)
+//             .style('fill', d => scaleColor(d.key))
+//             .style('stroke', d => scaleColor(d.key));
+//     });
+//
+//
+//
+// $(document).ready(function () {
+//     window.addEventListener('scroll', function () {
+//         tippy.hideAllPoppers();
+//     });
+// });
