@@ -90,9 +90,10 @@ svg text {
 }
 
 main {
-  transition: background-color 0.5s;
+  transition: background-color 0.5s, color 0.5s;
   &.dark {
     background-color: $fontcol;
+    color: $bgcol;
 
     div.tippy-tooltip {
       color: $bgcol;
@@ -328,7 +329,6 @@ main {
         &.active {
           font-weight: 600;
           //font-size: 1.25em;
-          fill: $blue;
         }
       }
 
@@ -498,6 +498,7 @@ section.dark {
   figure {
     padding: 0;
     margin: 0 2em 0 0;
+    max-height: 90vh;
 
     svg {
       overflow: visible;
