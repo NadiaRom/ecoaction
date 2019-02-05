@@ -37276,8 +37276,6 @@ const $ = require('jquery');
 const d3 = require('d3');
 const chroma = require('chroma-js');
 const tippy = require('tippy.js');
-// const labella = require('labella');
-
 
 const cols = {
     green: '#3bdf14',
@@ -37289,7 +37287,7 @@ const cols = {
 };
 
 const nform = d => d3.format(',.6r')(d).replace(/\..*/, '');
-
+const mobW = 577;
 
 const fontSize = parseInt($('body').css('font-size'));
 
@@ -37377,6 +37375,25 @@ Promise.all([
         const barsSvg = bars.append('svg')
             .attr('height', '4px')
             .attr('width', barW);
+
+        // DRAW BARS ------------------------------------------------------------------------------------------
+        const $hYear = $('#consumption #bar_year')
+        let datYear = nest_year[scenario];
+        const scaleBar = d3.scaleLinear()
+            .range([0, barW]);
+
+        const barsBar = barsSvg.append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 0)
+            .attr('height', '4px');
+
+        const barsCircle = barsSvg.append('circle')
+            .attr('cx', 0)
+            .attr('cy', 2)
+            .attr('r', (window.innerWidth < mobW) ? 3 : 5);
+        
+        // Lines mobile height
 
         const linesW = $('#consumption figure .chart#lines').width();
         const linesH = $('#consumption figure .chart#lines').height();
@@ -37468,18 +37485,17 @@ Promise.all([
             .attr('id', 'year_dragger')
             .attr('transform', `translate(${scaleYear(2015)} 0)`);
 
-        const dragHelperW = d3.max([linesW*0.05, 10]);
-        const linesTopY = document.getElementById('y_axis').getBBox().y;
+        const dragHelperW = d3.max([linesW * 0.05, 10]);
 
         dragger.append('line')
             .attr('x1', 0)
             .attr('x2', 0)
-            .attr('y1', scaleKTNE.range()[0])
-            .attr('y2', linesTopY);
+            .attr('y1', scaleKTNE.range()[1])
+            .attr('y2', scaleKTNE.range()[0]);
 
         dragger.append('rect')
             .attr('x', dragHelperW / 2 * (-1))
-            .attr('y', linesTopY)
+            .attr('y', scaleKTNE.range()[1])
             .attr('height', scaleKTNE.range()[0])
             .attr('width', dragHelperW)
             .style('stroke', 'none')
@@ -37489,8 +37505,8 @@ Promise.all([
         dragger.append('line')
             .attr('x1', -5)
             .attr('x2', 5)
-            .attr('y1', linesTopY)
-            .attr('y2', linesTopY);
+            .attr('y1', scaleKTNE.range()[0])
+            .attr('y2', scaleKTNE.range()[0]);
 
         // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
         const navigation = linesSvg.append('g')
@@ -37498,17 +37514,34 @@ Promise.all([
 
         const dragBBox = dragger.node().getBBox();
 
-        navigation.append('text')
+        const navigationText = navigation.append('text')
             .text('Потягніть за лінію, щоб переключити рік')
-            .attr('x', dragBBox.x + dragBBox.width / 2 + fontSize * 2)
-            .attr('y', dragBBox.y + fontSize*2);
+            .attr('x', dragBBox.x + dragBBox.width / 2 + fontSize * 2);
 
-        navigation.append('path')
-            .attr('id', 'drag_nav')
-            .attr('d', `M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
-                        q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize * 0.5}
-                         ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize*0.5}
+        const navigationArrow = navigation.append('path')
+            .attr('id', 'drag_nav');
+        
+        if (window.innerWidth < mobW) {
+            navigationText
+                .attr('y', dragBBox.y + fontSize / 2);
+            
+            navigationArrow
+                .attr('d', `
+                M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
+                q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y - fontSize * 0.25}
+                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y - fontSize * 0.5}
                         `);
+        } else {
+            navigationText
+                .attr('y', dragBBox.y + fontSize*2);
+            
+            navigationArrow
+                .attr('d', `
+                M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
+                q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize * 0.5}
+                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize*0.5}
+                        `)
+        }
 
         // continue dots
 
@@ -37524,28 +37557,9 @@ Promise.all([
             .append('circle')
             .attr('cx', d => scaleYear(d.year))
             .attr('cy', d => scaleKTNE(0))
-            .attr('r', 5)
+            .attr('r', (window.innerWidth < mobW) ? 3 : 5)
             .attr('class', d => d.by_vde)
             .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
-        
-
-        // DRAW BARS ------------------------------------------------------------------------------------------
-        const $hYear = $('#consumption #bar_year')
-        let datYear = nest_year[scenario];
-        const scaleBar = d3.scaleLinear()
-            .range([0, barW]);
-
-        const barsBar = barsSvg.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', 0)
-            .attr('height', '4px');
-
-        const barsCircle = barsSvg.append('circle')
-            .attr('cx', 0)
-            .attr('cy', 2)
-            .attr('r', 5);
-
 
         const updateBar = function () {
             const dat = {};
@@ -37767,13 +37781,13 @@ Promise.all([
                 return $(this).parent().width();
             });
 
-        const circleR = 5;
+        const circleR = (window.innerWidth < mobW) ? 3 : 5;
         
         const svgW = parseInt(svg.attr('width'));
         const svgH = parseInt(svg.attr('height'));
         const svgM = {
             top: fontSize * 0.5,
-            right: circleR + 1,
+            right: (window.innerWidth < mobW) ? fontSize * 3 : circleR + 1,
             bottom: fontSize * 1,
             left: 1,
         };
@@ -38078,6 +38092,10 @@ Promise.all([
             "Газ",
             "Нафта",
         ]
+        
+        if (window.innerWidth < mobW) {
+            data = data.filter(d => [2015, 2030, 2050].indexOf(d.year) > -1)
+        }
 
         const nested = d3.nest()
             .key(d => d.year)
