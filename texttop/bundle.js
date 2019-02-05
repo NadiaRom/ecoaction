@@ -3193,6 +3193,1707 @@
 })));
 
 },{}],2:[function(require,module,exports){
+module.exports = function (it) {
+  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+},{}],3:[function(require,module,exports){
+// 22.1.3.31 Array.prototype[@@unscopables]
+var UNSCOPABLES = require('./_wks')('unscopables');
+var ArrayProto = Array.prototype;
+if (ArrayProto[UNSCOPABLES] == undefined) require('./_hide')(ArrayProto, UNSCOPABLES, {});
+module.exports = function (key) {
+  ArrayProto[UNSCOPABLES][key] = true;
+};
+
+},{"./_hide":22,"./_wks":66}],4:[function(require,module,exports){
+'use strict';
+var at = require('./_string-at')(true);
+
+ // `AdvanceStringIndex` abstract operation
+// https://tc39.github.io/ecma262/#sec-advancestringindex
+module.exports = function (S, index, unicode) {
+  return index + (unicode ? at(S, index).length : 1);
+};
+
+},{"./_string-at":56}],5:[function(require,module,exports){
+var isObject = require('./_is-object');
+module.exports = function (it) {
+  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+},{"./_is-object":27}],6:[function(require,module,exports){
+// false -> Array#indexOf
+// true  -> Array#includes
+var toIObject = require('./_to-iobject');
+var toLength = require('./_to-length');
+var toAbsoluteIndex = require('./_to-absolute-index');
+module.exports = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIObject($this);
+    var length = toLength(O.length);
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+},{"./_to-absolute-index":57,"./_to-iobject":59,"./_to-length":60}],7:[function(require,module,exports){
+// getting tag from 19.1.3.6 Object.prototype.toString()
+var cof = require('./_cof');
+var TAG = require('./_wks')('toStringTag');
+// ES3 wrong here
+var ARG = cof(function () { return arguments; }()) == 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function (it, key) {
+  try {
+    return it[key];
+  } catch (e) { /* empty */ }
+};
+
+module.exports = function (it) {
+  var O, T, B;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+    // @@toStringTag case
+    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
+    // builtinTag case
+    : ARG ? cof(O)
+    // ES3 arguments fallback
+    : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
+};
+
+},{"./_cof":8,"./_wks":66}],8:[function(require,module,exports){
+var toString = {}.toString;
+
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
+};
+
+},{}],9:[function(require,module,exports){
+var core = module.exports = { version: '2.6.3' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+
+},{}],10:[function(require,module,exports){
+// optional / simple context binding
+var aFunction = require('./_a-function');
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+},{"./_a-function":2}],11:[function(require,module,exports){
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+},{}],12:[function(require,module,exports){
+// Thank's IE8 for his funny defineProperty
+module.exports = !require('./_fails')(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+},{"./_fails":17}],13:[function(require,module,exports){
+var isObject = require('./_is-object');
+var document = require('./_global').document;
+// typeof document.createElement is 'object' in old IE
+var is = isObject(document) && isObject(document.createElement);
+module.exports = function (it) {
+  return is ? document.createElement(it) : {};
+};
+
+},{"./_global":20,"./_is-object":27}],14:[function(require,module,exports){
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+},{}],15:[function(require,module,exports){
+// all enumerable object keys, includes symbols
+var getKeys = require('./_object-keys');
+var gOPS = require('./_object-gops');
+var pIE = require('./_object-pie');
+module.exports = function (it) {
+  var result = getKeys(it);
+  var getSymbols = gOPS.f;
+  if (getSymbols) {
+    var symbols = getSymbols(it);
+    var isEnum = pIE.f;
+    var i = 0;
+    var key;
+    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
+  } return result;
+};
+
+},{"./_object-gops":41,"./_object-keys":44,"./_object-pie":45}],16:[function(require,module,exports){
+var global = require('./_global');
+var core = require('./_core');
+var hide = require('./_hide');
+var redefine = require('./_redefine');
+var ctx = require('./_ctx');
+var PROTOTYPE = 'prototype';
+
+var $export = function (type, name, source) {
+  var IS_FORCED = type & $export.F;
+  var IS_GLOBAL = type & $export.G;
+  var IS_STATIC = type & $export.S;
+  var IS_PROTO = type & $export.P;
+  var IS_BIND = type & $export.B;
+  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] || (global[name] = {}) : (global[name] || {})[PROTOTYPE];
+  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
+  var expProto = exports[PROTOTYPE] || (exports[PROTOTYPE] = {});
+  var key, own, out, exp;
+  if (IS_GLOBAL) source = name;
+  for (key in source) {
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    // export native or passed
+    out = (own ? target : source)[key];
+    // bind timers to global for call from export context
+    exp = IS_BIND && own ? ctx(out, global) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // extend global
+    if (target) redefine(target, key, out, type & $export.U);
+    // export
+    if (exports[key] != out) hide(exports, key, exp);
+    if (IS_PROTO && expProto[key] != out) expProto[key] = out;
+  }
+};
+global.core = core;
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library`
+module.exports = $export;
+
+},{"./_core":9,"./_ctx":10,"./_global":20,"./_hide":22,"./_redefine":47}],17:[function(require,module,exports){
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (e) {
+    return true;
+  }
+};
+
+},{}],18:[function(require,module,exports){
+'use strict';
+require('./es6.regexp.exec');
+var redefine = require('./_redefine');
+var hide = require('./_hide');
+var fails = require('./_fails');
+var defined = require('./_defined');
+var wks = require('./_wks');
+var regexpExec = require('./_regexp-exec');
+
+var SPECIES = wks('species');
+
+var REPLACE_SUPPORTS_NAMED_GROUPS = !fails(function () {
+  // #replace needs built-in support for named groups.
+  // #match works fine because it just return the exec results, even if it has
+  // a "grops" property.
+  var re = /./;
+  re.exec = function () {
+    var result = [];
+    result.groups = { a: '7' };
+    return result;
+  };
+  return ''.replace(re, '$<a>') !== '7';
+});
+
+var SPLIT_WORKS_WITH_OVERWRITTEN_EXEC = (function () {
+  // Chrome 51 has a buggy "split" implementation when RegExp#exec !== nativeExec
+  var re = /(?:)/;
+  var originalExec = re.exec;
+  re.exec = function () { return originalExec.apply(this, arguments); };
+  var result = 'ab'.split(re);
+  return result.length === 2 && result[0] === 'a' && result[1] === 'b';
+})();
+
+module.exports = function (KEY, length, exec) {
+  var SYMBOL = wks(KEY);
+
+  var DELEGATES_TO_SYMBOL = !fails(function () {
+    // String methods call symbol-named RegEp methods
+    var O = {};
+    O[SYMBOL] = function () { return 7; };
+    return ''[KEY](O) != 7;
+  });
+
+  var DELEGATES_TO_EXEC = DELEGATES_TO_SYMBOL ? !fails(function () {
+    // Symbol-named RegExp methods call .exec
+    var execCalled = false;
+    var re = /a/;
+    re.exec = function () { execCalled = true; return null; };
+    if (KEY === 'split') {
+      // RegExp[@@split] doesn't call the regex's exec method, but first creates
+      // a new one. We need to return the patched regex when creating the new one.
+      re.constructor = {};
+      re.constructor[SPECIES] = function () { return re; };
+    }
+    re[SYMBOL]('');
+    return !execCalled;
+  }) : undefined;
+
+  if (
+    !DELEGATES_TO_SYMBOL ||
+    !DELEGATES_TO_EXEC ||
+    (KEY === 'replace' && !REPLACE_SUPPORTS_NAMED_GROUPS) ||
+    (KEY === 'split' && !SPLIT_WORKS_WITH_OVERWRITTEN_EXEC)
+  ) {
+    var nativeRegExpMethod = /./[SYMBOL];
+    var fns = exec(
+      defined,
+      SYMBOL,
+      ''[KEY],
+      function maybeCallNative(nativeMethod, regexp, str, arg2, forceStringMethod) {
+        if (regexp.exec === regexpExec) {
+          if (DELEGATES_TO_SYMBOL && !forceStringMethod) {
+            // The native String method already delegates to @@method (this
+            // polyfilled function), leasing to infinite recursion.
+            // We avoid it by directly calling the native @@method method.
+            return { done: true, value: nativeRegExpMethod.call(regexp, str, arg2) };
+          }
+          return { done: true, value: nativeMethod.call(str, regexp, arg2) };
+        }
+        return { done: false };
+      }
+    );
+    var strfn = fns[0];
+    var rxfn = fns[1];
+
+    redefine(String.prototype, KEY, strfn);
+    hide(RegExp.prototype, SYMBOL, length == 2
+      // 21.2.5.8 RegExp.prototype[@@replace](string, replaceValue)
+      // 21.2.5.11 RegExp.prototype[@@split](string, limit)
+      ? function (string, arg) { return rxfn.call(string, this, arg); }
+      // 21.2.5.6 RegExp.prototype[@@match](string)
+      // 21.2.5.9 RegExp.prototype[@@search](string)
+      : function (string) { return rxfn.call(string, this); }
+    );
+  }
+};
+
+},{"./_defined":11,"./_fails":17,"./_hide":22,"./_redefine":47,"./_regexp-exec":49,"./_wks":66,"./es6.regexp.exec":69}],19:[function(require,module,exports){
+'use strict';
+// 21.2.5.3 get RegExp.prototype.flags
+var anObject = require('./_an-object');
+module.exports = function () {
+  var that = anObject(this);
+  var result = '';
+  if (that.global) result += 'g';
+  if (that.ignoreCase) result += 'i';
+  if (that.multiline) result += 'm';
+  if (that.unicode) result += 'u';
+  if (that.sticky) result += 'y';
+  return result;
+};
+
+},{"./_an-object":5}],20:[function(require,module,exports){
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self
+  // eslint-disable-next-line no-new-func
+  : Function('return this')();
+if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
+
+},{}],21:[function(require,module,exports){
+var hasOwnProperty = {}.hasOwnProperty;
+module.exports = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
+
+},{}],22:[function(require,module,exports){
+var dP = require('./_object-dp');
+var createDesc = require('./_property-desc');
+module.exports = require('./_descriptors') ? function (object, key, value) {
+  return dP.f(object, key, createDesc(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+},{"./_descriptors":12,"./_object-dp":36,"./_property-desc":46}],23:[function(require,module,exports){
+var document = require('./_global').document;
+module.exports = document && document.documentElement;
+
+},{"./_global":20}],24:[function(require,module,exports){
+module.exports = !require('./_descriptors') && !require('./_fails')(function () {
+  return Object.defineProperty(require('./_dom-create')('div'), 'a', { get: function () { return 7; } }).a != 7;
+});
+
+},{"./_descriptors":12,"./_dom-create":13,"./_fails":17}],25:[function(require,module,exports){
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = require('./_cof');
+// eslint-disable-next-line no-prototype-builtins
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+},{"./_cof":8}],26:[function(require,module,exports){
+// 7.2.2 IsArray(argument)
+var cof = require('./_cof');
+module.exports = Array.isArray || function isArray(arg) {
+  return cof(arg) == 'Array';
+};
+
+},{"./_cof":8}],27:[function(require,module,exports){
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+},{}],28:[function(require,module,exports){
+// 7.2.8 IsRegExp(argument)
+var isObject = require('./_is-object');
+var cof = require('./_cof');
+var MATCH = require('./_wks')('match');
+module.exports = function (it) {
+  var isRegExp;
+  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : cof(it) == 'RegExp');
+};
+
+},{"./_cof":8,"./_is-object":27,"./_wks":66}],29:[function(require,module,exports){
+'use strict';
+var create = require('./_object-create');
+var descriptor = require('./_property-desc');
+var setToStringTag = require('./_set-to-string-tag');
+var IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+require('./_hide')(IteratorPrototype, require('./_wks')('iterator'), function () { return this; });
+
+module.exports = function (Constructor, NAME, next) {
+  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
+  setToStringTag(Constructor, NAME + ' Iterator');
+};
+
+},{"./_hide":22,"./_object-create":35,"./_property-desc":46,"./_set-to-string-tag":51,"./_wks":66}],30:[function(require,module,exports){
+'use strict';
+var LIBRARY = require('./_library');
+var $export = require('./_export');
+var redefine = require('./_redefine');
+var hide = require('./_hide');
+var Iterators = require('./_iterators');
+var $iterCreate = require('./_iter-create');
+var setToStringTag = require('./_set-to-string-tag');
+var getPrototypeOf = require('./_object-gpo');
+var ITERATOR = require('./_wks')('iterator');
+var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
+var FF_ITERATOR = '@@iterator';
+var KEYS = 'keys';
+var VALUES = 'values';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
+  $iterCreate(Constructor, NAME, next);
+  var getMethod = function (kind) {
+    if (!BUGGY && kind in proto) return proto[kind];
+    switch (kind) {
+      case KEYS: return function keys() { return new Constructor(this, kind); };
+      case VALUES: return function values() { return new Constructor(this, kind); };
+    } return function entries() { return new Constructor(this, kind); };
+  };
+  var TAG = NAME + ' Iterator';
+  var DEF_VALUES = DEFAULT == VALUES;
+  var VALUES_BUG = false;
+  var proto = Base.prototype;
+  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
+  var $default = $native || getMethod(DEFAULT);
+  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
+  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
+  var methods, key, IteratorPrototype;
+  // Fix native
+  if ($anyNative) {
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
+    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
+      // Set @@toStringTag to native iterators
+      setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if (!LIBRARY && typeof IteratorPrototype[ITERATOR] != 'function') hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEF_VALUES && $native && $native.name !== VALUES) {
+    VALUES_BUG = true;
+    $default = function values() { return $native.call(this); };
+  }
+  // Define iterator
+  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+    hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  Iterators[NAME] = $default;
+  Iterators[TAG] = returnThis;
+  if (DEFAULT) {
+    methods = {
+      values: DEF_VALUES ? $default : getMethod(VALUES),
+      keys: IS_SET ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if (FORCED) for (key in methods) {
+      if (!(key in proto)) redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
+
+},{"./_export":16,"./_hide":22,"./_iter-create":29,"./_iterators":32,"./_library":33,"./_object-gpo":42,"./_redefine":47,"./_set-to-string-tag":51,"./_wks":66}],31:[function(require,module,exports){
+module.exports = function (done, value) {
+  return { value: value, done: !!done };
+};
+
+},{}],32:[function(require,module,exports){
+module.exports = {};
+
+},{}],33:[function(require,module,exports){
+module.exports = false;
+
+},{}],34:[function(require,module,exports){
+var META = require('./_uid')('meta');
+var isObject = require('./_is-object');
+var has = require('./_has');
+var setDesc = require('./_object-dp').f;
+var id = 0;
+var isExtensible = Object.isExtensible || function () {
+  return true;
+};
+var FREEZE = !require('./_fails')(function () {
+  return isExtensible(Object.preventExtensions({}));
+});
+var setMeta = function (it) {
+  setDesc(it, META, { value: {
+    i: 'O' + ++id, // object ID
+    w: {}          // weak collections IDs
+  } });
+};
+var fastKey = function (it, create) {
+  // return primitive with prefix
+  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return 'F';
+    // not necessary to add metadata
+    if (!create) return 'E';
+    // add missing metadata
+    setMeta(it);
+  // return object ID
+  } return it[META].i;
+};
+var getWeak = function (it, create) {
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return true;
+    // not necessary to add metadata
+    if (!create) return false;
+    // add missing metadata
+    setMeta(it);
+  // return hash weak collections IDs
+  } return it[META].w;
+};
+// add metadata on freeze-family methods calling
+var onFreeze = function (it) {
+  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
+  return it;
+};
+var meta = module.exports = {
+  KEY: META,
+  NEED: false,
+  fastKey: fastKey,
+  getWeak: getWeak,
+  onFreeze: onFreeze
+};
+
+},{"./_fails":17,"./_has":21,"./_is-object":27,"./_object-dp":36,"./_uid":63}],35:[function(require,module,exports){
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+var anObject = require('./_an-object');
+var dPs = require('./_object-dps');
+var enumBugKeys = require('./_enum-bug-keys');
+var IE_PROTO = require('./_shared-key')('IE_PROTO');
+var Empty = function () { /* empty */ };
+var PROTOTYPE = 'prototype';
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = require('./_dom-create')('iframe');
+  var i = enumBugKeys.length;
+  var lt = '<';
+  var gt = '>';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  require('./_html').appendChild(iframe);
+  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
+  // createDict = iframe.contentWindow.Object;
+  // html.removeChild(iframe);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while (i--) delete createDict[PROTOTYPE][enumBugKeys[i]];
+  return createDict();
+};
+
+module.exports = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    Empty[PROTOTYPE] = anObject(O);
+    result = new Empty();
+    Empty[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : dPs(result, Properties);
+};
+
+},{"./_an-object":5,"./_dom-create":13,"./_enum-bug-keys":14,"./_html":23,"./_object-dps":37,"./_shared-key":52}],36:[function(require,module,exports){
+var anObject = require('./_an-object');
+var IE8_DOM_DEFINE = require('./_ie8-dom-define');
+var toPrimitive = require('./_to-primitive');
+var dP = Object.defineProperty;
+
+exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return dP(O, P, Attributes);
+  } catch (e) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+},{"./_an-object":5,"./_descriptors":12,"./_ie8-dom-define":24,"./_to-primitive":62}],37:[function(require,module,exports){
+var dP = require('./_object-dp');
+var anObject = require('./_an-object');
+var getKeys = require('./_object-keys');
+
+module.exports = require('./_descriptors') ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = getKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var P;
+  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
+
+},{"./_an-object":5,"./_descriptors":12,"./_object-dp":36,"./_object-keys":44}],38:[function(require,module,exports){
+var pIE = require('./_object-pie');
+var createDesc = require('./_property-desc');
+var toIObject = require('./_to-iobject');
+var toPrimitive = require('./_to-primitive');
+var has = require('./_has');
+var IE8_DOM_DEFINE = require('./_ie8-dom-define');
+var gOPD = Object.getOwnPropertyDescriptor;
+
+exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor(O, P) {
+  O = toIObject(O);
+  P = toPrimitive(P, true);
+  if (IE8_DOM_DEFINE) try {
+    return gOPD(O, P);
+  } catch (e) { /* empty */ }
+  if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
+};
+
+},{"./_descriptors":12,"./_has":21,"./_ie8-dom-define":24,"./_object-pie":45,"./_property-desc":46,"./_to-iobject":59,"./_to-primitive":62}],39:[function(require,module,exports){
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+var toIObject = require('./_to-iobject');
+var gOPN = require('./_object-gopn').f;
+var toString = {}.toString;
+
+var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
+  ? Object.getOwnPropertyNames(window) : [];
+
+var getWindowNames = function (it) {
+  try {
+    return gOPN(it);
+  } catch (e) {
+    return windowNames.slice();
+  }
+};
+
+module.exports.f = function getOwnPropertyNames(it) {
+  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
+};
+
+},{"./_object-gopn":40,"./_to-iobject":59}],40:[function(require,module,exports){
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var $keys = require('./_object-keys-internal');
+var hiddenKeys = require('./_enum-bug-keys').concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return $keys(O, hiddenKeys);
+};
+
+},{"./_enum-bug-keys":14,"./_object-keys-internal":43}],41:[function(require,module,exports){
+exports.f = Object.getOwnPropertySymbols;
+
+},{}],42:[function(require,module,exports){
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+var has = require('./_has');
+var toObject = require('./_to-object');
+var IE_PROTO = require('./_shared-key')('IE_PROTO');
+var ObjectProto = Object.prototype;
+
+module.exports = Object.getPrototypeOf || function (O) {
+  O = toObject(O);
+  if (has(O, IE_PROTO)) return O[IE_PROTO];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectProto : null;
+};
+
+},{"./_has":21,"./_shared-key":52,"./_to-object":61}],43:[function(require,module,exports){
+var has = require('./_has');
+var toIObject = require('./_to-iobject');
+var arrayIndexOf = require('./_array-includes')(false);
+var IE_PROTO = require('./_shared-key')('IE_PROTO');
+
+module.exports = function (object, names) {
+  var O = toIObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+},{"./_array-includes":6,"./_has":21,"./_shared-key":52,"./_to-iobject":59}],44:[function(require,module,exports){
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys = require('./_object-keys-internal');
+var enumBugKeys = require('./_enum-bug-keys');
+
+module.exports = Object.keys || function keys(O) {
+  return $keys(O, enumBugKeys);
+};
+
+},{"./_enum-bug-keys":14,"./_object-keys-internal":43}],45:[function(require,module,exports){
+exports.f = {}.propertyIsEnumerable;
+
+},{}],46:[function(require,module,exports){
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+},{}],47:[function(require,module,exports){
+var global = require('./_global');
+var hide = require('./_hide');
+var has = require('./_has');
+var SRC = require('./_uid')('src');
+var TO_STRING = 'toString';
+var $toString = Function[TO_STRING];
+var TPL = ('' + $toString).split(TO_STRING);
+
+require('./_core').inspectSource = function (it) {
+  return $toString.call(it);
+};
+
+(module.exports = function (O, key, val, safe) {
+  var isFunction = typeof val == 'function';
+  if (isFunction) has(val, 'name') || hide(val, 'name', key);
+  if (O[key] === val) return;
+  if (isFunction) has(val, SRC) || hide(val, SRC, O[key] ? '' + O[key] : TPL.join(String(key)));
+  if (O === global) {
+    O[key] = val;
+  } else if (!safe) {
+    delete O[key];
+    hide(O, key, val);
+  } else if (O[key]) {
+    O[key] = val;
+  } else {
+    hide(O, key, val);
+  }
+// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+})(Function.prototype, TO_STRING, function toString() {
+  return typeof this == 'function' && this[SRC] || $toString.call(this);
+});
+
+},{"./_core":9,"./_global":20,"./_has":21,"./_hide":22,"./_uid":63}],48:[function(require,module,exports){
+'use strict';
+
+var classof = require('./_classof');
+var builtinExec = RegExp.prototype.exec;
+
+ // `RegExpExec` abstract operation
+// https://tc39.github.io/ecma262/#sec-regexpexec
+module.exports = function (R, S) {
+  var exec = R.exec;
+  if (typeof exec === 'function') {
+    var result = exec.call(R, S);
+    if (typeof result !== 'object') {
+      throw new TypeError('RegExp exec method returned something other than an Object or null');
+    }
+    return result;
+  }
+  if (classof(R) !== 'RegExp') {
+    throw new TypeError('RegExp#exec called on incompatible receiver');
+  }
+  return builtinExec.call(R, S);
+};
+
+},{"./_classof":7}],49:[function(require,module,exports){
+'use strict';
+
+var regexpFlags = require('./_flags');
+
+var nativeExec = RegExp.prototype.exec;
+// This always refers to the native implementation, because the
+// String#replace polyfill uses ./fix-regexp-well-known-symbol-logic.js,
+// which loads this file before patching the method.
+var nativeReplace = String.prototype.replace;
+
+var patchedExec = nativeExec;
+
+var LAST_INDEX = 'lastIndex';
+
+var UPDATES_LAST_INDEX_WRONG = (function () {
+  var re1 = /a/,
+      re2 = /b*/g;
+  nativeExec.call(re1, 'a');
+  nativeExec.call(re2, 'a');
+  return re1[LAST_INDEX] !== 0 || re2[LAST_INDEX] !== 0;
+})();
+
+// nonparticipating capturing group, copied from es5-shim's String#split patch.
+var NPCG_INCLUDED = /()??/.exec('')[1] !== undefined;
+
+var PATCH = UPDATES_LAST_INDEX_WRONG || NPCG_INCLUDED;
+
+if (PATCH) {
+  patchedExec = function exec(str) {
+    var re = this;
+    var lastIndex, reCopy, match, i;
+
+    if (NPCG_INCLUDED) {
+      reCopy = new RegExp('^' + re.source + '$(?!\\s)', regexpFlags.call(re));
+    }
+    if (UPDATES_LAST_INDEX_WRONG) lastIndex = re[LAST_INDEX];
+
+    match = nativeExec.call(re, str);
+
+    if (UPDATES_LAST_INDEX_WRONG && match) {
+      re[LAST_INDEX] = re.global ? match.index + match[0].length : lastIndex;
+    }
+    if (NPCG_INCLUDED && match && match.length > 1) {
+      // Fix browsers whose `exec` methods don't consistently return `undefined`
+      // for NPCG, like IE8. NOTE: This doesn' work for /(.?)?/
+      // eslint-disable-next-line no-loop-func
+      nativeReplace.call(match[0], reCopy, function () {
+        for (i = 1; i < arguments.length - 2; i++) {
+          if (arguments[i] === undefined) match[i] = undefined;
+        }
+      });
+    }
+
+    return match;
+  };
+}
+
+module.exports = patchedExec;
+
+},{"./_flags":19}],50:[function(require,module,exports){
+// 7.2.9 SameValue(x, y)
+module.exports = Object.is || function is(x, y) {
+  // eslint-disable-next-line no-self-compare
+  return x === y ? x !== 0 || 1 / x === 1 / y : x != x && y != y;
+};
+
+},{}],51:[function(require,module,exports){
+var def = require('./_object-dp').f;
+var has = require('./_has');
+var TAG = require('./_wks')('toStringTag');
+
+module.exports = function (it, tag, stat) {
+  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
+};
+
+},{"./_has":21,"./_object-dp":36,"./_wks":66}],52:[function(require,module,exports){
+var shared = require('./_shared')('keys');
+var uid = require('./_uid');
+module.exports = function (key) {
+  return shared[key] || (shared[key] = uid(key));
+};
+
+},{"./_shared":53,"./_uid":63}],53:[function(require,module,exports){
+var core = require('./_core');
+var global = require('./_global');
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || (global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: core.version,
+  mode: require('./_library') ? 'pure' : 'global',
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
+});
+
+},{"./_core":9,"./_global":20,"./_library":33}],54:[function(require,module,exports){
+// 7.3.20 SpeciesConstructor(O, defaultConstructor)
+var anObject = require('./_an-object');
+var aFunction = require('./_a-function');
+var SPECIES = require('./_wks')('species');
+module.exports = function (O, D) {
+  var C = anObject(O).constructor;
+  var S;
+  return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
+};
+
+},{"./_a-function":2,"./_an-object":5,"./_wks":66}],55:[function(require,module,exports){
+'use strict';
+var fails = require('./_fails');
+
+module.exports = function (method, arg) {
+  return !!method && fails(function () {
+    // eslint-disable-next-line no-useless-call
+    arg ? method.call(null, function () { /* empty */ }, 1) : method.call(null);
+  });
+};
+
+},{"./_fails":17}],56:[function(require,module,exports){
+var toInteger = require('./_to-integer');
+var defined = require('./_defined');
+// true  -> String#at
+// false -> String#codePointAt
+module.exports = function (TO_STRING) {
+  return function (that, pos) {
+    var s = String(defined(that));
+    var i = toInteger(pos);
+    var l = s.length;
+    var a, b;
+    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
+      ? TO_STRING ? s.charAt(i) : a
+      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+},{"./_defined":11,"./_to-integer":58}],57:[function(require,module,exports){
+var toInteger = require('./_to-integer');
+var max = Math.max;
+var min = Math.min;
+module.exports = function (index, length) {
+  index = toInteger(index);
+  return index < 0 ? max(index + length, 0) : min(index, length);
+};
+
+},{"./_to-integer":58}],58:[function(require,module,exports){
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+module.exports = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+},{}],59:[function(require,module,exports){
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+var IObject = require('./_iobject');
+var defined = require('./_defined');
+module.exports = function (it) {
+  return IObject(defined(it));
+};
+
+},{"./_defined":11,"./_iobject":25}],60:[function(require,module,exports){
+// 7.1.15 ToLength
+var toInteger = require('./_to-integer');
+var min = Math.min;
+module.exports = function (it) {
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+},{"./_to-integer":58}],61:[function(require,module,exports){
+// 7.1.13 ToObject(argument)
+var defined = require('./_defined');
+module.exports = function (it) {
+  return Object(defined(it));
+};
+
+},{"./_defined":11}],62:[function(require,module,exports){
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = require('./_is-object');
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+},{"./_is-object":27}],63:[function(require,module,exports){
+var id = 0;
+var px = Math.random();
+module.exports = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+},{}],64:[function(require,module,exports){
+var global = require('./_global');
+var core = require('./_core');
+var LIBRARY = require('./_library');
+var wksExt = require('./_wks-ext');
+var defineProperty = require('./_object-dp').f;
+module.exports = function (name) {
+  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
+  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
+};
+
+},{"./_core":9,"./_global":20,"./_library":33,"./_object-dp":36,"./_wks-ext":65}],65:[function(require,module,exports){
+exports.f = require('./_wks');
+
+},{"./_wks":66}],66:[function(require,module,exports){
+var store = require('./_shared')('wks');
+var uid = require('./_uid');
+var Symbol = require('./_global').Symbol;
+var USE_SYMBOL = typeof Symbol == 'function';
+
+var $exports = module.exports = function (name) {
+  return store[name] || (store[name] =
+    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
+};
+
+$exports.store = store;
+
+},{"./_global":20,"./_shared":53,"./_uid":63}],67:[function(require,module,exports){
+'use strict';
+var addToUnscopables = require('./_add-to-unscopables');
+var step = require('./_iter-step');
+var Iterators = require('./_iterators');
+var toIObject = require('./_to-iobject');
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+module.exports = require('./_iter-define')(Array, 'Array', function (iterated, kind) {
+  this._t = toIObject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var kind = this._k;
+  var index = this._i++;
+  if (!O || index >= O.length) {
+    this._t = undefined;
+    return step(1);
+  }
+  if (kind == 'keys') return step(0, index);
+  if (kind == 'values') return step(0, O[index]);
+  return step(0, [index, O[index]]);
+}, 'values');
+
+// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
+Iterators.Arguments = Iterators.Array;
+
+addToUnscopables('keys');
+addToUnscopables('values');
+addToUnscopables('entries');
+
+},{"./_add-to-unscopables":3,"./_iter-define":30,"./_iter-step":31,"./_iterators":32,"./_to-iobject":59}],68:[function(require,module,exports){
+'use strict';
+var $export = require('./_export');
+var aFunction = require('./_a-function');
+var toObject = require('./_to-object');
+var fails = require('./_fails');
+var $sort = [].sort;
+var test = [1, 2, 3];
+
+$export($export.P + $export.F * (fails(function () {
+  // IE8-
+  test.sort(undefined);
+}) || !fails(function () {
+  // V8 bug
+  test.sort(null);
+  // Old WebKit
+}) || !require('./_strict-method')($sort)), 'Array', {
+  // 22.1.3.25 Array.prototype.sort(comparefn)
+  sort: function sort(comparefn) {
+    return comparefn === undefined
+      ? $sort.call(toObject(this))
+      : $sort.call(toObject(this), aFunction(comparefn));
+  }
+});
+
+},{"./_a-function":2,"./_export":16,"./_fails":17,"./_strict-method":55,"./_to-object":61}],69:[function(require,module,exports){
+'use strict';
+var regexpExec = require('./_regexp-exec');
+require('./_export')({
+  target: 'RegExp',
+  proto: true,
+  forced: regexpExec !== /./.exec
+}, {
+  exec: regexpExec
+});
+
+},{"./_export":16,"./_regexp-exec":49}],70:[function(require,module,exports){
+// 21.2.5.3 get RegExp.prototype.flags()
+if (require('./_descriptors') && /./g.flags != 'g') require('./_object-dp').f(RegExp.prototype, 'flags', {
+  configurable: true,
+  get: require('./_flags')
+});
+
+},{"./_descriptors":12,"./_flags":19,"./_object-dp":36}],71:[function(require,module,exports){
+'use strict';
+
+var anObject = require('./_an-object');
+var toObject = require('./_to-object');
+var toLength = require('./_to-length');
+var toInteger = require('./_to-integer');
+var advanceStringIndex = require('./_advance-string-index');
+var regExpExec = require('./_regexp-exec-abstract');
+var max = Math.max;
+var min = Math.min;
+var floor = Math.floor;
+var SUBSTITUTION_SYMBOLS = /\$([$&`']|\d\d?|<[^>]*>)/g;
+var SUBSTITUTION_SYMBOLS_NO_NAMED = /\$([$&`']|\d\d?)/g;
+
+var maybeToString = function (it) {
+  return it === undefined ? it : String(it);
+};
+
+// @@replace logic
+require('./_fix-re-wks')('replace', 2, function (defined, REPLACE, $replace, maybeCallNative) {
+  return [
+    // `String.prototype.replace` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.replace
+    function replace(searchValue, replaceValue) {
+      var O = defined(this);
+      var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
+      return fn !== undefined
+        ? fn.call(searchValue, O, replaceValue)
+        : $replace.call(String(O), searchValue, replaceValue);
+    },
+    // `RegExp.prototype[@@replace]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@replace
+    function (regexp, replaceValue) {
+      var res = maybeCallNative($replace, regexp, this, replaceValue);
+      if (res.done) return res.value;
+
+      var rx = anObject(regexp);
+      var S = String(this);
+      var functionalReplace = typeof replaceValue === 'function';
+      if (!functionalReplace) replaceValue = String(replaceValue);
+      var global = rx.global;
+      if (global) {
+        var fullUnicode = rx.unicode;
+        rx.lastIndex = 0;
+      }
+      var results = [];
+      while (true) {
+        var result = regExpExec(rx, S);
+        if (result === null) break;
+        results.push(result);
+        if (!global) break;
+        var matchStr = String(result[0]);
+        if (matchStr === '') rx.lastIndex = advanceStringIndex(S, toLength(rx.lastIndex), fullUnicode);
+      }
+      var accumulatedResult = '';
+      var nextSourcePosition = 0;
+      for (var i = 0; i < results.length; i++) {
+        result = results[i];
+        var matched = String(result[0]);
+        var position = max(min(toInteger(result.index), S.length), 0);
+        var captures = [];
+        // NOTE: This is equivalent to
+        //   captures = result.slice(1).map(maybeToString)
+        // but for some reason `nativeSlice.call(result, 1, result.length)` (called in
+        // the slice polyfill when slicing native arrays) "doesn't work" in safari 9 and
+        // causes a crash (https://pastebin.com/N21QzeQA) when trying to debug it.
+        for (var j = 1; j < result.length; j++) captures.push(maybeToString(result[j]));
+        var namedCaptures = result.groups;
+        if (functionalReplace) {
+          var replacerArgs = [matched].concat(captures, position, S);
+          if (namedCaptures !== undefined) replacerArgs.push(namedCaptures);
+          var replacement = String(replaceValue.apply(undefined, replacerArgs));
+        } else {
+          replacement = getSubstitution(matched, S, position, captures, namedCaptures, replaceValue);
+        }
+        if (position >= nextSourcePosition) {
+          accumulatedResult += S.slice(nextSourcePosition, position) + replacement;
+          nextSourcePosition = position + matched.length;
+        }
+      }
+      return accumulatedResult + S.slice(nextSourcePosition);
+    }
+  ];
+
+    // https://tc39.github.io/ecma262/#sec-getsubstitution
+  function getSubstitution(matched, str, position, captures, namedCaptures, replacement) {
+    var tailPos = position + matched.length;
+    var m = captures.length;
+    var symbols = SUBSTITUTION_SYMBOLS_NO_NAMED;
+    if (namedCaptures !== undefined) {
+      namedCaptures = toObject(namedCaptures);
+      symbols = SUBSTITUTION_SYMBOLS;
+    }
+    return $replace.call(replacement, symbols, function (match, ch) {
+      var capture;
+      switch (ch.charAt(0)) {
+        case '$': return '$';
+        case '&': return matched;
+        case '`': return str.slice(0, position);
+        case "'": return str.slice(tailPos);
+        case '<':
+          capture = namedCaptures[ch.slice(1, -1)];
+          break;
+        default: // \d\d?
+          var n = +ch;
+          if (n === 0) return match;
+          if (n > m) {
+            var f = floor(n / 10);
+            if (f === 0) return match;
+            if (f <= m) return captures[f - 1] === undefined ? ch.charAt(1) : captures[f - 1] + ch.charAt(1);
+            return match;
+          }
+          capture = captures[n - 1];
+      }
+      return capture === undefined ? '' : capture;
+    });
+  }
+});
+
+},{"./_advance-string-index":4,"./_an-object":5,"./_fix-re-wks":18,"./_regexp-exec-abstract":48,"./_to-integer":58,"./_to-length":60,"./_to-object":61}],72:[function(require,module,exports){
+'use strict';
+
+var anObject = require('./_an-object');
+var sameValue = require('./_same-value');
+var regExpExec = require('./_regexp-exec-abstract');
+
+// @@search logic
+require('./_fix-re-wks')('search', 1, function (defined, SEARCH, $search, maybeCallNative) {
+  return [
+    // `String.prototype.search` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.search
+    function search(regexp) {
+      var O = defined(this);
+      var fn = regexp == undefined ? undefined : regexp[SEARCH];
+      return fn !== undefined ? fn.call(regexp, O) : new RegExp(regexp)[SEARCH](String(O));
+    },
+    // `RegExp.prototype[@@search]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@search
+    function (regexp) {
+      var res = maybeCallNative($search, regexp, this);
+      if (res.done) return res.value;
+      var rx = anObject(regexp);
+      var S = String(this);
+      var previousLastIndex = rx.lastIndex;
+      if (!sameValue(previousLastIndex, 0)) rx.lastIndex = 0;
+      var result = regExpExec(rx, S);
+      if (!sameValue(rx.lastIndex, previousLastIndex)) rx.lastIndex = previousLastIndex;
+      return result === null ? -1 : result.index;
+    }
+  ];
+});
+
+},{"./_an-object":5,"./_fix-re-wks":18,"./_regexp-exec-abstract":48,"./_same-value":50}],73:[function(require,module,exports){
+'use strict';
+
+var isRegExp = require('./_is-regexp');
+var anObject = require('./_an-object');
+var speciesConstructor = require('./_species-constructor');
+var advanceStringIndex = require('./_advance-string-index');
+var toLength = require('./_to-length');
+var callRegExpExec = require('./_regexp-exec-abstract');
+var regexpExec = require('./_regexp-exec');
+var fails = require('./_fails');
+var $min = Math.min;
+var $push = [].push;
+var $SPLIT = 'split';
+var LENGTH = 'length';
+var LAST_INDEX = 'lastIndex';
+var MAX_UINT32 = 0xffffffff;
+
+// babel-minify transpiles RegExp('x', 'y') -> /x/y and it causes SyntaxError
+var SUPPORTS_Y = !fails(function () { RegExp(MAX_UINT32, 'y'); });
+
+// @@split logic
+require('./_fix-re-wks')('split', 2, function (defined, SPLIT, $split, maybeCallNative) {
+  var internalSplit;
+  if (
+    'abbc'[$SPLIT](/(b)*/)[1] == 'c' ||
+    'test'[$SPLIT](/(?:)/, -1)[LENGTH] != 4 ||
+    'ab'[$SPLIT](/(?:ab)*/)[LENGTH] != 2 ||
+    '.'[$SPLIT](/(.?)(.?)/)[LENGTH] != 4 ||
+    '.'[$SPLIT](/()()/)[LENGTH] > 1 ||
+    ''[$SPLIT](/.?/)[LENGTH]
+  ) {
+    // based on es5-shim implementation, need to rework it
+    internalSplit = function (separator, limit) {
+      var string = String(this);
+      if (separator === undefined && limit === 0) return [];
+      // If `separator` is not a regex, use native split
+      if (!isRegExp(separator)) return $split.call(string, separator, limit);
+      var output = [];
+      var flags = (separator.ignoreCase ? 'i' : '') +
+                  (separator.multiline ? 'm' : '') +
+                  (separator.unicode ? 'u' : '') +
+                  (separator.sticky ? 'y' : '');
+      var lastLastIndex = 0;
+      var splitLimit = limit === undefined ? MAX_UINT32 : limit >>> 0;
+      // Make `global` and avoid `lastIndex` issues by working with a copy
+      var separatorCopy = new RegExp(separator.source, flags + 'g');
+      var match, lastIndex, lastLength;
+      while (match = regexpExec.call(separatorCopy, string)) {
+        lastIndex = separatorCopy[LAST_INDEX];
+        if (lastIndex > lastLastIndex) {
+          output.push(string.slice(lastLastIndex, match.index));
+          if (match[LENGTH] > 1 && match.index < string[LENGTH]) $push.apply(output, match.slice(1));
+          lastLength = match[0][LENGTH];
+          lastLastIndex = lastIndex;
+          if (output[LENGTH] >= splitLimit) break;
+        }
+        if (separatorCopy[LAST_INDEX] === match.index) separatorCopy[LAST_INDEX]++; // Avoid an infinite loop
+      }
+      if (lastLastIndex === string[LENGTH]) {
+        if (lastLength || !separatorCopy.test('')) output.push('');
+      } else output.push(string.slice(lastLastIndex));
+      return output[LENGTH] > splitLimit ? output.slice(0, splitLimit) : output;
+    };
+  // Chakra, V8
+  } else if ('0'[$SPLIT](undefined, 0)[LENGTH]) {
+    internalSplit = function (separator, limit) {
+      return separator === undefined && limit === 0 ? [] : $split.call(this, separator, limit);
+    };
+  } else {
+    internalSplit = $split;
+  }
+
+  return [
+    // `String.prototype.split` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.split
+    function split(separator, limit) {
+      var O = defined(this);
+      var splitter = separator == undefined ? undefined : separator[SPLIT];
+      return splitter !== undefined
+        ? splitter.call(separator, O, limit)
+        : internalSplit.call(String(O), separator, limit);
+    },
+    // `RegExp.prototype[@@split]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@split
+    //
+    // NOTE: This cannot be properly polyfilled in engines that don't support
+    // the 'y' flag.
+    function (regexp, limit) {
+      var res = maybeCallNative(internalSplit, regexp, this, limit, internalSplit !== $split);
+      if (res.done) return res.value;
+
+      var rx = anObject(regexp);
+      var S = String(this);
+      var C = speciesConstructor(rx, RegExp);
+
+      var unicodeMatching = rx.unicode;
+      var flags = (rx.ignoreCase ? 'i' : '') +
+                  (rx.multiline ? 'm' : '') +
+                  (rx.unicode ? 'u' : '') +
+                  (SUPPORTS_Y ? 'y' : 'g');
+
+      // ^(? + rx + ) is needed, in combination with some S slicing, to
+      // simulate the 'y' flag.
+      var splitter = new C(SUPPORTS_Y ? rx : '^(?:' + rx.source + ')', flags);
+      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
+      if (lim === 0) return [];
+      if (S.length === 0) return callRegExpExec(splitter, S) === null ? [S] : [];
+      var p = 0;
+      var q = 0;
+      var A = [];
+      while (q < S.length) {
+        splitter.lastIndex = SUPPORTS_Y ? q : 0;
+        var z = callRegExpExec(splitter, SUPPORTS_Y ? S : S.slice(q));
+        var e;
+        if (
+          z === null ||
+          (e = $min(toLength(splitter.lastIndex + (SUPPORTS_Y ? 0 : q)), S.length)) === p
+        ) {
+          q = advanceStringIndex(S, q, unicodeMatching);
+        } else {
+          A.push(S.slice(p, q));
+          if (A.length === lim) return A;
+          for (var i = 1; i <= z.length - 1; i++) {
+            A.push(z[i]);
+            if (A.length === lim) return A;
+          }
+          q = p = e;
+        }
+      }
+      A.push(S.slice(p));
+      return A;
+    }
+  ];
+});
+
+},{"./_advance-string-index":4,"./_an-object":5,"./_fails":17,"./_fix-re-wks":18,"./_is-regexp":28,"./_regexp-exec":49,"./_regexp-exec-abstract":48,"./_species-constructor":54,"./_to-length":60}],74:[function(require,module,exports){
+'use strict';
+require('./es6.regexp.flags');
+var anObject = require('./_an-object');
+var $flags = require('./_flags');
+var DESCRIPTORS = require('./_descriptors');
+var TO_STRING = 'toString';
+var $toString = /./[TO_STRING];
+
+var define = function (fn) {
+  require('./_redefine')(RegExp.prototype, TO_STRING, fn, true);
+};
+
+// 21.2.5.14 RegExp.prototype.toString()
+if (require('./_fails')(function () { return $toString.call({ source: 'a', flags: 'b' }) != '/a/b'; })) {
+  define(function toString() {
+    var R = anObject(this);
+    return '/'.concat(R.source, '/',
+      'flags' in R ? R.flags : !DESCRIPTORS && R instanceof RegExp ? $flags.call(R) : undefined);
+  });
+// FF44- RegExp#toString has a wrong name
+} else if ($toString.name != TO_STRING) {
+  define(function toString() {
+    return $toString.call(this);
+  });
+}
+
+},{"./_an-object":5,"./_descriptors":12,"./_fails":17,"./_flags":19,"./_redefine":47,"./es6.regexp.flags":70}],75:[function(require,module,exports){
+'use strict';
+// ECMAScript 6 symbols shim
+var global = require('./_global');
+var has = require('./_has');
+var DESCRIPTORS = require('./_descriptors');
+var $export = require('./_export');
+var redefine = require('./_redefine');
+var META = require('./_meta').KEY;
+var $fails = require('./_fails');
+var shared = require('./_shared');
+var setToStringTag = require('./_set-to-string-tag');
+var uid = require('./_uid');
+var wks = require('./_wks');
+var wksExt = require('./_wks-ext');
+var wksDefine = require('./_wks-define');
+var enumKeys = require('./_enum-keys');
+var isArray = require('./_is-array');
+var anObject = require('./_an-object');
+var isObject = require('./_is-object');
+var toIObject = require('./_to-iobject');
+var toPrimitive = require('./_to-primitive');
+var createDesc = require('./_property-desc');
+var _create = require('./_object-create');
+var gOPNExt = require('./_object-gopn-ext');
+var $GOPD = require('./_object-gopd');
+var $DP = require('./_object-dp');
+var $keys = require('./_object-keys');
+var gOPD = $GOPD.f;
+var dP = $DP.f;
+var gOPN = gOPNExt.f;
+var $Symbol = global.Symbol;
+var $JSON = global.JSON;
+var _stringify = $JSON && $JSON.stringify;
+var PROTOTYPE = 'prototype';
+var HIDDEN = wks('_hidden');
+var TO_PRIMITIVE = wks('toPrimitive');
+var isEnum = {}.propertyIsEnumerable;
+var SymbolRegistry = shared('symbol-registry');
+var AllSymbols = shared('symbols');
+var OPSymbols = shared('op-symbols');
+var ObjectProto = Object[PROTOTYPE];
+var USE_NATIVE = typeof $Symbol == 'function';
+var QObject = global.QObject;
+// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
+var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
+
+// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
+var setSymbolDesc = DESCRIPTORS && $fails(function () {
+  return _create(dP({}, 'a', {
+    get: function () { return dP(this, 'a', { value: 7 }).a; }
+  })).a != 7;
+}) ? function (it, key, D) {
+  var protoDesc = gOPD(ObjectProto, key);
+  if (protoDesc) delete ObjectProto[key];
+  dP(it, key, D);
+  if (protoDesc && it !== ObjectProto) dP(ObjectProto, key, protoDesc);
+} : dP;
+
+var wrap = function (tag) {
+  var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
+  sym._k = tag;
+  return sym;
+};
+
+var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
+  return typeof it == 'symbol';
+} : function (it) {
+  return it instanceof $Symbol;
+};
+
+var $defineProperty = function defineProperty(it, key, D) {
+  if (it === ObjectProto) $defineProperty(OPSymbols, key, D);
+  anObject(it);
+  key = toPrimitive(key, true);
+  anObject(D);
+  if (has(AllSymbols, key)) {
+    if (!D.enumerable) {
+      if (!has(it, HIDDEN)) dP(it, HIDDEN, createDesc(1, {}));
+      it[HIDDEN][key] = true;
+    } else {
+      if (has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
+      D = _create(D, { enumerable: createDesc(0, false) });
+    } return setSymbolDesc(it, key, D);
+  } return dP(it, key, D);
+};
+var $defineProperties = function defineProperties(it, P) {
+  anObject(it);
+  var keys = enumKeys(P = toIObject(P));
+  var i = 0;
+  var l = keys.length;
+  var key;
+  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
+  return it;
+};
+var $create = function create(it, P) {
+  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
+};
+var $propertyIsEnumerable = function propertyIsEnumerable(key) {
+  var E = isEnum.call(this, key = toPrimitive(key, true));
+  if (this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return false;
+  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
+};
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
+  it = toIObject(it);
+  key = toPrimitive(key, true);
+  if (it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return;
+  var D = gOPD(it, key);
+  if (D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
+  return D;
+};
+var $getOwnPropertyNames = function getOwnPropertyNames(it) {
+  var names = gOPN(toIObject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
+  } return result;
+};
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
+  var IS_OP = it === ObjectProto;
+  var names = gOPN(IS_OP ? OPSymbols : toIObject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true)) result.push(AllSymbols[key]);
+  } return result;
+};
+
+// 19.4.1.1 Symbol([description])
+if (!USE_NATIVE) {
+  $Symbol = function Symbol() {
+    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
+    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
+    var $set = function (value) {
+      if (this === ObjectProto) $set.call(OPSymbols, value);
+      if (has(this, HIDDEN) && has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
+      setSymbolDesc(this, tag, createDesc(1, value));
+    };
+    if (DESCRIPTORS && setter) setSymbolDesc(ObjectProto, tag, { configurable: true, set: $set });
+    return wrap(tag);
+  };
+  redefine($Symbol[PROTOTYPE], 'toString', function toString() {
+    return this._k;
+  });
+
+  $GOPD.f = $getOwnPropertyDescriptor;
+  $DP.f = $defineProperty;
+  require('./_object-gopn').f = gOPNExt.f = $getOwnPropertyNames;
+  require('./_object-pie').f = $propertyIsEnumerable;
+  require('./_object-gops').f = $getOwnPropertySymbols;
+
+  if (DESCRIPTORS && !require('./_library')) {
+    redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
+  }
+
+  wksExt.f = function (name) {
+    return wrap(wks(name));
+  };
+}
+
+$export($export.G + $export.W + $export.F * !USE_NATIVE, { Symbol: $Symbol });
+
+for (var es6Symbols = (
+  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
+  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
+).split(','), j = 0; es6Symbols.length > j;)wks(es6Symbols[j++]);
+
+for (var wellKnownSymbols = $keys(wks.store), k = 0; wellKnownSymbols.length > k;) wksDefine(wellKnownSymbols[k++]);
+
+$export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
+  // 19.4.2.1 Symbol.for(key)
+  'for': function (key) {
+    return has(SymbolRegistry, key += '')
+      ? SymbolRegistry[key]
+      : SymbolRegistry[key] = $Symbol(key);
+  },
+  // 19.4.2.5 Symbol.keyFor(sym)
+  keyFor: function keyFor(sym) {
+    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
+    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
+  },
+  useSetter: function () { setter = true; },
+  useSimple: function () { setter = false; }
+});
+
+$export($export.S + $export.F * !USE_NATIVE, 'Object', {
+  // 19.1.2.2 Object.create(O [, Properties])
+  create: $create,
+  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
+  defineProperty: $defineProperty,
+  // 19.1.2.3 Object.defineProperties(O, Properties)
+  defineProperties: $defineProperties,
+  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
+  // 19.1.2.7 Object.getOwnPropertyNames(O)
+  getOwnPropertyNames: $getOwnPropertyNames,
+  // 19.1.2.8 Object.getOwnPropertySymbols(O)
+  getOwnPropertySymbols: $getOwnPropertySymbols
+});
+
+// 24.3.2 JSON.stringify(value [, replacer [, space]])
+$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
+  var S = $Symbol();
+  // MS Edge converts symbol values to JSON as {}
+  // WebKit converts symbol values to JSON as null
+  // V8 throws on boxed symbols
+  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
+})), 'JSON', {
+  stringify: function stringify(it) {
+    var args = [it];
+    var i = 1;
+    var replacer, $replacer;
+    while (arguments.length > i) args.push(arguments[i++]);
+    $replacer = replacer = args[1];
+    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+    if (!isArray(replacer)) replacer = function (key, value) {
+      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+      if (!isSymbol(value)) return value;
+    };
+    args[1] = replacer;
+    return _stringify.apply($JSON, args);
+  }
+});
+
+// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
+$Symbol[PROTOTYPE][TO_PRIMITIVE] || require('./_hide')($Symbol[PROTOTYPE], TO_PRIMITIVE, $Symbol[PROTOTYPE].valueOf);
+// 19.4.3.5 Symbol.prototype[@@toStringTag]
+setToStringTag($Symbol, 'Symbol');
+// 20.2.1.9 Math[@@toStringTag]
+setToStringTag(Math, 'Math', true);
+// 24.3.3 JSON[@@toStringTag]
+setToStringTag(global.JSON, 'JSON', true);
+
+},{"./_an-object":5,"./_descriptors":12,"./_enum-keys":15,"./_export":16,"./_fails":17,"./_global":20,"./_has":21,"./_hide":22,"./_is-array":26,"./_is-object":27,"./_library":33,"./_meta":34,"./_object-create":35,"./_object-dp":36,"./_object-gopd":38,"./_object-gopn":40,"./_object-gopn-ext":39,"./_object-gops":41,"./_object-keys":44,"./_object-pie":45,"./_property-desc":46,"./_redefine":47,"./_set-to-string-tag":51,"./_shared":53,"./_to-iobject":59,"./_to-primitive":62,"./_uid":63,"./_wks":66,"./_wks-define":64,"./_wks-ext":65}],76:[function(require,module,exports){
+require('./_wks-define')('asyncIterator');
+
+},{"./_wks-define":64}],77:[function(require,module,exports){
+var $iterators = require('./es6.array.iterator');
+var getKeys = require('./_object-keys');
+var redefine = require('./_redefine');
+var global = require('./_global');
+var hide = require('./_hide');
+var Iterators = require('./_iterators');
+var wks = require('./_wks');
+var ITERATOR = wks('iterator');
+var TO_STRING_TAG = wks('toStringTag');
+var ArrayValues = Iterators.Array;
+
+var DOMIterables = {
+  CSSRuleList: true, // TODO: Not spec compliant, should be false.
+  CSSStyleDeclaration: false,
+  CSSValueList: false,
+  ClientRectList: false,
+  DOMRectList: false,
+  DOMStringList: false,
+  DOMTokenList: true,
+  DataTransferItemList: false,
+  FileList: false,
+  HTMLAllCollection: false,
+  HTMLCollection: false,
+  HTMLFormElement: false,
+  HTMLSelectElement: false,
+  MediaList: true, // TODO: Not spec compliant, should be false.
+  MimeTypeArray: false,
+  NamedNodeMap: false,
+  NodeList: true,
+  PaintRequestList: false,
+  Plugin: false,
+  PluginArray: false,
+  SVGLengthList: false,
+  SVGNumberList: false,
+  SVGPathSegList: false,
+  SVGPointList: false,
+  SVGStringList: false,
+  SVGTransformList: false,
+  SourceBufferList: false,
+  StyleSheetList: true, // TODO: Not spec compliant, should be false.
+  TextTrackCueList: false,
+  TextTrackList: false,
+  TouchList: false
+};
+
+for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++) {
+  var NAME = collections[i];
+  var explicit = DOMIterables[NAME];
+  var Collection = global[NAME];
+  var proto = Collection && Collection.prototype;
+  var key;
+  if (proto) {
+    if (!proto[ITERATOR]) hide(proto, ITERATOR, ArrayValues);
+    if (!proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
+    Iterators[NAME] = ArrayValues;
+    if (explicit) for (key in $iterators) if (!proto[key]) redefine(proto, key, $iterators[key], true);
+  }
+}
+
+},{"./_global":20,"./_hide":22,"./_iterators":32,"./_object-keys":44,"./_redefine":47,"./_wks":66,"./es6.array.iterator":67}],78:[function(require,module,exports){
 // https://d3js.org/d3-array/ v1.2.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -3784,7 +5485,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],3:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 // https://d3js.org/d3-axis/ v1.0.12 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -3979,7 +5680,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],4:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 // https://d3js.org/d3-brush/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -4548,7 +6249,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":9,"d3-drag":10,"d3-interpolate":18,"d3-selection":25,"d3-transition":30}],5:[function(require,module,exports){
+},{"d3-dispatch":85,"d3-drag":86,"d3-interpolate":94,"d3-selection":101,"d3-transition":106}],81:[function(require,module,exports){
 // https://d3js.org/d3-chord/ v1.0.6 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-path')) :
@@ -4780,7 +6481,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":2,"d3-path":19}],6:[function(require,module,exports){
+},{"d3-array":78,"d3-path":95}],82:[function(require,module,exports){
 // https://d3js.org/d3-collection/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -4999,7 +6700,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],7:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 // https://d3js.org/d3-color/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -5550,7 +7251,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],8:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 // https://d3js.org/d3-contour/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -5983,7 +7684,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":2}],9:[function(require,module,exports){
+},{"d3-array":78}],85:[function(require,module,exports){
 // https://d3js.org/d3-dispatch/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6080,7 +7781,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],10:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 // https://d3js.org/d3-drag/ v1.2.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch')) :
@@ -6316,7 +8017,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":9,"d3-selection":25}],11:[function(require,module,exports){
+},{"d3-dispatch":85,"d3-selection":101}],87:[function(require,module,exports){
 // https://d3js.org/d3-dsv/ v1.0.10 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6480,7 +8181,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],12:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 // https://d3js.org/d3-ease/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6741,7 +8442,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],13:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 // https://d3js.org/d3-fetch/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dsv')) :
@@ -6845,8 +8546,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dsv":11}],14:[function(require,module,exports){
-// https://d3js.org/d3-force/ v1.1.2 Copyright 2018 Mike Bostock
+},{"d3-dsv":87}],90:[function(require,module,exports){
+// https://d3js.org/d3-force/ v1.2.0 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-quadtree'), require('d3-collection'), require('d3-dispatch'), require('d3-timer')) :
 typeof define === 'function' && define.amd ? define(['exports', 'd3-quadtree', 'd3-collection', 'd3-dispatch', 'd3-timer'], factory) :
@@ -7141,27 +8842,35 @@ function simulation(nodes) {
     }
   }
 
-  function tick() {
+  function tick(iterations) {
     var i, n = nodes.length, node;
 
-    alpha += (alphaTarget - alpha) * alphaDecay;
+    if (iterations === undefined) iterations = 1;
 
-    forces.each(function(force) {
-      force(alpha);
-    });
+    for (var k = 0; k < iterations; ++k) {
+      alpha += (alphaTarget - alpha) * alphaDecay;
 
-    for (i = 0; i < n; ++i) {
-      node = nodes[i];
-      if (node.fx == null) node.x += node.vx *= velocityDecay;
-      else node.x = node.fx, node.vx = 0;
-      if (node.fy == null) node.y += node.vy *= velocityDecay;
-      else node.y = node.fy, node.vy = 0;
+      forces.each(function (force) {
+        force(alpha);
+      });
+
+      for (i = 0; i < n; ++i) {
+        node = nodes[i];
+        if (node.fx == null) node.x += node.vx *= velocityDecay;
+        else node.x = node.fx, node.vx = 0;
+        if (node.fy == null) node.y += node.vy *= velocityDecay;
+        else node.y = node.fy, node.vy = 0;
+      }
     }
+
+    return simulation;
   }
 
   function initializeNodes() {
     for (var i = 0, n = nodes.length, node; i < n; ++i) {
       node = nodes[i], node.index = i;
+      if (!isNaN(node.fx)) node.x = node.fx;
+      if (!isNaN(node.fy)) node.y = node.fy;
       if (isNaN(node.x) || isNaN(node.y)) {
         var radius = initialRadius * Math.sqrt(i), angle = i * initialAngle;
         node.x = radius * Math.cos(angle);
@@ -7507,7 +9216,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-collection":6,"d3-dispatch":9,"d3-quadtree":21,"d3-timer":29}],15:[function(require,module,exports){
+},{"d3-collection":82,"d3-dispatch":85,"d3-quadtree":97,"d3-timer":105}],91:[function(require,module,exports){
 // https://d3js.org/d3-format/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -7829,7 +9538,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],16:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 // https://d3js.org/d3-geo/ v1.11.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array')) :
@@ -10934,7 +12643,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":2}],17:[function(require,module,exports){
+},{"d3-array":78}],93:[function(require,module,exports){
 // https://d3js.org/d3-hierarchy/ v1.1.8 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -12226,7 +13935,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],18:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 // https://d3js.org/d3-interpolate/ v1.3.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color')) :
@@ -12800,7 +14509,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":7}],19:[function(require,module,exports){
+},{"d3-color":83}],95:[function(require,module,exports){
 // https://d3js.org/d3-path/ v1.0.7 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -12943,7 +14652,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],20:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 // https://d3js.org/d3-polygon/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13095,7 +14804,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],21:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 // https://d3js.org/d3-quadtree/ v1.0.5 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13532,7 +15241,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],22:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 // https://d3js.org/d3-random/ v1.1.2 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -13649,7 +15358,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],23:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 // https://d3js.org/d3-scale-chromatic/ v1.3.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-interpolate'), require('d3-color')) :
@@ -14149,13 +15858,31 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":7,"d3-interpolate":18}],24:[function(require,module,exports){
-// https://d3js.org/d3-scale/ v2.1.2 Copyright 2018 Mike Bostock
+},{"d3-color":83,"d3-interpolate":94}],100:[function(require,module,exports){
+// https://d3js.org/d3-scale/ v2.2.2 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-collection'), require('d3-array'), require('d3-interpolate'), require('d3-format'), require('d3-time'), require('d3-time-format')) :
 typeof define === 'function' && define.amd ? define(['exports', 'd3-collection', 'd3-array', 'd3-interpolate', 'd3-format', 'd3-time', 'd3-time-format'], factory) :
 (factory((global.d3 = global.d3 || {}),global.d3,global.d3,global.d3,global.d3,global.d3,global.d3));
 }(this, (function (exports,d3Collection,d3Array,d3Interpolate,d3Format,d3Time,d3TimeFormat) { 'use strict';
+
+function initRange(domain, range) {
+  switch (arguments.length) {
+    case 0: break;
+    case 1: this.range(domain); break;
+    default: this.range(range).domain(domain); break;
+  }
+  return this;
+}
+
+function initInterpolator(domain, interpolator) {
+  switch (arguments.length) {
+    case 0: break;
+    case 1: this.interpolator(domain); break;
+    default: this.interpolator(interpolator).domain(domain); break;
+  }
+  return this;
+}
 
 var array = Array.prototype;
 
@@ -14164,12 +15891,11 @@ var slice = array.slice;
 
 var implicit = {name: "implicit"};
 
-function ordinal(range) {
+function ordinal() {
   var index = d3Collection.map(),
       domain = [],
+      range = [],
       unknown = implicit;
-
-  range = range == null ? [] : slice.call(range);
 
   function scale(d) {
     var key = d + "", i = index.get(key);
@@ -14197,11 +15923,10 @@ function ordinal(range) {
   };
 
   scale.copy = function() {
-    return ordinal()
-        .domain(domain)
-        .range(range)
-        .unknown(unknown);
+    return ordinal(domain, range).unknown(unknown);
   };
+
+  initRange.apply(scale, arguments);
 
   return scale;
 }
@@ -14259,15 +15984,15 @@ function band() {
   };
 
   scale.padding = function(_) {
-    return arguments.length ? (paddingInner = paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+    return arguments.length ? (paddingInner = Math.min(1, paddingOuter = +_), rescale()) : paddingInner;
   };
 
   scale.paddingInner = function(_) {
-    return arguments.length ? (paddingInner = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+    return arguments.length ? (paddingInner = Math.min(1, _), rescale()) : paddingInner;
   };
 
   scale.paddingOuter = function(_) {
-    return arguments.length ? (paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingOuter;
+    return arguments.length ? (paddingOuter = +_, rescale()) : paddingOuter;
   };
 
   scale.align = function(_) {
@@ -14275,16 +16000,14 @@ function band() {
   };
 
   scale.copy = function() {
-    return band()
-        .domain(domain())
-        .range(range)
+    return band(domain(), range)
         .round(round)
         .paddingInner(paddingInner)
         .paddingOuter(paddingOuter)
         .align(align);
   };
 
-  return rescale();
+  return initRange.apply(rescale(), arguments);
 }
 
 function pointish(scale) {
@@ -14302,7 +16025,7 @@ function pointish(scale) {
 }
 
 function point() {
-  return pointish(band().paddingInner(1));
+  return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
 function constant(x) {
@@ -14317,34 +16040,32 @@ function number(x) {
 
 var unit = [0, 1];
 
-function deinterpolateLinear(a, b) {
+function identity(x) {
+  return x;
+}
+
+function normalize(a, b) {
   return (b -= (a = +a))
       ? function(x) { return (x - a) / b; }
-      : constant(b);
+      : constant(isNaN(b) ? NaN : 0.5);
 }
 
-function deinterpolateClamp(deinterpolate) {
-  return function(a, b) {
-    var d = deinterpolate(a = +a, b = +b);
-    return function(x) { return x <= a ? 0 : x >= b ? 1 : d(x); };
-  };
+function clamper(domain) {
+  var a = domain[0], b = domain[domain.length - 1], t;
+  if (a > b) t = a, a = b, b = t;
+  return function(x) { return Math.max(a, Math.min(b, x)); };
 }
 
-function reinterpolateClamp(reinterpolate) {
-  return function(a, b) {
-    var r = reinterpolate(a = +a, b = +b);
-    return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
-  };
-}
-
-function bimap(domain, range, deinterpolate, reinterpolate) {
+// normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+// interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
+function bimap(domain, range, interpolate) {
   var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
-  if (d1 < d0) d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0);
-  else d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1);
+  if (d1 < d0) d0 = normalize(d1, d0), r0 = interpolate(r1, r0);
+  else d0 = normalize(d0, d1), r0 = interpolate(r0, r1);
   return function(x) { return r0(d0(x)); };
 }
 
-function polymap(domain, range, deinterpolate, reinterpolate) {
+function polymap(domain, range, interpolate) {
   var j = Math.min(domain.length, range.length) - 1,
       d = new Array(j),
       r = new Array(j),
@@ -14357,8 +16078,8 @@ function polymap(domain, range, deinterpolate, reinterpolate) {
   }
 
   while (++i < j) {
-    d[i] = deinterpolate(domain[i], domain[i + 1]);
-    r[i] = reinterpolate(range[i], range[i + 1]);
+    d[i] = normalize(domain[i], domain[i + 1]);
+    r[i] = interpolate(range[i], range[i + 1]);
   }
 
   return function(x) {
@@ -14372,16 +16093,18 @@ function copy(source, target) {
       .domain(source.domain())
       .range(source.range())
       .interpolate(source.interpolate())
-      .clamp(source.clamp());
+      .clamp(source.clamp())
+      .unknown(source.unknown());
 }
 
-// deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
-// reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
-function continuous(deinterpolate, reinterpolate) {
+function transformer() {
   var domain = unit,
       range = unit,
       interpolate = d3Interpolate.interpolate,
-      clamp = false,
+      transform,
+      untransform,
+      unknown,
+      clamp = identity,
       piecewise,
       output,
       input;
@@ -14393,15 +16116,15 @@ function continuous(deinterpolate, reinterpolate) {
   }
 
   function scale(x) {
-    return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate)))(+x);
+    return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
   }
 
   scale.invert = function(y) {
-    return (input || (input = piecewise(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
+    return clamp(untransform((input || (input = piecewise(range, domain.map(transform), d3Interpolate.interpolateNumber)))(y)));
   };
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = map.call(_, number), rescale()) : domain.slice();
+    return arguments.length ? (domain = map.call(_, number), clamp === identity || (clamp = clamper(domain)), rescale()) : domain.slice();
   };
 
   scale.range = function(_) {
@@ -14413,20 +16136,29 @@ function continuous(deinterpolate, reinterpolate) {
   };
 
   scale.clamp = function(_) {
-    return arguments.length ? (clamp = !!_, rescale()) : clamp;
+    return arguments.length ? (clamp = _ ? clamper(domain) : identity, scale) : clamp !== identity;
   };
 
   scale.interpolate = function(_) {
     return arguments.length ? (interpolate = _, rescale()) : interpolate;
   };
 
-  return rescale();
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
+  return function(t, u) {
+    transform = t, untransform = u;
+    return rescale();
+  };
 }
 
-function tickFormat(domain, count, specifier) {
-  var start = domain[0],
-      stop = domain[domain.length - 1],
-      step = d3Array.tickStep(start, stop, count == null ? 10 : count),
+function continuous(transform, untransform) {
+  return transformer()(transform, untransform);
+}
+
+function tickFormat(start, stop, count, specifier) {
+  var step = d3Array.tickStep(start, stop, count),
       precision;
   specifier = d3Format.formatSpecifier(specifier == null ? ",f" : specifier);
   switch (specifier.type) {
@@ -14461,7 +16193,8 @@ function linearish(scale) {
   };
 
   scale.tickFormat = function(count, specifier) {
-    return tickFormat(domain(), count, specifier);
+    var d = domain();
+    return tickFormat(d[0], d[d.length - 1], count == null ? 10 : count, specifier);
   };
 
   scale.nice = function(count) {
@@ -14508,20 +16241,22 @@ function linearish(scale) {
 }
 
 function linear() {
-  var scale = continuous(deinterpolateLinear, d3Interpolate.interpolateNumber);
+  var scale = continuous(identity, identity);
 
   scale.copy = function() {
     return copy(scale, linear());
   };
 
+  initRange.apply(scale, arguments);
+
   return linearish(scale);
 }
 
-function identity() {
-  var domain = [0, 1];
+function identity$1(domain) {
+  var unknown;
 
   function scale(x) {
-    return +x;
+    return isNaN(x = +x) ? unknown : x;
   }
 
   scale.invert = scale;
@@ -14530,9 +16265,15 @@ function identity() {
     return arguments.length ? (domain = map.call(_, number), scale) : domain.slice();
   };
 
-  scale.copy = function() {
-    return identity().domain(domain);
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
   };
+
+  scale.copy = function() {
+    return identity$1(domain).unknown(unknown);
+  };
+
+  domain = arguments.length ? map.call(domain, number) : [0, 1];
 
   return linearish(scale);
 }
@@ -14556,16 +16297,20 @@ function nice(domain, interval) {
   return domain;
 }
 
-function deinterpolate(a, b) {
-  return (b = Math.log(b / a))
-      ? function(x) { return Math.log(x / a) / b; }
-      : constant(b);
+function transformLog(x) {
+  return Math.log(x);
 }
 
-function reinterpolate(a, b) {
-  return a < 0
-      ? function(t) { return -Math.pow(-b, t) * Math.pow(-a, 1 - t); }
-      : function(t) { return Math.pow(b, t) * Math.pow(a, 1 - t); };
+function transformExp(x) {
+  return Math.exp(x);
+}
+
+function transformLogn(x) {
+  return -Math.log(-x);
+}
+
+function transformExpn(x) {
+  return -Math.exp(-x);
 }
 
 function pow10(x) {
@@ -14591,16 +16336,21 @@ function reflect(f) {
   };
 }
 
-function log() {
-  var scale = continuous(deinterpolate, reinterpolate).domain([1, 10]),
+function loggish(transform) {
+  var scale = transform(transformLog, transformExp),
       domain = scale.domain,
       base = 10,
-      logs = logp(10),
-      pows = powp(10);
+      logs,
+      pows;
 
   function rescale() {
     logs = logp(base), pows = powp(base);
-    if (domain()[0] < 0) logs = reflect(logs), pows = reflect(pows);
+    if (domain()[0] < 0) {
+      logs = reflect(logs), pows = reflect(pows);
+      transform(transformLogn, transformExpn);
+    } else {
+      transform(transformLog, transformExp);
+    }
     return scale;
   }
 
@@ -14672,52 +16422,105 @@ function log() {
     }));
   };
 
+  return scale;
+}
+
+function log() {
+  var scale = loggish(transformer()).domain([1, 10]);
+
   scale.copy = function() {
-    return copy(scale, log().base(base));
+    return copy(scale, log()).base(scale.base());
   };
+
+  initRange.apply(scale, arguments);
 
   return scale;
 }
 
-function raise(x, exponent) {
-  return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+function transformSymlog(c) {
+  return function(x) {
+    return Math.sign(x) * Math.log1p(Math.abs(x / c));
+  };
 }
 
-function pow() {
-  var exponent = 1,
-      scale = continuous(deinterpolate, reinterpolate),
-      domain = scale.domain;
-
-  function deinterpolate(a, b) {
-    return (b = raise(b, exponent) - (a = raise(a, exponent)))
-        ? function(x) { return (raise(x, exponent) - a) / b; }
-        : constant(b);
-  }
-
-  function reinterpolate(a, b) {
-    b = raise(b, exponent) - (a = raise(a, exponent));
-    return function(t) { return raise(a + b * t, 1 / exponent); };
-  }
-
-  scale.exponent = function(_) {
-    return arguments.length ? (exponent = +_, domain(domain())) : exponent;
+function transformSymexp(c) {
+  return function(x) {
+    return Math.sign(x) * Math.expm1(Math.abs(x)) * c;
   };
+}
 
-  scale.copy = function() {
-    return copy(scale, pow().exponent(exponent));
+function symlogish(transform) {
+  var c = 1, scale = transform(transformSymlog(c), transformSymexp(c));
+
+  scale.constant = function(_) {
+    return arguments.length ? transform(transformSymlog(c = +_), transformSymexp(c)) : c;
   };
 
   return linearish(scale);
 }
 
+function symlog() {
+  var scale = symlogish(transformer());
+
+  scale.copy = function() {
+    return copy(scale, symlog()).constant(scale.constant());
+  };
+
+  return initRange.apply(scale, arguments);
+}
+
+function transformPow(exponent) {
+  return function(x) {
+    return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+  };
+}
+
+function transformSqrt(x) {
+  return x < 0 ? -Math.sqrt(-x) : Math.sqrt(x);
+}
+
+function transformSquare(x) {
+  return x < 0 ? -x * x : x * x;
+}
+
+function powish(transform) {
+  var scale = transform(identity, identity),
+      exponent = 1;
+
+  function rescale() {
+    return exponent === 1 ? transform(identity, identity)
+        : exponent === 0.5 ? transform(transformSqrt, transformSquare)
+        : transform(transformPow(exponent), transformPow(1 / exponent));
+  }
+
+  scale.exponent = function(_) {
+    return arguments.length ? (exponent = +_, rescale()) : exponent;
+  };
+
+  return linearish(scale);
+}
+
+function pow() {
+  var scale = powish(transformer());
+
+  scale.copy = function() {
+    return copy(scale, pow()).exponent(scale.exponent());
+  };
+
+  initRange.apply(scale, arguments);
+
+  return scale;
+}
+
 function sqrt() {
-  return pow().exponent(0.5);
+  return pow.apply(null, arguments).exponent(0.5);
 }
 
 function quantile() {
   var domain = [],
       range = [],
-      thresholds = [];
+      thresholds = [],
+      unknown;
 
   function rescale() {
     var i = 0, n = Math.max(1, range.length);
@@ -14727,7 +16530,7 @@ function quantile() {
   }
 
   function scale(x) {
-    if (!isNaN(x = +x)) return range[d3Array.bisect(thresholds, x)];
+    return isNaN(x = +x) ? unknown : range[d3Array.bisect(thresholds, x)];
   }
 
   scale.invertExtent = function(y) {
@@ -14750,6 +16553,10 @@ function quantile() {
     return arguments.length ? (range = slice.call(_), rescale()) : range.slice();
   };
 
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
   scale.quantiles = function() {
     return thresholds.slice();
   };
@@ -14757,10 +16564,11 @@ function quantile() {
   scale.copy = function() {
     return quantile()
         .domain(domain)
-        .range(range);
+        .range(range)
+        .unknown(unknown);
   };
 
-  return scale;
+  return initRange.apply(scale, arguments);
 }
 
 function quantize() {
@@ -14768,10 +16576,11 @@ function quantize() {
       x1 = 1,
       n = 1,
       domain = [0.5],
-      range = [0, 1];
+      range = [0, 1],
+      unknown;
 
   function scale(x) {
-    if (x <= x) return range[d3Array.bisect(domain, x, 0, n)];
+    return x <= x ? range[d3Array.bisect(domain, x, 0, n)] : unknown;
   }
 
   function rescale() {
@@ -14797,22 +16606,32 @@ function quantize() {
         : [domain[i - 1], domain[i]];
   };
 
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : scale;
+  };
+
+  scale.thresholds = function() {
+    return domain.slice();
+  };
+
   scale.copy = function() {
     return quantize()
         .domain([x0, x1])
-        .range(range);
+        .range(range)
+        .unknown(unknown);
   };
 
-  return linearish(scale);
+  return initRange.apply(linearish(scale), arguments);
 }
 
 function threshold() {
   var domain = [0.5],
       range = [0, 1],
+      unknown,
       n = 1;
 
   function scale(x) {
-    if (x <= x) return range[d3Array.bisect(domain, x, 0, n)];
+    return x <= x ? range[d3Array.bisect(domain, x, 0, n)] : unknown;
   }
 
   scale.domain = function(_) {
@@ -14828,13 +16647,18 @@ function threshold() {
     return [domain[i - 1], domain[i]];
   };
 
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
   scale.copy = function() {
     return threshold()
         .domain(domain)
-        .range(range);
+        .range(range)
+        .unknown(unknown);
   };
 
-  return scale;
+  return initRange.apply(scale, arguments);
 }
 
 var durationSecond = 1000,
@@ -14854,7 +16678,7 @@ function number$1(t) {
 }
 
 function calendar(year, month, week, day, hour, minute, second, millisecond, format) {
-  var scale = continuous(deinterpolateLinear, d3Interpolate.interpolateNumber),
+  var scale = continuous(identity, identity),
       invert = scale.invert,
       domain = scale.domain;
 
@@ -14962,26 +16786,30 @@ function calendar(year, month, week, day, hour, minute, second, millisecond, for
 }
 
 function time() {
-  return calendar(d3Time.timeYear, d3Time.timeMonth, d3Time.timeWeek, d3Time.timeDay, d3Time.timeHour, d3Time.timeMinute, d3Time.timeSecond, d3Time.timeMillisecond, d3TimeFormat.timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
+  return initRange.apply(calendar(d3Time.timeYear, d3Time.timeMonth, d3Time.timeWeek, d3Time.timeDay, d3Time.timeHour, d3Time.timeMinute, d3Time.timeSecond, d3Time.timeMillisecond, d3TimeFormat.timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
 }
 
 function utcTime() {
-  return calendar(d3Time.utcYear, d3Time.utcMonth, d3Time.utcWeek, d3Time.utcDay, d3Time.utcHour, d3Time.utcMinute, d3Time.utcSecond, d3Time.utcMillisecond, d3TimeFormat.utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]);
+  return initRange.apply(calendar(d3Time.utcYear, d3Time.utcMonth, d3Time.utcWeek, d3Time.utcDay, d3Time.utcHour, d3Time.utcMinute, d3Time.utcSecond, d3Time.utcMillisecond, d3TimeFormat.utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
 }
 
-function sequential(interpolator) {
+function transformer$1() {
   var x0 = 0,
       x1 = 1,
-      k10 = 1,
-      clamp = false;
+      t0,
+      t1,
+      k10,
+      transform,
+      interpolator = identity,
+      clamp = false,
+      unknown;
 
   function scale(x) {
-    var t = (x - x0) * k10;
-    return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+    return isNaN(x = +x) ? unknown : interpolator(k10 === 0 ? 0.5 : (x = (transform(x) - t0) * k10, clamp ? Math.max(0, Math.min(1, x)) : x));
   }
 
   scale.domain = function(_) {
-    return arguments.length ? (x0 = +_[0], x1 = +_[1], k10 = x0 === x1 ? 0 : 1 / (x1 - x0), scale) : [x0, x1];
+    return arguments.length ? (t0 = transform(x0 = +_[0]), t1 = transform(x1 = +_[1]), k10 = t0 === t1 ? 0 : 1 / (t1 - t0), scale) : [x0, x1];
   };
 
   scale.clamp = function(_) {
@@ -14992,28 +16820,115 @@ function sequential(interpolator) {
     return arguments.length ? (interpolator = _, scale) : interpolator;
   };
 
-  scale.copy = function() {
-    return sequential(interpolator).domain([x0, x1]).clamp(clamp);
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
   };
 
-  return linearish(scale);
+  return function(t) {
+    transform = t, t0 = t(x0), t1 = t(x1), k10 = t0 === t1 ? 0 : 1 / (t1 - t0);
+    return scale;
+  };
 }
 
-function diverging(interpolator) {
+function copy$1(source, target) {
+  return target
+      .domain(source.domain())
+      .interpolator(source.interpolator())
+      .clamp(source.clamp())
+      .unknown(source.unknown());
+}
+
+function sequential() {
+  var scale = linearish(transformer$1()(identity));
+
+  scale.copy = function() {
+    return copy$1(scale, sequential());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function sequentialLog() {
+  var scale = loggish(transformer$1()).domain([1, 10]);
+
+  scale.copy = function() {
+    return copy$1(scale, sequentialLog()).base(scale.base());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function sequentialSymlog() {
+  var scale = symlogish(transformer$1());
+
+  scale.copy = function() {
+    return copy$1(scale, sequentialSymlog()).constant(scale.constant());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function sequentialPow() {
+  var scale = powish(transformer$1());
+
+  scale.copy = function() {
+    return copy$1(scale, sequentialPow()).exponent(scale.exponent());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function sequentialSqrt() {
+  return sequentialPow.apply(null, arguments).exponent(0.5);
+}
+
+function sequentialQuantile() {
+  var domain = [],
+      interpolator = identity;
+
+  function scale(x) {
+    if (!isNaN(x = +x)) return interpolator((d3Array.bisect(domain, x) - 1) / (domain.length - 1));
+  }
+
+  scale.domain = function(_) {
+    if (!arguments.length) return domain.slice();
+    domain = [];
+    for (var i = 0, n = _.length, d; i < n; ++i) if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
+    domain.sort(d3Array.ascending);
+    return scale;
+  };
+
+  scale.interpolator = function(_) {
+    return arguments.length ? (interpolator = _, scale) : interpolator;
+  };
+
+  scale.copy = function() {
+    return sequentialQuantile(interpolator).domain(domain);
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function transformer$2() {
   var x0 = 0,
       x1 = 0.5,
       x2 = 1,
-      k10 = 1,
-      k21 = 1,
-      clamp = false;
+      t0,
+      t1,
+      t2,
+      k10,
+      k21,
+      interpolator = identity,
+      transform,
+      clamp = false,
+      unknown;
 
   function scale(x) {
-    var t = 0.5 + ((x = +x) - x1) * (x < x1 ? k10 : k21);
-    return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+    return isNaN(x = +x) ? unknown : (x = 0.5 + ((x = +transform(x)) - t1) * (x < t1 ? k10 : k21), interpolator(clamp ? Math.max(0, Math.min(1, x)) : x));
   }
 
   scale.domain = function(_) {
-    return arguments.length ? (x0 = +_[0], x1 = +_[1], x2 = +_[2], k10 = x0 === x1 ? 0 : 0.5 / (x1 - x0), k21 = x1 === x2 ? 0 : 0.5 / (x2 - x1), scale) : [x0, x1, x2];
+    return arguments.length ? (t0 = transform(x0 = +_[0]), t1 = transform(x1 = +_[1]), t2 = transform(x2 = +_[2]), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1), scale) : [x0, x1, x2];
   };
 
   scale.clamp = function(_) {
@@ -15024,18 +16939,66 @@ function diverging(interpolator) {
     return arguments.length ? (interpolator = _, scale) : interpolator;
   };
 
-  scale.copy = function() {
-    return diverging(interpolator).domain([x0, x1, x2]).clamp(clamp);
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
   };
 
-  return linearish(scale);
+  return function(t) {
+    transform = t, t0 = t(x0), t1 = t(x1), t2 = t(x2), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1);
+    return scale;
+  };
+}
+
+function diverging() {
+  var scale = linearish(transformer$2()(identity));
+
+  scale.copy = function() {
+    return copy$1(scale, diverging());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function divergingLog() {
+  var scale = loggish(transformer$2()).domain([0.1, 1, 10]);
+
+  scale.copy = function() {
+    return copy$1(scale, divergingLog()).base(scale.base());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function divergingSymlog() {
+  var scale = symlogish(transformer$2());
+
+  scale.copy = function() {
+    return copy$1(scale, divergingSymlog()).constant(scale.constant());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function divergingPow() {
+  var scale = powish(transformer$2());
+
+  scale.copy = function() {
+    return copy$1(scale, divergingPow()).exponent(scale.exponent());
+  };
+
+  return initInterpolator.apply(scale, arguments);
+}
+
+function divergingSqrt() {
+  return divergingPow.apply(null, arguments).exponent(0.5);
 }
 
 exports.scaleBand = band;
 exports.scalePoint = point;
-exports.scaleIdentity = identity;
+exports.scaleIdentity = identity$1;
 exports.scaleLinear = linear;
 exports.scaleLog = log;
+exports.scaleSymlog = symlog;
 exports.scaleOrdinal = ordinal;
 exports.scaleImplicit = implicit;
 exports.scalePow = pow;
@@ -15046,14 +17009,24 @@ exports.scaleThreshold = threshold;
 exports.scaleTime = time;
 exports.scaleUtc = utcTime;
 exports.scaleSequential = sequential;
+exports.scaleSequentialLog = sequentialLog;
+exports.scaleSequentialPow = sequentialPow;
+exports.scaleSequentialSqrt = sequentialSqrt;
+exports.scaleSequentialSymlog = sequentialSymlog;
+exports.scaleSequentialQuantile = sequentialQuantile;
 exports.scaleDiverging = diverging;
+exports.scaleDivergingLog = divergingLog;
+exports.scaleDivergingPow = divergingPow;
+exports.scaleDivergingSqrt = divergingSqrt;
+exports.scaleDivergingSymlog = divergingSymlog;
+exports.tickFormat = tickFormat;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-array":2,"d3-collection":6,"d3-format":15,"d3-interpolate":18,"d3-time":28,"d3-time-format":27}],25:[function(require,module,exports){
-// https://d3js.org/d3-selection/ v1.3.2 Copyright 2018 Mike Bostock
+},{"d3-array":78,"d3-collection":82,"d3-format":91,"d3-interpolate":94,"d3-time":104,"d3-time-format":103}],101:[function(require,module,exports){
+// https://d3js.org/d3-selection/ v1.4.0 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -15147,31 +17120,14 @@ function selection_selectAll(select) {
   return new Selection(subgroups, parents);
 }
 
-var matcher = function(selector) {
+function matcher(selector) {
   return function() {
     return this.matches(selector);
   };
-};
-
-if (typeof document !== "undefined") {
-  var element = document.documentElement;
-  if (!element.matches) {
-    var vendorMatches = element.webkitMatchesSelector
-        || element.msMatchesSelector
-        || element.mozMatchesSelector
-        || element.oMatchesSelector;
-    matcher = function(selector) {
-      return function() {
-        return vendorMatches.call(this, selector);
-      };
-    };
-  }
 }
 
-var matcher$1 = matcher;
-
 function selection_filter(match) {
-  if (typeof match !== "function") match = matcher$1(match);
+  if (typeof match !== "function") match = matcher(match);
 
   for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
@@ -15333,6 +17289,14 @@ function selection_exit() {
   return new Selection(this._exit || this._groups.map(sparse), this._parents);
 }
 
+function selection_join(onenter, onupdate, onexit) {
+  var enter = this.enter(), update = this, exit = this.exit();
+  enter = typeof onenter === "function" ? onenter(enter) : enter.append(onenter + "");
+  if (onupdate != null) update = onupdate(update);
+  if (onexit == null) exit.remove(); else onexit(exit);
+  return enter && update ? enter.merge(update).order() : update;
+}
+
 function selection_merge(selection$$1) {
 
   for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -15355,7 +17319,7 @@ function selection_order() {
   for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
     for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
       if (node = group[i]) {
-        if (next && next !== node.nextSibling) next.parentNode.insertBefore(node, next);
+        if (next && node.compareDocumentPosition(next) ^ 4) next.parentNode.insertBefore(node, next);
         next = node;
       }
     }
@@ -15753,8 +17717,8 @@ var filterEvents = {};
 exports.event = null;
 
 if (typeof document !== "undefined") {
-  var element$1 = document.documentElement;
-  if (!("onmouseenter" in element$1)) {
+  var element = document.documentElement;
+  if (!("onmouseenter" in element)) {
     filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
   }
 }
@@ -15908,6 +17872,7 @@ Selection.prototype = selection.prototype = {
   data: selection_data,
   enter: selection_enter,
   exit: selection_exit,
+  join: selection_join,
   merge: selection_merge,
   order: selection_order,
   sort: selection_sort,
@@ -16029,7 +17994,7 @@ function touches(node, touches) {
 exports.create = create;
 exports.creator = creator;
 exports.local = local;
-exports.matcher = matcher$1;
+exports.matcher = matcher;
 exports.mouse = mouse;
 exports.namespace = namespace;
 exports.namespaces = namespaces;
@@ -16049,8 +18014,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],26:[function(require,module,exports){
-// https://d3js.org/d3-shape/ v1.2.2 Copyright 2018 Mike Bostock
+},{}],102:[function(require,module,exports){
+// https://d3js.org/d3-shape/ v1.3.4 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-path')) :
 typeof define === 'function' && define.amd ? define(['exports', 'd3-path'], factory) :
@@ -16107,7 +18072,9 @@ function arcPadAngle(d) {
 function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
   var x10 = x1 - x0, y10 = y1 - y0,
       x32 = x3 - x2, y32 = y3 - y2,
-      t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / (y32 * x10 - x32 * y10);
+      t = y32 * x10 - x32 * y10;
+  if (t * t < epsilon) return;
+  t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / t;
   return [x0 + t * x10, y0 + t * y10];
 }
 
@@ -16228,12 +18195,12 @@ function arc() {
         var x11 = r1 * cos(a11),
             y11 = r1 * sin(a11),
             x00 = r0 * cos(a00),
-            y00 = r0 * sin(a00);
+            y00 = r0 * sin(a00),
+            oc;
 
         // Restrict the corner radius according to the sector angle.
-        if (da < pi) {
-          var oc = da0 > epsilon ? intersect(x01, y01, x00, y00, x11, y11, x10, y10) : [x10, y10],
-              ax = x01 - oc[0],
+        if (da < pi && (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10))) {
+          var ax = x01 - oc[0],
               ay = y01 - oc[1],
               bx = x11 - oc[0],
               by = y11 - oc[1],
@@ -17887,6 +19854,17 @@ function wiggle(series, order) {
   none(series, order);
 }
 
+function appearance(series) {
+  var peaks = series.map(peak);
+  return none$1(series).sort(function(a, b) { return peaks[a] - peaks[b]; });
+}
+
+function peak(series) {
+  var i = -1, j = 0, n = series.length, vi, vj = -Infinity;
+  while (++i < n) if ((vi = +series[i][1]) > vj) vj = vi, j = i;
+  return j;
+}
+
 function ascending(series) {
   var sums = series.map(sum);
   return none$1(series).sort(function(a, b) { return sums[a] - sums[b]; });
@@ -17907,7 +19885,7 @@ function insideOut(series) {
       i,
       j,
       sums = series.map(sum),
-      order = none$1(series).sort(function(a, b) { return sums[b] - sums[a]; }),
+      order = appearance(series),
       top = 0,
       bottom = 0,
       tops = [],
@@ -17976,6 +19954,7 @@ exports.stackOffsetDiverging = diverging;
 exports.stackOffsetNone = none;
 exports.stackOffsetSilhouette = silhouette;
 exports.stackOffsetWiggle = wiggle;
+exports.stackOrderAppearance = appearance;
 exports.stackOrderAscending = ascending;
 exports.stackOrderDescending = descending$1;
 exports.stackOrderInsideOut = insideOut;
@@ -17986,7 +19965,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-path":19}],27:[function(require,module,exports){
+},{"d3-path":95}],103:[function(require,module,exports){
 // https://d3js.org/d3-time-format/ v2.1.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-time')) :
@@ -18672,8 +20651,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-time":28}],28:[function(require,module,exports){
-// https://d3js.org/d3-time/ v1.0.10 Copyright 2018 Mike Bostock
+},{"d3-time":104}],104:[function(require,module,exports){
+// https://d3js.org/d3-time/ v1.0.11 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -18779,7 +20758,7 @@ var durationDay = 864e5;
 var durationWeek = 6048e5;
 
 var second = newInterval(function(date) {
-  date.setTime(Math.floor(date / durationSecond) * durationSecond);
+  date.setTime(date - date.getMilliseconds());
 }, function(date, step) {
   date.setTime(+date + step * durationSecond);
 }, function(start, end) {
@@ -18790,7 +20769,7 @@ var second = newInterval(function(date) {
 var seconds = second.range;
 
 var minute = newInterval(function(date) {
-  date.setTime(Math.floor(date / durationMinute) * durationMinute);
+  date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
 }, function(date, step) {
   date.setTime(+date + step * durationMinute);
 }, function(start, end) {
@@ -18801,9 +20780,7 @@ var minute = newInterval(function(date) {
 var minutes = minute.range;
 
 var hour = newInterval(function(date) {
-  var offset = date.getTimezoneOffset() * durationMinute % durationHour;
-  if (offset < 0) offset += durationHour;
-  date.setTime(Math.floor((+date - offset) / durationHour) * durationHour + offset);
+  date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
 }, function(date, step) {
   date.setTime(+date + step * durationHour);
 }, function(start, end) {
@@ -19047,7 +21024,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],29:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 // https://d3js.org/d3-timer/ v1.0.9 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -19198,15 +21175,15 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],30:[function(require,module,exports){
-// https://d3js.org/d3-transition/ v1.1.3 Copyright 2018 Mike Bostock
+},{}],106:[function(require,module,exports){
+// https://d3js.org/d3-transition/ v1.2.0 Copyright 2019 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-dispatch'), require('d3-timer'), require('d3-color'), require('d3-interpolate'), require('d3-selection'), require('d3-ease')) :
 typeof define === 'function' && define.amd ? define(['exports', 'd3-dispatch', 'd3-timer', 'd3-color', 'd3-interpolate', 'd3-selection', 'd3-ease'], factory) :
 (factory((global.d3 = global.d3 || {}),global.d3,global.d3,global.d3,global.d3,global.d3,global.d3));
 }(this, (function (exports,d3Dispatch,d3Timer,d3Color,d3Interpolate,d3Selection,d3Ease) { 'use strict';
 
-var emptyOn = d3Dispatch.dispatch("start", "end", "interrupt");
+var emptyOn = d3Dispatch.dispatch("start", "end", "cancel", "interrupt");
 var emptyTween = [];
 
 var CREATED = 0;
@@ -19244,7 +21221,7 @@ function init(node, id) {
 
 function set(node, id) {
   var schedule = get(node, id);
-  if (schedule.state > STARTING) throw new Error("too late; already started");
+  if (schedule.state > STARTED) throw new Error("too late; already running");
   return schedule;
 }
 
@@ -19287,7 +21264,6 @@ function create(node, id, self) {
       if (o.state === STARTED) return d3Timer.timeout(start);
 
       // Interrupt the active transition, if any.
-      // Dispatch the interrupt event.
       if (o.state === RUNNING) {
         o.state = ENDED;
         o.timer.stop();
@@ -19295,12 +21271,11 @@ function create(node, id, self) {
         delete schedules[i];
       }
 
-      // Cancel any pre-empted transitions. No interrupt event is dispatched
-      // because the cancelled transitions never started. Note that this also
-      // removes this transition from the pending list!
+      // Cancel any pre-empted transitions.
       else if (+i < id) {
         o.state = ENDED;
         o.timer.stop();
+        o.on.call("cancel", node, node.__data__, o.index, o.group);
         delete schedules[i];
       }
     }
@@ -19340,7 +21315,7 @@ function create(node, id, self) {
         n = tween.length;
 
     while (++i < n) {
-      tween[i].call(null, t);
+      tween[i].call(node, t);
     }
 
     // Dispatch the end event.
@@ -19375,7 +21350,7 @@ function interrupt(node, name) {
     active = schedule$$1.state > STARTING && schedule$$1.state < ENDING;
     schedule$$1.state = ENDED;
     schedule$$1.timer.stop();
-    if (active) schedule$$1.on.call("interrupt", node, node.__data__, schedule$$1.index, schedule$$1.group);
+    schedule$$1.on.call(active ? "interrupt" : "cancel", node, node.__data__, schedule$$1.index, schedule$$1.group);
     delete schedules[i];
   }
 
@@ -19489,52 +21464,56 @@ function attrRemoveNS(fullname) {
 }
 
 function attrConstant(name, interpolate$$1, value1) {
-  var value00,
+  var string00,
+      string1 = value1 + "",
       interpolate0;
   return function() {
-    var value0 = this.getAttribute(name);
-    return value0 === value1 ? null
-        : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+    var string0 = this.getAttribute(name);
+    return string0 === string1 ? null
+        : string0 === string00 ? interpolate0
+        : interpolate0 = interpolate$$1(string00 = string0, value1);
   };
 }
 
 function attrConstantNS(fullname, interpolate$$1, value1) {
-  var value00,
+  var string00,
+      string1 = value1 + "",
       interpolate0;
   return function() {
-    var value0 = this.getAttributeNS(fullname.space, fullname.local);
-    return value0 === value1 ? null
-        : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+    var string0 = this.getAttributeNS(fullname.space, fullname.local);
+    return string0 === string1 ? null
+        : string0 === string00 ? interpolate0
+        : interpolate0 = interpolate$$1(string00 = string0, value1);
   };
 }
 
 function attrFunction(name, interpolate$$1, value) {
-  var value00,
-      value10,
+  var string00,
+      string10,
       interpolate0;
   return function() {
-    var value0, value1 = value(this);
+    var string0, value1 = value(this), string1;
     if (value1 == null) return void this.removeAttribute(name);
-    value0 = this.getAttribute(name);
-    return value0 === value1 ? null
-        : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+    string0 = this.getAttribute(name);
+    string1 = value1 + "";
+    return string0 === string1 ? null
+        : string0 === string00 && string1 === string10 ? interpolate0
+        : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
   };
 }
 
 function attrFunctionNS(fullname, interpolate$$1, value) {
-  var value00,
-      value10,
+  var string00,
+      string10,
       interpolate0;
   return function() {
-    var value0, value1 = value(this);
+    var string0, value1 = value(this), string1;
     if (value1 == null) return void this.removeAttributeNS(fullname.space, fullname.local);
-    value0 = this.getAttributeNS(fullname.space, fullname.local);
-    return value0 === value1 ? null
-        : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+    string0 = this.getAttributeNS(fullname.space, fullname.local);
+    string1 = value1 + "";
+    return string0 === string1 ? null
+        : string0 === string00 && string1 === string10 ? interpolate0
+        : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
   };
 }
 
@@ -19543,26 +21522,38 @@ function transition_attr(name, value) {
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS : attrFunction)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS : attrRemove)(fullname)
-      : (fullname.local ? attrConstantNS : attrConstant)(fullname, i, value + ""));
+      : (fullname.local ? attrConstantNS : attrConstant)(fullname, i, value));
+}
+
+function attrInterpolate(name, i) {
+  return function(t) {
+    this.setAttribute(name, i(t));
+  };
+}
+
+function attrInterpolateNS(fullname, i) {
+  return function(t) {
+    this.setAttributeNS(fullname.space, fullname.local, i(t));
+  };
 }
 
 function attrTweenNS(fullname, value) {
+  var t0, i0;
   function tween() {
-    var node = this, i = value.apply(node, arguments);
-    return i && function(t) {
-      node.setAttributeNS(fullname.space, fullname.local, i(t));
-    };
+    var i = value.apply(this, arguments);
+    if (i !== i0) t0 = (i0 = i) && attrInterpolateNS(fullname, i);
+    return t0;
   }
   tween._value = value;
   return tween;
 }
 
 function attrTween(name, value) {
+  var t0, i0;
   function tween() {
-    var node = this, i = value.apply(node, arguments);
-    return i && function(t) {
-      node.setAttribute(name, i(t));
-    };
+    var i = value.apply(this, arguments);
+    if (i !== i0) t0 = (i0 = i) && attrInterpolate(name, i);
+    return t0;
   }
   tween._value = value;
   return tween;
@@ -19759,66 +21750,93 @@ function transition_selection() {
   return new Selection(this._groups, this._parents);
 }
 
-function styleRemove(name, interpolate$$1) {
-  var value00,
-      value10,
+function styleNull(name, interpolate$$1) {
+  var string00,
+      string10,
       interpolate0;
   return function() {
-    var value0 = d3Selection.style(this, name),
-        value1 = (this.style.removeProperty(name), d3Selection.style(this, name));
-    return value0 === value1 ? null
-        : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+    var string0 = d3Selection.style(this, name),
+        string1 = (this.style.removeProperty(name), d3Selection.style(this, name));
+    return string0 === string1 ? null
+        : string0 === string00 && string1 === string10 ? interpolate0
+        : interpolate0 = interpolate$$1(string00 = string0, string10 = string1);
   };
 }
 
-function styleRemoveEnd(name) {
+function styleRemove(name) {
   return function() {
     this.style.removeProperty(name);
   };
 }
 
 function styleConstant(name, interpolate$$1, value1) {
-  var value00,
+  var string00,
+      string1 = value1 + "",
       interpolate0;
   return function() {
-    var value0 = d3Selection.style(this, name);
-    return value0 === value1 ? null
-        : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+    var string0 = d3Selection.style(this, name);
+    return string0 === string1 ? null
+        : string0 === string00 ? interpolate0
+        : interpolate0 = interpolate$$1(string00 = string0, value1);
   };
 }
 
 function styleFunction(name, interpolate$$1, value) {
-  var value00,
-      value10,
+  var string00,
+      string10,
       interpolate0;
   return function() {
-    var value0 = d3Selection.style(this, name),
-        value1 = value(this);
-    if (value1 == null) value1 = (this.style.removeProperty(name), d3Selection.style(this, name));
-    return value0 === value1 ? null
-        : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+    var string0 = d3Selection.style(this, name),
+        value1 = value(this),
+        string1 = value1 + "";
+    if (value1 == null) string1 = value1 = (this.style.removeProperty(name), d3Selection.style(this, name));
+    return string0 === string1 ? null
+        : string0 === string00 && string1 === string10 ? interpolate0
+        : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
+  };
+}
+
+function styleMaybeRemove(id, name) {
+  var on0, on1, listener0, key = "style." + name, event = "end." + key, remove;
+  return function() {
+    var schedule$$1 = set(this, id),
+        on = schedule$$1.on,
+        listener = schedule$$1.value[key] == null ? remove || (remove = styleRemove(name)) : undefined;
+
+    // If this node shared a dispatch with the previous node,
+    // just assign the updated shared dispatch and we’re done!
+    // Otherwise, copy-on-write.
+    if (on !== on0 || listener0 !== listener) (on1 = (on0 = on).copy()).on(event, listener0 = listener);
+
+    schedule$$1.on = on1;
   };
 }
 
 function transition_style(name, value, priority) {
   var i = (name += "") === "transform" ? d3Interpolate.interpolateTransformCss : interpolate;
   return value == null ? this
-          .styleTween(name, styleRemove(name, i))
-          .on("end.style." + name, styleRemoveEnd(name))
-      : this.styleTween(name, typeof value === "function"
-          ? styleFunction(name, i, tweenValue(this, "style." + name, value))
-          : styleConstant(name, i, value + ""), priority);
+      .styleTween(name, styleNull(name, i))
+      .on("end.style." + name, styleRemove(name))
+    : typeof value === "function" ? this
+      .styleTween(name, styleFunction(name, i, tweenValue(this, "style." + name, value)))
+      .each(styleMaybeRemove(this._id, name))
+    : this
+      .styleTween(name, styleConstant(name, i, value), priority)
+      .on("end.style." + name, null);
+}
+
+function styleInterpolate(name, i, priority) {
+  return function(t) {
+    this.style.setProperty(name, i(t), priority);
+  };
 }
 
 function styleTween(name, value, priority) {
+  var t, i0;
   function tween() {
-    var node = this, i = value.apply(node, arguments);
-    return i && function(t) {
-      node.style.setProperty(name, i(t), priority);
-    };
+    var i = value.apply(this, arguments);
+    if (i !== i0) t = (i0 = i) && styleInterpolate(name, i, priority);
+    return t;
   }
   tween._value = value;
   return tween;
@@ -19873,6 +21891,31 @@ function transition_transition() {
   return new Transition(groups, this._parents, name, id1);
 }
 
+function transition_end() {
+  var on0, on1, that = this, id = that._id, size = that.size();
+  return new Promise(function(resolve, reject) {
+    var cancel = {value: reject},
+        end = {value: function() { if (--size === 0) resolve(); }};
+
+    that.each(function() {
+      var schedule$$1 = set(this, id),
+          on = schedule$$1.on;
+
+      // If this node shared a dispatch with the previous node,
+      // just assign the updated shared dispatch and we’re done!
+      // Otherwise, copy-on-write.
+      if (on !== on0) {
+        on1 = (on0 = on).copy();
+        on1._.cancel.push(cancel);
+        on1._.interrupt.push(cancel);
+        on1._.end.push(end);
+      }
+
+      schedule$$1.on = on1;
+    });
+  });
+}
+
 var id = 0;
 
 function Transition(groups, parents, name, id) {
@@ -19916,7 +21959,8 @@ Transition.prototype = transition.prototype = {
   tween: transition_tween,
   delay: transition_delay,
   duration: transition_duration,
-  ease: transition_ease
+  ease: transition_ease,
+  end: transition_end
 };
 
 var defaultTiming = {
@@ -19987,7 +22031,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-color":7,"d3-dispatch":9,"d3-ease":12,"d3-interpolate":18,"d3-selection":25,"d3-timer":29}],31:[function(require,module,exports){
+},{"d3-color":83,"d3-dispatch":85,"d3-ease":88,"d3-interpolate":94,"d3-selection":101,"d3-timer":105}],107:[function(require,module,exports){
 // https://d3js.org/d3-voronoi/ v1.1.4 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -20988,7 +23032,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{}],32:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 // https://d3js.org/d3-zoom/ v1.7.3 Copyright 2018 Mike Bostock
 (function (global, factory) {
 typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-dispatch'), require('d3-drag'), require('d3-interpolate'), require('d3-transition')) :
@@ -21492,7 +23536,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 
-},{"d3-dispatch":9,"d3-drag":10,"d3-interpolate":18,"d3-selection":25,"d3-transition":30}],33:[function(require,module,exports){
+},{"d3-dispatch":85,"d3-drag":86,"d3-interpolate":94,"d3-selection":101,"d3-transition":106}],109:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -21529,7 +23573,7 @@ var d3Transition = require('d3-transition');
 var d3Voronoi = require('d3-voronoi');
 var d3Zoom = require('d3-zoom');
 
-var version = "5.7.0";
+var version = "5.8.2";
 
 Object.keys(d3Array).forEach(function (key) { exports[key] = d3Array[key]; });
 Object.keys(d3Axis).forEach(function (key) { exports[key] = d3Axis[key]; });
@@ -21565,7 +23609,7 @@ Object.keys(d3Zoom).forEach(function (key) { exports[key] = d3Zoom[key]; });
 exports.version = version;
 Object.defineProperty(exports, "event", {get: function() { return d3Selection.event; }});
 
-},{"d3-array":2,"d3-axis":3,"d3-brush":4,"d3-chord":5,"d3-collection":6,"d3-color":7,"d3-contour":8,"d3-dispatch":9,"d3-drag":10,"d3-dsv":11,"d3-ease":12,"d3-fetch":13,"d3-force":14,"d3-format":15,"d3-geo":16,"d3-hierarchy":17,"d3-interpolate":18,"d3-path":19,"d3-polygon":20,"d3-quadtree":21,"d3-random":22,"d3-scale":24,"d3-scale-chromatic":23,"d3-selection":25,"d3-shape":26,"d3-time":28,"d3-time-format":27,"d3-timer":29,"d3-transition":30,"d3-voronoi":31,"d3-zoom":32}],34:[function(require,module,exports){
+},{"d3-array":78,"d3-axis":79,"d3-brush":80,"d3-chord":81,"d3-collection":82,"d3-color":83,"d3-contour":84,"d3-dispatch":85,"d3-drag":86,"d3-dsv":87,"d3-ease":88,"d3-fetch":89,"d3-force":90,"d3-format":91,"d3-geo":92,"d3-hierarchy":93,"d3-interpolate":94,"d3-path":95,"d3-polygon":96,"d3-quadtree":97,"d3-random":98,"d3-scale":100,"d3-scale-chromatic":99,"d3-selection":101,"d3-shape":102,"d3-time":104,"d3-time-format":103,"d3-timer":105,"d3-transition":106,"d3-voronoi":107,"d3-zoom":108}],110:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.3.1
  * https://jquery.com/
@@ -31931,7 +33975,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],35:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -32711,7 +34755,7 @@ return scrollama;
 
 })));
 
-},{}],36:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 (function (global){
 /*!
 * Tippy.js v3.4.1
@@ -37270,1080 +39314,765 @@ return tippy;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],37:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
+"use strict";
+
+require("core-js/modules/es7.symbol.async-iterator");
+
+require("core-js/modules/es6.symbol");
+
+require("core-js/modules/es6.array.sort");
+
+require("core-js/modules/es6.regexp.split");
+
+require("core-js/modules/es6.regexp.to-string");
+
+require("core-js/modules/web.dom.iterable");
+
+require("core-js/modules/es6.regexp.search");
+
+require("core-js/modules/es6.regexp.replace");
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 const scrollama = require('scrollama');
+
 const $ = require('jquery');
+
 const d3 = require('d3');
+
 const chroma = require('chroma-js');
+
 const tippy = require('tippy.js');
 
 const cols = {
-    green: '#3bdf14',
-    black: 'rgb(51, 51, 51)',
-    orange: '#ce73e9',
-    bgcol: '#f7f7f7',
-    blue: '#608cc4',
-    lightblack: '#787878f',
+  green: '#3bdf14',
+  black: 'rgb(51, 51, 51)',
+  orange: '#ce73e9',
+  bgcol: '#f7f7f7',
+  blue: '#608cc4',
+  lightblack: '#787878f'
 };
 
-const nform = d => d3.format(',.6r')(d).replace(/\..*/, '');
-const mobW = 577;
+const nform = function nform(d) {
+  return d3.format(',.6r')(d).replace(/\..*/, '');
+};
 
+const mobW = 577;
 const fontSize = parseInt($('body').css('font-size'));
 
-const numericalize = function (d) {
-    for (const k in d) {
-        if (d[k].search(/[^0-9\.]/) === -1) {
-            d[k] = +d[k];
-        }
+const numericalize = function numericalize(d) {
+  for (const k in d) {
+    if (d[k].search(/[^0-9\.]/) === -1) {
+      d[k] = +d[k];
     }
-    return d;
+  }
+
+  return d;
 };
 
-Promise.all([
-    d3.csv('data/by_vde_wide.csv', numericalize),
-    d3.csv('data/data_report_wide.csv', numericalize),
-    d3.json('data/sources_order.json', numericalize),
-])
-    .then(function ([data_vde, data_year, sourcesOrder]) {
-        const nest_vde = d3.nest()
-            .key(d => d.scenario)
-            .key(d => d.by_vde)
-            .entries(data_vde)
-            .reduce((res, d) => {
-                res[d.key] = d.values;
-                return res;
-            }, {});
-
-        let nest_year = d3.nest()
-            .key(d => d.scenario)
-            .key(d => d.year)
-            .entries(data_year);
-
-        nest_year.map((val, i) => {
-            nest_year[i].values = val.values.reduce((res, d) => {
-                res[d.key] = d.values;
-                return res;
-            }, {});
-        });
-
-        nest_year = nest_year.reduce((res, d) => {
-            res[d.key] = d.values;
-            return res;
-        }, {});
-
-        const sources = [...Object.keys(sourcesOrder)];
-
-        let activeSphere = 'Загалом',
-            scenario = 'Революційний',
-            dragYear = 2015;
-
-        d3.select('#consumption figure #bars')
-            .append('div')
-            .classed('bar_vde', true)
-            .attr('data-vde', 'dirt');
-
-        d3.select('#consumption figure #bars')
-            .append('div')
-            .classed('bar_vde', true)
-            .attr('data-vde', 'vde');
-
-        d3.select('#consumption figure #bars div[data-vde="dirt"]')
-            .selectAll('div.e-source')
-            .data(nest_year[scenario][dragYear].filter(d => !sourcesOrder[d.source].is_vde))
-            .enter()
-            .append('div')
-            .classed('e-source', true);
-
-        d3.select('#consumption figure #bars div[data-vde="vde"]')
-            .selectAll('div.e-source')
-            .data(nest_year[scenario][dragYear].filter(d => sourcesOrder[d.source].is_vde))
-            .enter()
-            .append('div')
-            .classed('e-source', true);
-
-        const bars = d3.selectAll('#consumption figure #bars div.e-source');
-
-        const barSpans = bars
-            .append('p')
-            .text(d => d.source + ' ')
-            .append('span')
-            .classed('ktne', true);
-
-        const barW = $('.e-source').width();
-
-        const barsSvg = bars.append('svg')
-            .attr('height', '4px')
-            .attr('width', barW);
-
-        // DRAW BARS ------------------------------------------------------------------------------------------
-        const $hYear = $('#consumption #bar_year')
-        let datYear = nest_year[scenario];
-        const scaleBar = d3.scaleLinear()
-            .range([0, barW]);
-
-        const barsBar = barsSvg.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', 0)
-            .attr('height', '4px');
-
-        const barsCircle = barsSvg.append('circle')
-            .attr('cx', 0)
-            .attr('cy', 2)
-            .attr('r', (window.innerWidth < mobW) ? 3 : 5);
-        
-        // Lines mobile height
-
-        const linesW = $('#consumption figure .chart#lines').width();
-        const linesH = $('#consumption figure .chart#lines').height();
-
-        const linesSvg = d3.select('#consumption figure .chart#lines')
-            .append('svg')
-            .attr('width', linesW)
-            .attr('height', linesH);
-
-        const linesM = {
-            top: linesH * 0.1,
-            right: linesW * 0.1,
-            bottom: linesW * 0.05,
-            left: linesH * 0,
-        };
-
-        const scaleYear = d3.scaleLinear()
-            .domain([2015, 2050])
-            .range([linesM.left, linesW - linesM.right]);
-
-        const scaleKTNE = d3.scaleLinear()
-            .domain([0, 0])
-            .range([linesH - linesM.top, linesM.bottom]);
-
-        const line = d3.line()
-            .x(d => scaleYear(d.year))
-            .y(d => scaleKTNE(d[activeSphere]))
-            .curve(d3.curveCatmullRom);
-
-        const xAxis = d3.axisBottom()
-            .scale(scaleYear)
-            .ticks(8)
-            .tickFormat(d => d.toString());
-
-        const yAxis = d3.axisRight()
-            .scale(scaleKTNE)
-            .tickFormat(nform);
-
-
-        // DRAW CHART------------------------------------------------------------------------------------------
-        let datLines = nest_vde[scenario];
-
-        const gXAxis = linesSvg.append('g')
-            .attr('id', 'x_axis')
-            .attr('transform', `translate(0 ${scaleKTNE.range()[0]})`)
-            .call(xAxis);
-
-        gXAxis.selectAll('.tick text')
-            .attr('font-size', '0.85rem');
-
-        gXAxis.selectAll('.tick line')
-            .attr('y1', -1 * (linesH - linesM.top - linesM.bottom))
-            .attr('y2', 0)
-            .attr('stroke', chroma(cols.black).alpha(0.4))
-            .attr('stroke-dasharray', '2 2');
-
-        const gYAxis = linesSvg.append('g')
-            .attr('id', 'y_axis')
-            .attr('transform', `translate(${linesW - linesM.right}, 0)`)
-            .call(yAxis);
-
-        const $xAxisTexts = $('#x_axis .tick text');
-
-        $xAxisTexts.first().addClass('active');
-
-
-        const sourceLine = linesSvg.selectAll('path.sl')
-            .data(datLines)
-            .enter()
-            .append('path')
-            .classed('sl', true)
-            .attr('id', d => `line_${d.key}`)
-            .attr('d', d => line(d.values.slice(1)))
-            .style('fill', 'none')
-            .style('stroke', d => (d.key === 'vde') ? cols.green : cols.orange);
-
-        const textPath = linesSvg.selectAll('g.follow-path')
-            .data(datLines)
-            .enter()
-            .append('g')
-            .attr('transform', `translate(0 -${fontSize})`)
-            .append('text')
-            .append('textPath')
-            .attr('href', d => `#line_${d.key}`)
-            .text(d => (d.key === 'vde') ? '    Зелена енергія' : '    Невідновлювані джерела');
-
-        // Dragger created here, to be before dots
-        const dragger = linesSvg.append('g')
-            .attr('id', 'year_dragger')
-            .attr('transform', `translate(${scaleYear(2015)} 0)`);
-
-        const dragHelperW = d3.max([linesW * 0.05, 10]);
-
-        dragger.append('line')
-            .attr('x1', 0)
-            .attr('x2', 0)
-            .attr('y1', scaleKTNE.range()[1])
-            .attr('y2', scaleKTNE.range()[0]);
-
-        dragger.append('rect')
-            .attr('x', dragHelperW / 2 * (-1))
-            .attr('y', scaleKTNE.range()[1])
-            .attr('height', scaleKTNE.range()[0])
-            .attr('width', dragHelperW)
-            .style('stroke', 'none')
-            .style('fill', cols.bgcol)
-            .style('opacity', 0);
-
-        dragger.append('line')
-            .attr('x1', -5)
-            .attr('x2', 5)
-            .attr('y1', scaleKTNE.range()[0])
-            .attr('y2', scaleKTNE.range()[0]);
-
-        // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
-        const navigation = linesSvg.append('g')
-            .attr('id', 'consumption_nav');
-
-        const dragBBox = dragger.node().getBBox();
-
-        const navigationText = navigation.append('text')
-            .text('Потягніть за лінію, щоб переключити рік')
-            .attr('x', dragBBox.x + dragBBox.width / 2 + fontSize * 2);
-
-        const navigationArrow = navigation.append('path')
-            .attr('id', 'drag_nav');
-        
-        if (window.innerWidth < mobW) {
-            navigationText
-                .attr('y', dragBBox.y + fontSize / 2);
-            
-            navigationArrow
-                .attr('d', `
-                M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
-                q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y - fontSize * 0.25}
-                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y - fontSize * 0.5}
-                        `);
-        } else {
-            navigationText
-                .attr('y', dragBBox.y + fontSize*2);
-            
-            navigationArrow
-                .attr('d', `
-                M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
-                q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize * 0.5}
-                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize*0.5}
-                        `)
-        }
-
-        // continue dots
-
-        const dotsG = linesSvg.selectAll('g.circle_g')
-            .data(datLines)
-            .enter()
-            .append('g')
-            .classed('circle_g', true);
-        
-        const dots = dotsG.selectAll('circle')
-            .data(d => d.values.slice(1))
-            .enter()
-            .append('circle')
-            .attr('cx', d => scaleYear(d.year))
-            .attr('cy', d => scaleKTNE(0))
-            .attr('r', (window.innerWidth < mobW) ? 3 : 5)
-            .attr('class', d => d.by_vde)
-            .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
-
-        const updateBar = function () {
-            const dat = {};
-            datYear[dragYear.toString()].map(function (d) {
-                dat[d.source] = d;
-            });
-
-            scaleBar.domain([0, d3.max(datYear[dragYear.toString()], d => d[activeSphere])]);
-
-            const datOrd = barsBar.data().map(d => dat[d.source]);
-
-            barsBar
-                .data(datOrd)
-                .transition()
-                .duration(500)
-                .attr('width', d => scaleBar(d[activeSphere]));
-
-            barsCircle
-                .data(datOrd)
-                .transition()
-                .duration(500)
-                .attr('cx', d => scaleBar(d[activeSphere]));
-
-            barSpans.data(datOrd)
-                .text(d => `${nform(d[activeSphere])} тис. т н.е.`);
-            
-            $hYear.text(dragYear);
-        };
-
-        updateBar();
-
-        // DRAG YEAR ------------------------------------------------------------------------------------------
-        const lineTipSelection = (window.innerHeight > 850)
-            ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde')
-            : document.querySelectorAll('#lines circle.dirt, #lines circle.vde, .e-source circle');
-
-        const lineTip = tippy(lineTipSelection, {
-            animation: 'fade',
-            appendTo: document.querySelector('main'),
-            onShow: function (tip) {
-                const d = tip.reference.__data__;
-                const is_vde = (d.source) 
-                    ? ((sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt')
-                    : d.by_vde;
-                tip.setContent(`
-            <p class="small"><span class="${is_vde}">${nform(d[activeSphere])} тис. т н.е.</span></p>
-            `);
-            },
-        });
-
-        const dragStart = function() {
-            $('#consumption #consumption_nav').css('opacity', 0);
-            d3.select(this).classed('active', true);
-        };
-
-        const dragged = function() {
-            const dragTo = d3.min([scaleYear(2050), d3.max([scaleYear(2015), d3.event.x])]);
-            dragYear = Math.round(scaleYear.invert(dragTo) / 5) * 5;
-            dragger.attr('transform', `translate(${dragTo} 0)`);
-        };
-
-        const dragEnd = function() {
-            const yearDragger = d3.select('#lines #year_dragger');
-            yearDragger.transition()
-                .duration(500)
-                .attr('transform', `translate(${scaleYear(dragYear)} 0)`);
-
-            yearDragger.classed('active', false);
-
-            updateBar();
-
-            $xAxisTexts.removeClass('active')
-                .filter(function () {
-                    return this.textContent === dragYear.toString();
-                })
-                .addClass('active');
-        };
-
-        dragger.call(d3.drag()
-            .on('start', dragStart)
-            .on('drag', dragged)
-            .on('end', dragEnd));
-
-        $xAxisTexts.click(function () {
-            dragYear = this.__data__;
-            dragEnd();
-        });
-
-        d3.selectAll('#lines circle.dirt, #lines circle.vde')
-            .on('click', function (d) {
-                dragYear = d.year;
-                dragEnd();
-            });
-
-
-        // FUNC TO UPDATE LINES -----------------------------------------------------------------------------
-        const updateLines = function () {
-            scaleKTNE.domain([
-                0,
-                Math.ceil(d3.max(datLines[0].values.concat(datLines[1].values),
-                        d => d[activeSphere]) / 1000
-                ) * 1000
-            ]);
-
-            gYAxis.transition()
-                .duration(500)
-                .call(yAxis);
-
-            sourceLine.data(datLines)
-                .transition()
-                .duration(500)
-                .attr('d', d => line(d.values.slice(1)))
-                .on('end', function () {
-                    textPath
-                        .attr('href', null)
-                        .attr('href', d => `#line_${d.key}`);
-                });
-            
-            dotsG.data(datLines);
-            
-            dots.data(d => d.values.slice(1))
-                .transition()
-                .duration(500)
-                .attr('cx', d => scaleYear(d.year))
-                .attr('cy', d => scaleKTNE(d[activeSphere]));
-
-            // dragYear = 2015;
-            // dragEnd();
-        };
-
-        // SCROLLAMA -----------------------------------------------------------------------------------------
-        const $textLiMarks = $('#consumption .text li i');
-
-        const scroller = scrollama();
-
-        scroller.setup({
-            step: '#consumption article .text',
-            container: '#consumption',
-            graphic: '#consumption .fig_container',
-            offset: 0.8,
-        })
-            .onContainerEnter(function (r) {
-                updateLines();
-                updateBar();
-            })
-            .onStepEnter(function (r) {
-                if (r.element.id !== 'phantom') {
-                    activeSphere = r.element.getAttribute('data-sphere');
-                    $('#consumption .h3 #h3_sphere').text(activeSphere.toLowerCase());
-                    updateLines();
-                    updateBar();
-                }
-                // if (r.index === 0) {
-                //     navigation.style('opacity', 1)
-                // } else if (r.index === 1) {
-                //     navigation.style('opacity', 0)
-                // }
-            })
-            .onContainerExit(function (r) {
-                $('#consumption').removeClass('dark');
-                $('main').removeClass('dark');
-                scenario = 'Революційний';
-                datYear = nest_year[scenario];
-                datLines = nest_vde[scenario];
-                $('#consumption .switch_scenario').removeClass('active')
-                    .first()
-                    .addClass('active');
-
-                $textLiMarks.removeClass('fa-times').addClass('fa-check')
-
-            });
-
-
-        
-        $('#consumption .switch_scenario').click(function (e) {
-            const $t = $(this);
-            if ($t.hasClass('active')) { return; }
-            $('#consumption').toggleClass('dark');
-            $('main').toggleClass('dark');
-            $('#consumption .switch_scenario').removeClass('active');
-            $t.addClass('active');
-            scenario = $.trim($t.text());
-            datYear = nest_year[scenario];
-            datLines = nest_vde[scenario];
-            updateLines();
-            updateBar();
-            const markClasses = (scenario === 'Революційний')
-                ? ['fa-check', 'fa-times']
-                : ['fa-times', 'fa-check'];
-            $textLiMarks.removeClass(markClasses[1]).addClass(markClasses[0])
-        });
-        
+Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_report_wide.csv', numericalize), d3.json('data/sources_order.json', numericalize)]).then(function (_ref) {
+  let _ref2 = _slicedToArray(_ref, 3),
+      data_vde = _ref2[0],
+      data_year = _ref2[1],
+      sourcesOrder = _ref2[2];
+
+  const nest_vde = d3.nest().key(function (d) {
+    return d.scenario;
+  }).key(function (d) {
+    return d.by_vde;
+  }).entries(data_vde).reduce(function (res, d) {
+    res[d.key] = d.values;
+    return res;
+  }, {});
+  let nest_year = d3.nest().key(function (d) {
+    return d.scenario;
+  }).key(function (d) {
+    return d.year;
+  }).entries(data_year);
+  nest_year.map(function (val, i) {
+    nest_year[i].values = val.values.reduce(function (res, d) {
+      res[d.key] = d.values;
+      return res;
+    }, {});
+  });
+  nest_year = nest_year.reduce(function (res, d) {
+    res[d.key] = d.values;
+    return res;
+  }, {});
+  const sources = [...Object.keys(sourcesOrder)];
+  let activeSphere = 'Загалом',
+      scenario = 'Революційний',
+      dragYear = 2015;
+  d3.select('#consumption figure #bars').append('div').classed('bar_vde', true).attr('data-vde', 'dirt');
+  d3.select('#consumption figure #bars').append('div').classed('bar_vde', true).attr('data-vde', 'vde');
+  d3.select('#consumption figure #bars div[data-vde="dirt"]').selectAll('div.e-source').data(nest_year[scenario][dragYear].filter(function (d) {
+    return !sourcesOrder[d.source].is_vde;
+  })).enter().append('div').classed('e-source', true);
+  d3.select('#consumption figure #bars div[data-vde="vde"]').selectAll('div.e-source').data(nest_year[scenario][dragYear].filter(function (d) {
+    return sourcesOrder[d.source].is_vde;
+  })).enter().append('div').classed('e-source', true);
+  const bars = d3.selectAll('#consumption figure #bars div.e-source');
+  const barSpans = bars.append('p').text(function (d) {
+    return d.source + ' ';
+  }).append('span').classed('ktne', true);
+  const barW = $('.e-source').width();
+  const barsSvg = bars.append('svg').attr('height', '4px').attr('width', barW); // DRAW BARS ------------------------------------------------------------------------------------------
+
+  const $hYear = $('#consumption #bar_year');
+  let datYear = nest_year[scenario];
+  const scaleBar = d3.scaleLinear().range([0, barW]);
+  const barsBar = barsSvg.append('rect').attr('x', 0).attr('y', 0).attr('width', 0).attr('height', '4px');
+  const barsCircle = barsSvg.append('circle').attr('cx', 0).attr('cy', 2).attr('r', window.innerWidth < mobW ? 3 : 5); // Lines mobile height
+
+  const linesW = $('#consumption figure .chart#lines').width();
+  const linesH = $('#consumption figure .chart#lines').height();
+  const linesSvg = d3.select('#consumption figure .chart#lines').append('svg').attr('width', linesW).attr('height', linesH);
+  const linesM = {
+    top: linesH * 0.1,
+    right: linesW * 0.1,
+    bottom: linesW * 0.05,
+    left: linesH * 0
+  };
+  const scaleYear = d3.scaleLinear().domain([2015, 2050]).range([linesM.left, linesW - linesM.right]);
+  const scaleKTNE = d3.scaleLinear().domain([0, 0]).range([linesH - linesM.top, linesM.bottom]);
+  const line = d3.line().x(function (d) {
+    return scaleYear(d.year);
+  }).y(function (d) {
+    return scaleKTNE(d[activeSphere]);
+  }).curve(d3.curveCatmullRom);
+  const xAxis = d3.axisBottom().scale(scaleYear).ticks(8).tickFormat(function (d) {
+    return d.toString();
+  });
+  const yAxis = d3.axisRight().scale(scaleKTNE).tickFormat(nform); // DRAW CHART------------------------------------------------------------------------------------------
+
+  let datLines = nest_vde[scenario];
+  const gXAxis = linesSvg.append('g').attr('id', 'x_axis').attr('transform', "translate(0 " + scaleKTNE.range()[0] + ")").call(xAxis);
+  gXAxis.selectAll('.tick text').attr('font-size', '0.85rem');
+  gXAxis.selectAll('.tick line').attr('y1', -1 * (linesH - linesM.top - linesM.bottom)).attr('y2', 0).attr('stroke', chroma(cols.black).alpha(0.4)).attr('stroke-dasharray', '2 2');
+  const gYAxis = linesSvg.append('g').attr('id', 'y_axis').attr('transform', "translate(" + (linesW - linesM.right) + ", 0)").call(yAxis);
+  const $xAxisTexts = $('#x_axis .tick text');
+  $xAxisTexts.first().addClass('active');
+  const sourceLine = linesSvg.selectAll('path.sl').data(datLines).enter().append('path').classed('sl', true).attr('id', function (d) {
+    return "line_" + d.key;
+  }).attr('d', function (d) {
+    return line(d.values.slice(1));
+  }).style('fill', 'none').style('stroke', function (d) {
+    return d.key === 'vde' ? cols.green : cols.orange;
+  });
+  const textPath = linesSvg.selectAll('g.follow-path').data(datLines).enter().append('g').attr('transform', "translate(0 -" + fontSize + ")").append('text').append('textPath').attr('href', function (d) {
+    return "#line_" + d.key;
+  }).text(function (d) {
+    return d.key === 'vde' ? '    Зелена енергія' : '    Невідновлювані джерела';
+  }); // Dragger created here, to be before dots
+
+  const dragger = linesSvg.append('g').attr('id', 'year_dragger').attr('transform', "translate(" + scaleYear(2015) + " 0)");
+  const dragHelperW = d3.max([linesW * 0.05, 10]);
+  dragger.append('line').attr('x1', 0).attr('x2', 0).attr('y1', scaleKTNE.range()[1]).attr('y2', scaleKTNE.range()[0]);
+  dragger.append('rect').attr('x', dragHelperW / 2 * -1).attr('y', scaleKTNE.range()[1]).attr('height', scaleKTNE.range()[0]).attr('width', dragHelperW).style('stroke', 'none').style('fill', cols.bgcol).style('opacity', 0);
+  dragger.append('line').attr('x1', -5).attr('x2', 5).attr('y1', scaleKTNE.range()[0]).attr('y2', scaleKTNE.range()[0]); // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
+
+  const navigation = linesSvg.append('g').attr('id', 'consumption_nav');
+  const dragBBox = dragger.node().getBBox();
+  const navigationText = navigation.append('text').text('Потягніть за лінію, щоб переключити рік').attr('x', dragBBox.x + dragBBox.width / 2 + fontSize * 2);
+  const navigationArrow = navigation.append('path').attr('id', 'drag_nav');
+
+  if (window.innerWidth < mobW) {
+    navigationText.attr('y', dragBBox.y + fontSize / 2);
+    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y - fontSize * 0.25) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y - fontSize * 0.5) + "\n                        ");
+  } else {
+    navigationText.attr('y', dragBBox.y + fontSize * 2);
+    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y + fontSize * 0.5) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y + fontSize * 0.5) + "\n                        ");
+  } // continue dots
+
+
+  const dotsG = linesSvg.selectAll('g.circle_g').data(datLines).enter().append('g').classed('circle_g', true);
+  const dots = dotsG.selectAll('circle').data(function (d) {
+    return d.values.slice(1);
+  }).enter().append('circle').attr('cx', function (d) {
+    return scaleYear(d.year);
+  }).attr('cy', function (d) {
+    return scaleKTNE(0);
+  }).attr('r', window.innerWidth < mobW ? 3 : 5).attr('class', function (d) {
+    return d.by_vde;
+  }).style('fill', function (d) {
+    return d.by_vde === 'vde' ? cols.green : cols.orange;
+  });
+
+  const updateBar = function updateBar() {
+    const dat = {};
+    datYear[dragYear.toString()].map(function (d) {
+      dat[d.source] = d;
     });
-
-Promise.all([
-    d3.csv('data/costs_agg_wide.csv', numericalize)
-])
-    .then(function ([data]) {
-        const nested = d3.nest()
-            .key(d => d.action)
-            .key(d => d.scenario)
-            .entries(data);
-        
-        const scaleColor = d3.scaleOrdinal()
-            .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
-            .range(['#ff554e','#ff7bac','#ffa25c','#00afc9','#3EEC15']);
-
-        // const scaleColor = d3.scaleOrdinal()
-        //     .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
-        //     .range(['#ee4d30','#241d58','#f69a33','#1dada6','#81b652']);
-
-        let activeYear = '2050';
-        
-        const svg = d3.select('#costs figure svg')
-            .attr('height', function () {
-                return $(this).parent().height();
-            })
-            .attr('width', function () {
-                return $(this).parent().width();
-            });
-
-        const circleR = (window.innerWidth < mobW) ? 3 : 5;
-        
-        const svgW = parseInt(svg.attr('width'));
-        const svgH = parseInt(svg.attr('height'));
-        const svgM = {
-            top: fontSize * 0.5,
-            right: (window.innerWidth < mobW) ? fontSize * 3 : circleR + 1,
-            bottom: fontSize * 1,
-            left: 1,
-        };
-
-        const scaleExpence = d3.scaleLinear()
-            .domain([0, 60000])
-            .range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
-
-        const getTextLen = function () {
-            const t = svg.append('text')
-                .text('Енергоспоживання');
-            const w = t.node().getComputedTextLength();
-            t.remove();
-            return w;
-        };
-        
-        const labW = getTextLen();
-
-        const labs = svg.append('g')
-            .attr('id', 'labels')
-            .selectAll('text.lab')
-            .data(nested)
-            .enter()
-            .append('text')
-            .classed('lab', true)
-            .text(d => d.key)
-            .attr('data-cost', d => d.key)
-            // .style('fill', d => chroma(scaleColor(d.key)).darken(2))
-            .each(function () {
-                const text = d3.select(this),
-                    words = text.text().split(/\s+/).reverse(),
-                    lineH = 1.1;
-
-                let word = null,
-                    line=[],
-                    tspan = text.text(null)
-                        .append('tspan')
-                        .attr('x', 0)
-                        .attr('dy', 0);
-
-                while (word = words.pop()) {
-                    line.push(word);
-                    tspan.text(line.join(' '));
-                    if (tspan.node().getComputedTextLength() > labW) {
-                        line.pop();
-                        tspan.text(line.join(' '));
-                        line = [word];
-                        tspan = text.append('tspan')
-                            .attr('x', 0)
-                            .attr('dy', `${lineH}em`)
-                            .text(word);
-                    }
-                }
-            });
-        
-        const checkOverlap = function () {
-            labs.sort((a, b) => {
-                return scaleExpence(a.values[0].values[0][activeYear]) < scaleExpence(b.values[0].values[0][activeYear])
-                ? 1 : -1;
-            })
-                .transition()
-                .duration(200)
-                .attr('y', function (d) {
-                    const h0 = this.getBBox().height,
-                        y0 = scaleExpence(d.values[0].values[0][activeYear]);
-                    if (! this.previousSibling) {
-                        this.__data__['y'] = y0;
-                        return y0;
-                    }
-                    const y1 = this.previousSibling.__data__.y;
-                    if (y0 + h0 + fontSize*0.375 <= y1) {
-                        this.__data__['y'] = y0;
-                        return y0;
-                    }
-                    this.__data__['y'] = y1 - fontSize*0.375 - h0;
-                    return d.y;
-                })
-        };
-
-        checkOverlap();
-
-        const textX = svg.select('#labels').node().getBBox().width;
-
-        svgM.left = textX + fontSize * 0.5 + circleR * 2;
-        labs.style('text-anchor', 'start')
-            .attr('x', svgM.left - fontSize*0.5 - circleR * 2);
-        
-        labs.selectAll('tspan')
-            .attr('x', function() { return textX - this.getComputedTextLength(); });
-        
-        const scaleScen = d3.scalePoint()
-            .domain(['Консервативний', 'Революційний'])
-            .range([svgM.left, svgW - svgM.right]);
-        
-        const [x1, x2] = scaleScen.range();
-
-        const xAxis = d3.axisTop(scaleScen);
-            // .tickValues(['Базовий', 'Революційний']);
-
-        const gXAxis = svg.append('g')
-            .attr('id', 'cost_ax_x')
-            .call(xAxis);
-        
-        gXAxis.selectAll('.tick line')
-            .attr('y1', scaleExpence.range()[0])
-            .attr('y2', scaleExpence.range()[1]);
-
-        gXAxis.selectAll('.tick text')
-            .attr('y', scaleExpence.range()[1] - fontSize * 0.75);
-
-        gXAxis.selectAll('path').remove();
-        
-        const yLabs = svg.selectAll('text.y_lab')
-            .data(scaleExpence.domain())
-            .enter()
-            .append('text')
-            .classed('y_lab', true)
-            .text(d => nform(d))
-            .attr('y', d => scaleExpence(d))
-            .attr('x', x1 + 2);
-
-        const slopeGs = svg.selectAll('g.slope')
-            .data(nested)
-            .enter()
-            .append('g')
-            .classed('slope', true)
-            .attr('data-cost', d => d.key);
-        
-        $('#costs [data-cost]')
-            .css('cursor', 'pointer')
-            .on('mouseover', function () {
-                const c = $(this).data('cost');
-                $(`g.slope[data-cost="${c}"]`)
-                    .addClass('active')
-                    .find('circle')
-                    .each(function() {this._tippy.show(500)});
-                $('#costs svg [data-cost]')
-                    .not(`[data-cost="${c}"]`)
-                    .addClass('blured');
-            })
-            .on('mouseout', function () {
-                tippy.hideAllPoppers();
-                $('.blured').removeClass('blured');
-                $('#costs [data-cost].active').removeClass('active');
-            });
-
-        const slopeLines = slopeGs
-            .append('path')
-            .attr('d', d => `M ${x1} ${scaleExpence(d.values[0].values[0][activeYear])} L${x2} ${scaleExpence(d.values[1].values[0][activeYear])}`);
-            // .style('stroke', d => scaleColor(d.key));
-        
-        const slopeCircles = slopeGs.selectAll('circle')
-            .data(d => d.values)
-            .enter()
-            .append('circle')
-            .attr('cx', d => scaleScen(d.key))
-            .attr('cy', d => scaleExpence(d.values[0][activeYear]))
-            .attr('r', circleR);
-            // .style('fill', d => scaleColor(d.values[0].action));
-
-        const slopeHelpers = slopeLines.clone()
-            .style('stroke-opacity', 0)
-            .style('stroke-width', 10)
-            .style('fill', 'none');
-
-        const bubleH = scaleExpence.range()[1] - fontSize;
-
-        const scaleR = d3.scaleLinear()
-            .domain([0, 116000])
-            .range([0, d3.min([
-                slopeLines.node().getBBox().width,
-                bubleH - fontSize*4
-            ])]);
-
-        const totalBubbles = svg.selectAll('path.t_bubble')
-            .data(d3.nest()
-                .key(d => d.scenario)
-                .entries(data)
-            )
-            .enter()
-            .append('path')
-            .classed('t_bubble', true)
-            .attr('d', function (d) {
-                const r = scaleR(d3.sum(d.values, a => a[activeYear])),
-                    my = d.key === 'Консервативний'
-                        ? r + (bubleH - r) / 2 + fontSize
-                        : (bubleH - r) / 2 + fontSize,
-                    ar = d.key === 'Консервативний' ? -r : r;
-
-                return `M ${scaleScen(d.key)} ${my}
-                        a1,1 0 0,0 0,
-                        ${ar}`
-            })
-            .style('fill', d => d.key === 'Консервативний' ? cols.orange : cols.green)
-            .style('stroke', d => d.key === 'Консервативний' ? cols.orange : cols.green);
-
-        const totalBLab = svg.append('text')
-            .attr('id', 't_bubble_lab')
-            .text('Загалом')
-            .attr('x', textX)
-            .attr('y', bubleH / 2 + fontSize)
-            .style('dominant-baseline', 'middle')
-            .style('text-anchor', 'end');
-
-        const totalBVal = svg.selectAll('text.t_bubble_val')
-            .data(totalBubbles.data())
-            .enter()
-            .append('text')
-            .classed('t_bubble_val', true)
-            .text(d => nform(d3.sum(d.values, a => a[activeYear])))
-            .attr('x', d => scaleScen(d.key))
-            .attr('y', function (_, i) {
-                return totalBubbles.nodes()[i].getBBox().y - fontSize*0.3;
-            })
-            .style('fill', d => d.key === 'Консервативний'
-                ? chroma(cols.orange).darken()
-                : chroma(cols.green).darken()
-            )
-            .style('text-anchor', d => d.key === 'Консервативний' ? 'start' : 'end');
-        
-        const updSlopes = function () {
-            slopeGs.selectAll('path')
-                .transition()
-                .duration(600)
-                .attr('d', d => `M ${x1} ${scaleExpence(d.values[0].values[0][activeYear])}
-                                 L${x2} ${scaleExpence(d.values[1].values[0][activeYear])}`);
-
-            slopeCircles
-                .transition()
-                .duration(600)
-                .attr('cx', d => scaleScen(d.key))
-                .attr('cy', d => scaleExpence(d.values[0][activeYear]));
-
-            totalBubbles
-                .transition()
-                .duration(600)
-                .attr('d', function (d) {
-                    const r = scaleR(d3.sum(d.values, a => a[activeYear])),
-                        my = d.key === 'Консервативний'
-                            ? r + (bubleH - r) / 2 + fontSize
-                            : (bubleH - r) / 2 + fontSize,
-                        ar = d.key === 'Консервативний' ? -r : r;
-                    
-                    return `M ${scaleScen(d.key)} ${my}
-                        a1,1 0 0,0 0,
-                        ${ar}`
-                });
-
-            totalBVal
-                .transition()
-                .duration(600)
-                .text(d => nform(d3.sum(d.values, a => a[activeYear])))
-                .attr('y', function (d) {
-                    const r = scaleR(d3.sum(d.values, a => a[activeYear]));
-                    return (bubleH - r) / 2 + fontSize*0.7;
-                });
-
-            checkOverlap();
-        };
-
-        $('#costs .h3 i').click(function () {
-            const $t = $(this);
-            if ($t.hasClass('active')) {
-                const $sp = $t.siblings('span'),
-                    dir = $t.hasClass('fa-caret-left') ? -1 : 1;
-                activeYear = (parseInt($sp.text()) + 5 * dir).toString();
-                if (activeYear === '2050' || activeYear === '2015') {
-                    $t.removeClass('active');
-                } else if (activeYear === '2045' || activeYear === '2020') {
-                    $t.siblings('i').addClass('active');
-                }
-
-                $sp.text(activeYear);
-                updSlopes();
-            }
-        });
-        
-        const slopeTippy = tippy(document.querySelectorAll('#costs g.slope circle'), {
-            animation: 'fade',
-            onShow(tip) {
-                tip.setContent(`
-                <p class="sm">${nform(tip.reference.__data__.values[0][activeYear])} млн. €</p>
-                `)
-            },
-            trigger: 'manual',
-        });
-        
+    scaleBar.domain([0, d3.max(datYear[dragYear.toString()], function (d) {
+      return d[activeSphere];
+    })]);
+    const datOrd = barsBar.data().map(function (d) {
+      return dat[d.source];
     });
-
-
-Promise.all([
-    d3.csv('data/eresources_long.csv', numericalize),
-])
-    .then(function ([data]) {
-        const sourcesList = [
-            "Біопаливо та відходи",
-            "Гідро",
-            "Вітер",
-            "Сонце",
-            "Ресурс для АЕС",
-            "Вугілля",
-            "Газ",
-            "Нафта",
-        ]
-        
-        if (window.innerWidth < mobW) {
-            data = data.filter(d => [2015, 2030, 2050].indexOf(d.year) > -1)
-        }
-
-        const nested = d3.nest()
-            .key(d => d.year)
-            .entries(data
-                .filter(d => ['Всього', 'Імпорт'].indexOf(d.source) === -1)
-                .sort((a, b) => (sourcesList.indexOf(a.source) > sourcesList.indexOf(b.source) ? 1 : -1))
-            )
-            .sort((a, b) => (parseInt(a.key) > parseInt(b.key)) ? 1 : -1);
-
-        const svgW = $('#general figure').width(),
-            svgH = $('#general figure').height(),
-            svgM = {
-                top: 1,
-                right: 1,
-                bottom: 1,
-                left: 1,
-            };
-
-        let scenario = 'Революційний';
-
-        const svg = d3.select('#general figure svg')
-            .attr('width', svgW)
-            .attr('height', svgH);
-
-        const scaleYear = d3.scaleBand()
-            .domain(nested.map(d => d.key))
-            .range([svgM.left, svgW - svgM.right])
-            .padding((window.innerWidth < 100) ? 0.2 : 0.5);
-
-        const scaleSource = d3.scaleBand()
-            .domain(sourcesList)
-            .range([0, scaleYear.bandwidth()])
-            .padding(0.15);
-
-        const strokeWidth = d3.min([scaleSource.bandwidth() / 3, 2.5]);
-
-        const scaleKTNE = d3.scaleLinear()
-            .domain([0, 50000])
-            .range([0, svgH / 2 - svgM.top]);
-
-        const area = d3.area()
-            .x((d, i) => {
-                if (i === 0) {
-                    return scaleYear(d.year) - strokeWidth;
-                } else if (i === 8) {
-                    return scaleYear(d.year) + scaleSource(d.source) + scaleSource.bandwidth() / 2;
-                } else {
-                    return scaleYear(d.year) + scaleSource(d.source);
-                }
-            })
-            .y1(d => svgH/2 + scaleKTNE(d[scenario]))
-            .y0(d => svgH/2 - scaleKTNE(d[scenario]))
-            .curve(d3.curveStep);
-
-        const xAxis = d3.axisBottom(scaleYear)
-            .ticks(8)
-            .tickFormat(d => d.toString());
-
-        const gXAxis = svg.append('g')
-            .attr('id', 'x_ax_gen')
-            .call(xAxis)
-            .attr('transform', `translate(0 ${svgH - svgM.bottom})`);
-
-        const scaleColor = d3.scaleOrdinal()
-            .domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце',])
-            .range(['#ce73e9','#ce73e9','#ff554e','#ce73e9','#3bdf14','#3bdf14', '#3bdf14', '#3bdf14',]);
-
-        const areas = svg.append('defs')
-            .selectAll('clipPath.clip_gen')
-            .data(nested)
-            .enter()
-            .append('clipPath')
-            .classed('clip_gen', true)
-            .attr('id', d => `y${d.key}`)
-            .append('path')
-            .attr('d', d => area([d.values[0]].concat(d.values)));
-
-        const linesG = svg.selectAll('g.year')
-            .data(nested)
-            .enter()
-            .append('g')
-            .classed('year', true)
-            .style('clip-path', d => `url(#y${d.key})`);
-
-        const nSteps = Math.floor((svgH - svgM.top - svgM.bottom) / (fontSize*3)) * 2 + 1;
-        const step = (svgH - svgM.top - svgM.bottom) / nSteps;
-
-        const lines = linesG.selectAll('path.source')
-            .data(d => d.values)
-            .enter()
-            .append('path')
-            .classed('source', true)
-            .attr('d', function (d) {
-                const x = scaleYear(d.year) + scaleSource(d.source),
-                    dx = scaleSource.bandwidth() / 2 - strokeWidth / 1.5;
-                let i = 0,
-                    p = `M${x} ${svgM.top} `;
-                while (i < nSteps) {
-                    const dir = (i % 2) ? -1 : 1;
-                    p += `q ${dir * dx} ${step / 2} 0 ${step}`;
-                    i ++;
-                }
-                return p;
-            })
-            .style('stroke', d => scaleColor(d.source))
-            .style('stroke-width', strokeWidth)
-            .style('fill', 'none');
-
-        const svgBCR = svg.node().getBoundingClientRect(),
-            lineW = lines.node().getBoundingClientRect().width,
-            linesGBCR = lines.nodes().map(e => {
-                return {
-                    x: e.getBoundingClientRect().left - svgBCR.left + lineW / 2,
-                    e: e,
-                }
-            });
-        const $nav = $("#general nav p");
-        $nav.html(`${linesGBCR[0].e.__data__.year} рік<br/>
-                   ${linesGBCR[0].e.__data__.source}: ${nform(linesGBCR[0].e.__data__[scenario])} тис. т н.е.`);
-
-        const navHelper = svg.append('path')
-            .attr('id', 'nav_helper')
-            .attr('d', `M${linesGBCR[0].e.getBoundingClientRect().x - svgBCR.x + lineW / 2}
-                         ${svgH / 2 - scaleKTNE(linesGBCR[0].e.__data__[scenario]) - 2}
-                        V 0
-                         `);
-        
-        const transparentRect = svg.append('rect')
-            .attr('x', 0)
-            .attr('y', 0)
-            .attr('width', svgW)
-            .attr('height', svgH)
-            .style('opacity', 0)
-            .on('mousemove', function () {
-                const eX = d3.event.clientX - svgBCR.left;
-                const lineDist = linesGBCR.map(d => Math.abs(d.x - eX));
-                const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
-
-                $nav.html(`${closestLine.e.__data__.year}  рік<br/>
-                   ${closestLine.e.__data__.source}: ${nform(closestLine.e.__data__[scenario])} тис. т н.е.`);
-
-                const navBCR = $nav.get(0).getBoundingClientRect(),
-                    maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
-
-                let perfectMargin = closestLine.x + lineW/2 - navBCR.width / 2;
-                perfectMargin = (perfectMargin < 0) ? 0 : perfectMargin;
-                perfectMargin = (perfectMargin > maxMargin) ? maxMargin : perfectMargin;
-                $nav.css('margin-left', `${perfectMargin}px`);
-
-                const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2
-                navHelper.transition()
-                    .duration(150)
-                    .ease(d3.easeLinear)
-                    .attr('d', `M${closestLine.x}
-                             ${(navHelperY > 0) ? navHelperY : 0}
-                            V 0
-                           `);
-            });
-
-        // const legend = d3.select('#general figure #labels_gen')
-        //     .style('top', `${d3.max(lines.data(), d => svgH / 2 + scaleKTNE(d[scenario])) + fontSize *1.5}px`);
-        //
-        // legend.selectAll('p.lab')
-        //     .data(nested[0].values)
-        //     .enter()
-        //     .append('p')
-        //     .classed('lab_gen', true)
-        //     .attr('data-source', d => d.source)
-        //     .text(d => d.source);
-        //
-        // const svgBCR = svg.node().getBoundingClientRect(),
-        //     linesOnWay = lines.nodes().filter(e => e.getBBox().x < legend.node().getBoundingClientRect().width),
-        //     curveYStart = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375;
-        //
-        // const labArrows = svg.append('g')
-        //     .attr('id', 'lab_arrows')
-        //     .selectAll('path.lab_arrow')
-        //     .data(nested[0].values)
-        //     .enter()
-        //     .append('path')
-        //     .classed('lab_arrow', true)
-        //     .attr('d', function (d, i) {
-        //         const pBCR = $(`#general p.lab_gen[data-source="${d.source}"]`).get(0).getBoundingClientRect();
-        //         const x0 = scaleYear(d.year) + scaleSource(d.source),
-        //             x1 = (pBCR.x > x0)
-        //                 ? pBCR.x - svgBCR.left + fontSize
-        //                 : pBCR.x + pBCR.width - svgBCR.left,
-        //             y0 = scaleKTNE(d[scenario]) + svgH / 2 + fontSize,
-        //             y1 = pBCR.y - svgBCR.y,
-        //             curveY = curveYStart + fontSize * 0.15 * (8 - i);
-        //             // linesOnWay = lines.nodes().filter(e => (e.getBBox().x > x0 && e.getBBox().x < x1)
-        //             //                                     || (e.getBBox().x < x0 && e.getBBox().x > x1)),
-        //             // curveY = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375 + fontSize * 0.2 * (8 - i);
-        //
-        //         return `M${x0} ${y0}
-        //                 L${x0} ${curveY}
-        //                 L${x1} ${curveY}
-        //                 L${x1} ${y1}`;
-        //     });
-        //
-        const updClip = function () {
-            areas.transition()
-                .duration(1000)
-                .attr('d', d => area([d.values[0]].concat(d.values)));
-        };
-
-        // // clippath checker
-        // const areas = svg.selectAll('path.clip_gen')
-        //     .data(nested)
-        //     .enter()
-        //     .append('path')
-        //     .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]))
-        //     .style('fill', '#000')
-        //     .style('fill-opacity', 0.5);
-        
-        $('#general .switch_scenario').click(function (e) {
-            const $t = $(this);
-            if ($t.hasClass('active')) { return; }
-            $('#general, #general #x_helper').toggleClass('dark');
-            $('main').toggleClass('dark');
-            $('#general .switch_scenario').removeClass('active');
-            $t.addClass('active');
-            scenario = $.trim($t.text());
-            updClip();
-            
-        });
-
-        const scroller = scrollama();
-        scroller.setup({
-            step: '#general figure',
-            container: '#general',
-            graphic: '#general svg',
-            offset: 0.8,
-        })
-            .onContainerExit(function () {
-                if ($('main').hasClass('dark')) {
-                    $('#general').toggleClass('dark');
-                    $('main').toggleClass('dark');
-                    $('#general .switch_scenario').removeClass('active');
-                    const $t = $('#general .switch_scenario').first()
-                    $t.addClass('active');
-                    scenario = $.trim($t.text());
-                    updClip();
-                }
-            });
+    barsBar.data(datOrd).transition().duration(500).attr('width', function (d) {
+      return scaleBar(d[activeSphere]);
     });
+    barsCircle.data(datOrd).transition().duration(500).attr('cx', function (d) {
+      return scaleBar(d[activeSphere]);
+    });
+    barSpans.data(datOrd).text(function (d) {
+      return nform(d[activeSphere]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.";
+    });
+    $hYear.text(dragYear);
+  };
 
-// Promise.all([
+  updateBar(); // DRAG YEAR ------------------------------------------------------------------------------------------
+
+  const lineTipSelection = window.innerHeight > 850 ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde') : document.querySelectorAll('#lines circle.dirt, #lines circle.vde, .e-source circle');
+  const lineTip = tippy(lineTipSelection, {
+    animation: 'fade',
+    appendTo: document.querySelector('main'),
+    onShow: function onShow(tip) {
+      const d = tip.reference.__data__;
+      const is_vde = d.source ? sourcesOrder[d.source].is_vde ? 'vde' : 'dirt' : d.by_vde;
+      tip.setContent("\n            <p class=\"small\"><span class=\"" + is_vde + "\">" + nform(d[activeSphere]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.</span></p>\n            ");
+    }
+  });
+
+  const dragStart = function dragStart() {
+    $('#consumption #consumption_nav').css('opacity', 0);
+    d3.select(this).classed('active', true);
+  };
+
+  const dragged = function dragged() {
+    const dragTo = d3.min([scaleYear(2050), d3.max([scaleYear(2015), d3.event.x])]);
+    dragYear = Math.round(scaleYear.invert(dragTo) / 5) * 5;
+    dragger.attr('transform', "translate(" + dragTo + " 0)");
+  };
+
+  const dragEnd = function dragEnd() {
+    const yearDragger = d3.select('#lines #year_dragger');
+    yearDragger.transition().duration(500).attr('transform', "translate(" + scaleYear(dragYear) + " 0)");
+    yearDragger.classed('active', false);
+    updateBar();
+    $xAxisTexts.removeClass('active').filter(function () {
+      return this.textContent === dragYear.toString();
+    }).addClass('active');
+  };
+
+  dragger.call(d3.drag().on('start', dragStart).on('drag', dragged).on('end', dragEnd));
+  $xAxisTexts.click(function () {
+    dragYear = this.__data__;
+    dragEnd();
+  });
+  d3.selectAll('#lines circle.dirt, #lines circle.vde').on('click', function (d) {
+    dragYear = d.year;
+    dragEnd();
+  }); // FUNC TO UPDATE LINES -----------------------------------------------------------------------------
+
+  const updateLines = function updateLines() {
+    scaleKTNE.domain([0, Math.ceil(d3.max(datLines[0].values.concat(datLines[1].values), function (d) {
+      return d[activeSphere];
+    }) / 1000) * 1000]);
+    gYAxis.transition().duration(500).call(yAxis);
+    sourceLine.data(datLines).transition().duration(500).attr('d', function (d) {
+      return line(d.values.slice(1));
+    }).on('end', function () {
+      textPath.attr('href', null).attr('href', function (d) {
+        return "#line_" + d.key;
+      });
+    });
+    dotsG.data(datLines);
+    dots.data(function (d) {
+      return d.values.slice(1);
+    }).transition().duration(500).attr('cx', function (d) {
+      return scaleYear(d.year);
+    }).attr('cy', function (d) {
+      return scaleKTNE(d[activeSphere]);
+    }); // dragYear = 2015;
+    // dragEnd();
+  }; // SCROLLAMA -----------------------------------------------------------------------------------------
+
+
+  const $textLiMarks = $('#consumption .text li i');
+  const scroller = scrollama();
+  scroller.setup({
+    step: '#consumption article .text',
+    container: '#consumption',
+    graphic: '#consumption .fig_container',
+    offset: 0.8
+  }).onContainerEnter(function (r) {
+    updateLines();
+    updateBar();
+  }).onStepEnter(function (r) {
+    if (r.element.id !== 'phantom') {
+      activeSphere = r.element.getAttribute('data-sphere');
+      $('#consumption .h3 #h3_sphere').text(activeSphere.toLowerCase());
+      updateLines();
+      updateBar();
+    } // if (r.index === 0) {
+    //     navigation.style('opacity', 1)
+    // } else if (r.index === 1) {
+    //     navigation.style('opacity', 0)
+    // }
+
+  }).onContainerExit(function (r) {
+    $('#consumption').removeClass('dark');
+    $('main').removeClass('dark');
+    scenario = 'Революційний';
+    datYear = nest_year[scenario];
+    datLines = nest_vde[scenario];
+    $('#consumption .switch_scenario').removeClass('active').first().addClass('active');
+    $textLiMarks.removeClass('fa-times').addClass('fa-check');
+  });
+  $('#consumption .switch_scenario').click(function (e) {
+    const $t = $(this);
+
+    if ($t.hasClass('active')) {
+      return;
+    }
+
+    $('#consumption').toggleClass('dark');
+    $('main').toggleClass('dark');
+    $('#consumption .switch_scenario').removeClass('active');
+    $t.addClass('active');
+    scenario = $.trim($t.text());
+    datYear = nest_year[scenario];
+    datLines = nest_vde[scenario];
+    updateLines();
+    updateBar();
+    const markClasses = scenario === 'Революційний' ? ['fa-check', 'fa-times'] : ['fa-times', 'fa-check'];
+    $textLiMarks.removeClass(markClasses[1]).addClass(markClasses[0]);
+  });
+});
+Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_ref3) {
+  let _ref4 = _slicedToArray(_ref3, 1),
+      data = _ref4[0];
+
+  const nested = d3.nest().key(function (d) {
+    return d.action;
+  }).key(function (d) {
+    return d.scenario;
+  }).entries(data);
+  const scaleColor = d3.scaleOrdinal().domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)']).range(['#ff554e', '#ff7bac', '#ffa25c', '#00afc9', '#3EEC15']); // const scaleColor = d3.scaleOrdinal()
+  //     .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
+  //     .range(['#ee4d30','#241d58','#f69a33','#1dada6','#81b652']);
+
+  let activeYear = '2050';
+  const svg = d3.select('#costs figure svg').attr('height', function () {
+    return $(this).parent().height();
+  }).attr('width', function () {
+    return $(this).parent().width();
+  });
+  const circleR = window.innerWidth < mobW ? 3 : 5;
+  const svgW = parseInt(svg.attr('width'));
+  const svgH = parseInt(svg.attr('height'));
+  const svgM = {
+    top: fontSize * 0.5,
+    right: window.innerWidth < mobW ? fontSize * 3 : circleR + 1 + fontSize,
+    bottom: fontSize * 1,
+    left: 1
+  };
+  const scaleExpence = d3.scaleLinear().domain([0, 60000]).range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
+
+  const getTextLen = function getTextLen() {
+    const t = svg.append('text').text('Енергоспоживання');
+    const w = t.node().getComputedTextLength();
+    t.remove();
+    return w;
+  };
+
+  const labW = getTextLen();
+  const labs = svg.append('g').attr('id', 'labels').selectAll('text.lab').data(nested).enter().append('text').classed('lab', true).text(function (d) {
+    return d.key;
+  }).attr('data-cost', function (d) {
+    return d.key;
+  }) // .style('fill', d => chroma(scaleColor(d.key)).darken(2))
+  .each(function () {
+    const text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          lineH = 1.1;
+    let word = null,
+        line = [],
+        tspan = text.text(null).append('tspan').attr('x', 0).attr('dy', 0);
+
+    while (word = words.pop()) {
+      line.push(word);
+      tspan.text(line.join(' '));
+
+      if (tspan.node().getComputedTextLength() > labW) {
+        line.pop();
+        tspan.text(line.join(' '));
+        line = [word];
+        tspan = text.append('tspan').attr('x', 0).attr('dy', lineH + "em").text(word);
+      }
+    }
+  });
+
+  const checkOverlap = function checkOverlap() {
+    labs.sort(function (a, b) {
+      return scaleExpence(a.values[0].values[0][activeYear]) < scaleExpence(b.values[0].values[0][activeYear]) ? 1 : -1;
+    }).transition().duration(200).attr('y', function (d) {
+      const h0 = this.getBBox().height,
+            y0 = scaleExpence(d.values[0].values[0][activeYear]);
+
+      if (!this.previousSibling) {
+        this.__data__['y'] = y0;
+        return y0;
+      }
+
+      const y1 = this.previousSibling.__data__.y;
+
+      if (y0 + h0 + fontSize * 0.375 <= y1) {
+        this.__data__['y'] = y0;
+        return y0;
+      }
+
+      this.__data__['y'] = y1 - fontSize * 0.375 - h0;
+      return d.y;
+    });
+  };
+
+  checkOverlap();
+  const textX = svg.select('#labels').node().getBBox().width;
+  svgM.left = textX + fontSize * 0.5 + circleR * 2;
+  labs.style('text-anchor', 'start').attr('x', svgM.left - fontSize * 0.5 - circleR * 2);
+  labs.selectAll('tspan').attr('x', function () {
+    return textX - this.getComputedTextLength();
+  });
+  const scaleScen = d3.scalePoint().domain(['Консервативний', 'Революційний']).range([svgM.left, svgW - svgM.right]);
+
+  const _scaleScen$range = scaleScen.range(),
+        _scaleScen$range2 = _slicedToArray(_scaleScen$range, 2),
+        x1 = _scaleScen$range2[0],
+        x2 = _scaleScen$range2[1];
+
+  const xAxis = d3.axisTop(scaleScen); // .tickValues(['Базовий', 'Революційний']);
+
+  const gXAxis = svg.append('g').attr('id', 'cost_ax_x').call(xAxis);
+  gXAxis.selectAll('.tick line').attr('y1', scaleExpence.range()[0]).attr('y2', scaleExpence.range()[1]);
+  gXAxis.selectAll('.tick text').attr('y', scaleExpence.range()[1] - fontSize * 0.75);
+  gXAxis.selectAll('path').remove();
+  const yLabs = svg.selectAll('text.y_lab').data(scaleExpence.domain()).enter().append('text').classed('y_lab', true).text(function (d) {
+    return nform(d);
+  }).attr('y', function (d) {
+    return scaleExpence(d);
+  }).attr('x', x1 + 2);
+  const slopeGs = svg.selectAll('g.slope').data(nested).enter().append('g').classed('slope', true).attr('data-cost', function (d) {
+    return d.key;
+  });
+  $('#costs [data-cost]').css('cursor', 'pointer').on('mouseover', function () {
+    const c = $(this).data('cost');
+    $("g.slope[data-cost=\"" + c + "\"]").addClass('active').find('circle').each(function () {
+      this._tippy.show(500);
+    });
+    $('#costs svg [data-cost]').not("[data-cost=\"" + c + "\"]").addClass('blured');
+  }).on('mouseout', function () {
+    tippy.hideAllPoppers();
+    $('.blured').removeClass('blured');
+    $('#costs [data-cost].active').removeClass('active');
+  });
+  const slopeLines = slopeGs.append('path').attr('d', function (d) {
+    return "M " + x1 + " " + scaleExpence(d.values[0].values[0][activeYear]) + " L" + x2 + " " + scaleExpence(d.values[1].values[0][activeYear]);
+  }); // .style('stroke', d => scaleColor(d.key));
+
+  const slopeCircles = slopeGs.selectAll('circle').data(function (d) {
+    return d.values;
+  }).enter().append('circle').attr('cx', function (d) {
+    return scaleScen(d.key);
+  }).attr('cy', function (d) {
+    return scaleExpence(d.values[0][activeYear]);
+  }).attr('r', circleR); // .style('fill', d => scaleColor(d.values[0].action));
+
+  const slopeHelpers = slopeLines.clone().style('stroke-opacity', 0).style('stroke-width', 10).style('fill', 'none');
+  const bubleH = scaleExpence.range()[1] - fontSize;
+  const scaleR = d3.scaleLinear().domain([0, 116000]).range([0, d3.min([slopeLines.node().getBBox().width, bubleH - fontSize * 4])]);
+  const totalBubbles = svg.selectAll('path.t_bubble').data(d3.nest().key(function (d) {
+    return d.scenario;
+  }).entries(data)).enter().append('path').classed('t_bubble', true).attr('d', function (d) {
+    const r = scaleR(d3.sum(d.values, function (a) {
+      return a[activeYear];
+    })),
+          my = d.key === 'Консервативний' ? r + (bubleH - r) / 2 + fontSize : (bubleH - r) / 2 + fontSize,
+          ar = d.key === 'Консервативний' ? -r : r;
+    return "M " + scaleScen(d.key) + " " + my + "\n                        a1,1 0 0,0 0,\n                        " + ar;
+  }).style('fill', function (d) {
+    return d.key === 'Консервативний' ? cols.orange : cols.green;
+  }).style('stroke', function (d) {
+    return d.key === 'Консервативний' ? cols.orange : cols.green;
+  });
+  const totalBLab = svg.append('text').attr('id', 't_bubble_lab').text('Загалом').attr('x', textX).attr('y', bubleH / 2 + fontSize).style('dominant-baseline', 'middle').style('text-anchor', 'end');
+  const totalBVal = svg.selectAll('text.t_bubble_val').data(totalBubbles.data()).enter().append('text').classed('t_bubble_val', true).text(function (d) {
+    return nform(d3.sum(d.values, function (a) {
+      return a[activeYear];
+    }));
+  }).attr('x', function (d) {
+    return scaleScen(d.key);
+  }).attr('y', function (_, i) {
+    return totalBubbles.nodes()[i].getBBox().y - fontSize * 0.3;
+  }).style('fill', function (d) {
+    return d.key === 'Консервативний' ? chroma(cols.orange).darken() : chroma(cols.green).darken();
+  }).style('text-anchor', function (d) {
+    return d.key === 'Консервативний' ? 'start' : 'end';
+  });
+
+  const updSlopes = function updSlopes() {
+    slopeGs.selectAll('path').transition().duration(600).attr('d', function (d) {
+      return "M " + x1 + " " + scaleExpence(d.values[0].values[0][activeYear]) + "\n                                 L" + x2 + " " + scaleExpence(d.values[1].values[0][activeYear]);
+    });
+    slopeCircles.transition().duration(600).attr('cx', function (d) {
+      return scaleScen(d.key);
+    }).attr('cy', function (d) {
+      return scaleExpence(d.values[0][activeYear]);
+    });
+    totalBubbles.transition().duration(600).attr('d', function (d) {
+      const r = scaleR(d3.sum(d.values, function (a) {
+        return a[activeYear];
+      })),
+            my = d.key === 'Консервативний' ? r + (bubleH - r) / 2 + fontSize : (bubleH - r) / 2 + fontSize,
+            ar = d.key === 'Консервативний' ? -r : r;
+      return "M " + scaleScen(d.key) + " " + my + "\n                        a1,1 0 0,0 0,\n                        " + ar;
+    });
+    totalBVal.transition().duration(600).text(function (d) {
+      return nform(d3.sum(d.values, function (a) {
+        return a[activeYear];
+      }));
+    }).attr('y', function (d) {
+      const r = scaleR(d3.sum(d.values, function (a) {
+        return a[activeYear];
+      }));
+      return (bubleH - r) / 2 + fontSize * 0.7;
+    });
+    checkOverlap();
+  };
+
+  $('#costs .h3 i').click(function () {
+    const $t = $(this);
+
+    if ($t.hasClass('active')) {
+      const $sp = $('#consumprion #costs_year'),
+            dir = $t.hasClass('fa-caret-left') ? -1 : 1;
+      activeYear = (parseInt($sp.text()) + 5 * dir).toString();
+
+      if (activeYear === '2050' || activeYear === '2015') {
+        $t.removeClass('active');
+      } else if (activeYear === '2045' || activeYear === '2020') {
+        $t.siblings('i').addClass('active');
+      }
+
+      $sp.text(activeYear);
+      updSlopes();
+    }
+  });
+  const slopeTippy = tippy(document.querySelectorAll('#costs g.slope circle'), {
+    animation: 'fade',
+
+    onShow(tip) {
+      tip.setContent("\n                <p class=\"sm\">" + nform(tip.reference.__data__.values[0][activeYear]) + " \u043C\u043B\u043D. \u20AC</p>\n                ");
+    },
+
+    trigger: 'manual'
+  });
+});
+Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_ref5) {
+  let _ref6 = _slicedToArray(_ref5, 1),
+      data = _ref6[0];
+
+  const sourcesList = ["Біопаливо та відходи", "Гідро", "Вітер", "Сонце", "Ресурс для АЕС", "Вугілля", "Газ", "Нафта"];
+
+  if (window.innerWidth < mobW) {
+    data = data.filter(function (d) {
+      return [2015, 2030, 2050].indexOf(d.year) > -1;
+    });
+  }
+
+  const nested = d3.nest().key(function (d) {
+    return d.year;
+  }).entries(data.filter(function (d) {
+    return ['Всього', 'Імпорт'].indexOf(d.source) === -1;
+  }).sort(function (a, b) {
+    return sourcesList.indexOf(a.source) > sourcesList.indexOf(b.source) ? 1 : -1;
+  })).sort(function (a, b) {
+    return parseInt(a.key) > parseInt(b.key) ? 1 : -1;
+  });
+  const svgW = $('#general figure').width(),
+        svgH = $('#general figure').height(),
+        svgM = {
+    top: 1,
+    right: 1,
+    bottom: 1,
+    left: 1
+  };
+  let scenario = 'Революційний';
+  const svg = d3.select('#general figure svg').attr('width', svgW).attr('height', svgH);
+  const scaleYear = d3.scaleBand().domain(nested.map(function (d) {
+    return d.key;
+  })).range([svgM.left, svgW - svgM.right]).padding(window.innerWidth < 100 ? 0.2 : 0.5);
+  const scaleSource = d3.scaleBand().domain(sourcesList).range([0, scaleYear.bandwidth()]).padding(0.15);
+  const strokeWidth = d3.min([scaleSource.bandwidth() / 3, 2.5]);
+  const scaleKTNE = d3.scaleLinear().domain([0, 50000]).range([0, svgH / 2 - svgM.top]);
+  const area = d3.area().x(function (d, i) {
+    if (i === 0) {
+      return scaleYear(d.year) - strokeWidth;
+    } else if (i === 8) {
+      return scaleYear(d.year) + scaleSource(d.source) + scaleSource.bandwidth() / 2;
+    } else {
+      return scaleYear(d.year) + scaleSource(d.source);
+    }
+  }).y1(function (d) {
+    return svgH / 2 + scaleKTNE(d[scenario]);
+  }).y0(function (d) {
+    return svgH / 2 - scaleKTNE(d[scenario]);
+  }).curve(d3.curveStep);
+  const xAxis = d3.axisBottom(scaleYear).ticks(8).tickFormat(function (d) {
+    return d.toString();
+  });
+  const gXAxis = svg.append('g').attr('id', 'x_ax_gen').call(xAxis).attr('transform', "translate(0 " + (svgH - svgM.bottom) + ")");
+  const scaleColor = d3.scaleOrdinal().domain(['Вугілля', 'Газ', 'Ресурс для АЕС', 'Нафта', 'Біопаливо та відходи', 'Гідро', 'Вітер', 'Сонце']).range(['#ce73e9', '#ce73e9', '#ff554e', '#ce73e9', '#3bdf14', '#3bdf14', '#3bdf14', '#3bdf14']);
+  const areas = svg.append('defs').selectAll('clipPath.clip_gen').data(nested).enter().append('clipPath').classed('clip_gen', true).attr('id', function (d) {
+    return "y" + d.key;
+  }).append('path').attr('d', function (d) {
+    return area([d.values[0]].concat(d.values));
+  });
+  const linesG = svg.selectAll('g.year').data(nested).enter().append('g').classed('year', true).style('clip-path', function (d) {
+    return "url(#y" + d.key + ")";
+  });
+  const nSteps = Math.floor((svgH - svgM.top - svgM.bottom) / (fontSize * 3)) * 2 + 1;
+  const step = (svgH - svgM.top - svgM.bottom) / nSteps;
+  const lines = linesG.selectAll('path.source').data(function (d) {
+    return d.values;
+  }).enter().append('path').classed('source', true).attr('d', function (d) {
+    const x = scaleYear(d.year) + scaleSource(d.source),
+          dx = scaleSource.bandwidth() / 2 - strokeWidth / 1.5;
+    let i = 0,
+        p = "M" + x + " " + svgM.top + " ";
+
+    while (i < nSteps) {
+      const dir = i % 2 ? -1 : 1;
+      p += "q " + dir * dx + " " + step / 2 + " 0 " + step;
+      i++;
+    }
+
+    return p;
+  }).style('stroke', function (d) {
+    return scaleColor(d.source);
+  }).style('stroke-width', strokeWidth).style('fill', 'none');
+  const svgBCR = svg.node().getBoundingClientRect(),
+        lineW = lines.node().getBoundingClientRect().width,
+        linesGBCR = lines.nodes().map(function (e) {
+    return {
+      x: e.getBoundingClientRect().left - svgBCR.left + lineW / 2,
+      e: e
+    };
+  });
+  const $nav = $("#general nav p");
+  $nav.html(linesGBCR[0].e.__data__.year + " \u0440\u0456\u043A<br/>\n                   " + linesGBCR[0].e.__data__.source + ": " + nform(linesGBCR[0].e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.");
+  const navHelper = svg.append('path').attr('id', 'nav_helper').attr('d', "M" + (linesGBCR[0].e.getBoundingClientRect().x - svgBCR.x + lineW / 2) + "\n                         " + (svgH / 2 - scaleKTNE(linesGBCR[0].e.__data__[scenario]) - 2) + "\n                        V 0\n                         ");
+  const transparentRect = svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svgW).attr('height', svgH).style('opacity', 0).on('mousemove', function () {
+    const eX = d3.event.clientX - svgBCR.left;
+    const lineDist = linesGBCR.map(function (d) {
+      return Math.abs(d.x - eX);
+    });
+    const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
+    $nav.html(closestLine.e.__data__.year + "  \u0440\u0456\u043A<br/>\n                   " + closestLine.e.__data__.source + ": " + nform(closestLine.e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.");
+    const navBCR = $nav.get(0).getBoundingClientRect(),
+          maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
+    let perfectMargin = closestLine.x + lineW / 2 - navBCR.width / 2;
+    perfectMargin = perfectMargin < 0 ? 0 : perfectMargin;
+    perfectMargin = perfectMargin > maxMargin ? maxMargin : perfectMargin;
+    $nav.css('margin-left', perfectMargin + "px");
+    const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2;
+    navHelper.transition().duration(150).ease(d3.easeLinear).attr('d', "M" + closestLine.x + "\n                             " + (navHelperY > 0 ? navHelperY : 0) + "\n                            V 0\n                           ");
+  }); // const legend = d3.select('#general figure #labels_gen')
+  //     .style('top', `${d3.max(lines.data(), d => svgH / 2 + scaleKTNE(d[scenario])) + fontSize *1.5}px`);
+  //
+  // legend.selectAll('p.lab')
+  //     .data(nested[0].values)
+  //     .enter()
+  //     .append('p')
+  //     .classed('lab_gen', true)
+  //     .attr('data-source', d => d.source)
+  //     .text(d => d.source);
+  //
+  // const svgBCR = svg.node().getBoundingClientRect(),
+  //     linesOnWay = lines.nodes().filter(e => e.getBBox().x < legend.node().getBoundingClientRect().width),
+  //     curveYStart = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375;
+  //
+  // const labArrows = svg.append('g')
+  //     .attr('id', 'lab_arrows')
+  //     .selectAll('path.lab_arrow')
+  //     .data(nested[0].values)
+  //     .enter()
+  //     .append('path')
+  //     .classed('lab_arrow', true)
+  //     .attr('d', function (d, i) {
+  //         const pBCR = $(`#general p.lab_gen[data-source="${d.source}"]`).get(0).getBoundingClientRect();
+  //         const x0 = scaleYear(d.year) + scaleSource(d.source),
+  //             x1 = (pBCR.x > x0)
+  //                 ? pBCR.x - svgBCR.left + fontSize
+  //                 : pBCR.x + pBCR.width - svgBCR.left,
+  //             y0 = scaleKTNE(d[scenario]) + svgH / 2 + fontSize,
+  //             y1 = pBCR.y - svgBCR.y,
+  //             curveY = curveYStart + fontSize * 0.15 * (8 - i);
+  //             // linesOnWay = lines.nodes().filter(e => (e.getBBox().x > x0 && e.getBBox().x < x1)
+  //             //                                     || (e.getBBox().x < x0 && e.getBBox().x > x1)),
+  //             // curveY = scaleKTNE(d3.max(linesOnWay, e => e.__data__[scenario])) + svgH / 2 + fontSize*0.375 + fontSize * 0.2 * (8 - i);
+  //
+  //         return `M${x0} ${y0}
+  //                 L${x0} ${curveY}
+  //                 L${x1} ${curveY}
+  //                 L${x1} ${y1}`;
+  //     });
+  //
+
+  const updClip = function updClip() {
+    areas.transition().duration(1000).attr('d', function (d) {
+      return area([d.values[0]].concat(d.values));
+    });
+  }; // // clippath checker
+  // const areas = svg.selectAll('path.clip_gen')
+  //     .data(nested)
+  //     .enter()
+  //     .append('path')
+  //     .attr('d', d => area([d.values[0]].concat(d.values)).concat([d.values[d.values.length - 1]]))
+  //     .style('fill', '#000')
+  //     .style('fill-opacity', 0.5);
+
+
+  $('#general .switch_scenario').click(function (e) {
+    const $t = $(this);
+
+    if ($t.hasClass('active')) {
+      return;
+    }
+
+    $('#general, #general #x_helper').toggleClass('dark');
+    $('main').toggleClass('dark');
+    $('#general .switch_scenario').removeClass('active');
+    $t.addClass('active');
+    scenario = $.trim($t.text());
+    updClip();
+  });
+  const scroller = scrollama();
+  scroller.setup({
+    step: '#general figure',
+    container: '#general',
+    graphic: '#general svg',
+    offset: 0.8
+  }).onContainerExit(function () {
+    if ($('main').hasClass('dark')) {
+      $('#general').toggleClass('dark');
+      $('main').toggleClass('dark');
+      $('#general .switch_scenario').removeClass('active');
+      const $t = $('#general .switch_scenario').first();
+      $t.addClass('active');
+      scenario = $.trim($t.text());
+      updClip();
+    }
+  });
+}); // Promise.all([
 //     d3.csv('data/eresources_wide.csv', numericalize),
 // ])
 //     .then(function ([data]) {
@@ -38459,4 +40188,5 @@ Promise.all([
 //         tippy.hideAllPoppers();
 //     });
 // });
-},{"chroma-js":1,"d3":33,"jquery":34,"scrollama":35,"tippy.js":36}]},{},[37]);
+
+},{"chroma-js":1,"core-js/modules/es6.array.sort":68,"core-js/modules/es6.regexp.replace":71,"core-js/modules/es6.regexp.search":72,"core-js/modules/es6.regexp.split":73,"core-js/modules/es6.regexp.to-string":74,"core-js/modules/es6.symbol":75,"core-js/modules/es7.symbol.async-iterator":76,"core-js/modules/web.dom.iterable":77,"d3":109,"jquery":110,"scrollama":111,"tippy.js":112}]},{},[113]);

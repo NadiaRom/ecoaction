@@ -1,9 +1,14 @@
-$green: #00a650;
-$red: #f26522;
-$fontcol: #2c2c2c;
-$bgcol: #f7f7f7;
+$green: #3bdf14;
+$red: #ce73e9;
+$blue: #00afc9;
+$calmgreen: #658b5b;
+$fontcol: rgb(51, 51, 51);
+$bgcol: rgb(238, 242, 245);
 $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
-$fonttit: "Roboto Slab", Helvetica, Arial, Verdana, sans-serif;
+@font-face {
+  font-family: bebas;
+  src: url(img/Bebas_Neue_Cyrillic.ttf);
+}
 
 $medium: 'screen and (min-width: 577px)';
 $xlarge: 'screen and (min-width: 1500px)';
@@ -11,7 +16,7 @@ $large: 'screen and (min-width: 950px)';
 $mobile: 'screen and (max-width: 577px)';
 $max_height_medium: 'screen and (max-height: 850px)';
 
-@import 'node_modules/tippy.js/dist/themes/light.css';
+@import '../node_modules/tippy.js/dist/themes/light.css';
 
 body {
   color: $fontcol;
@@ -25,33 +30,100 @@ body {
   * {
     box-sizing: border-box;
     outline: none;
+    outline-color: none;
+  }
+
+  @media #{$mobile} {
+    font-size: 0.85em;
+  }
+}
+
+#menu-container {
+  position: relative;
+  img {
+    width: 100%;
+    height: auto;
   }
 }
 
 header {
-  padding: 1em 10% 2em 10%;
-  background: linear-gradient(0.5turn, $green, $green, $green);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: $bgcol;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    //height: auto;
+    background-color: $calmgreen;
+    padding: 0 0 1.5em 0;
+
+    @media #{$mobile} {
+      width: 125vw;
+      margin: 0 -12.5vw 0 -12.5vw;
+    }
+  }
 
   h1 {
     font-size: 3em;
-    font-family: $fonttit;
+    font-family: bebas;
+    margin: 0;
+    padding: 1em 0.75em 0 0.75em;
+    text-align: center;
+    font-weight: 400;
+    color: #608cc4;
+    background-color: #faf9e1;
+
+    @media #{$mobile} {
+      font-size: 2.25em;
+    }
   }
 
   h2 {
     font-size: 1em;
     font-weight: 600;
+    line-height: 1.6;
+    margin: 2em 1em 2em 1em;
+
+    @media #{$medium} {
+      margin: 2em 20% 2em 20%;
+    }
+
+    p {
+      margin: 0 0 0.5em 0;
+    }
+
+    span {
+      color: $green;
+      font-weight: 800;
+      &.green {
+        font-size: 2em;
+      }
+    }
   }
 }
 
 svg text {
   font-family: $fontfam;
+  fill: $fontcol;
 }
 
 main {
+  transition: background-color 0.5s, color 0.5s;
+  &.dark {
+    background-color: $fontcol;
+    color: $bgcol;
+
+    div.tippy-tooltip {
+      color: $bgcol;
+      box-shadow: 0 0 0.5em 1px lighten($fontcol, 10%);
+    }
+
+    .tippy-backdrop {
+      background-color: rgba($fontcol, 0.8);
+    }
+  }
+
   .data_caption {
     font-style: italic;
     color: lighten($fontcol, 40%);
@@ -63,63 +135,159 @@ main {
       //text-decoration-color: $red;
     }
   }
+
+  p.instruction {
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+}
+
+#why {
+  margin: 3em 1em 2em 1em;
+
+  @media #{$medium} {
+    margin: 3em 10% 2em 10%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media #{$large} {
+    margin: 3em 20% 2em 20%;
+  }
+
+  h3 {
+    grid-column: 1 / -1;
+    margin: 0 0 1em 0;
+  }
+
+  ul {
+    padding: 0;
+    list-style-type: none;
+    pointer-events: auto;
+
+    @media #{$medium} {
+      &#why_soc {
+        margin: 0 2em 0 0;
+      }
+
+      &#why_ec {
+        margin: 0 0 0 2em;
+      }
+    }
+
+    li {
+      margin: 0 0 1.5em 0;
+    }
+  }
+
+  i {
+    font-size: 0.5em;
+    transition: all 0.5s;
+
+    &.fa-check {
+      color: $green;
+    }
+
+    &.fa-times {
+      color: $red;
+    }
+  }
+}
+
+.switch_scenario {
+  background-color: lighten($fontcol, 50%);
+  padding: 0.1em 0.6em 0.1em 0.6em;
+  cursor: pointer;
+  color: white;
+  font-size: 0.9em;
+  transition: background-color 0.5s;
+
+  &:first-of-type {
+    margin-right: 1em;
+  }
+
+  &.active {
+    background-color: $blue;
+  }
 }
 
 #consumption {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr;
   padding: 0;
-  margin: 0;
+  margin: 1em 1em 0 1em;
+  transition: color 0.5s, fill 0.5s, stroke 0.5s, background-color 0.5s;
+
+  @media #{$medium} {
+    margin: 1em 5% 0 10%;
+  }
+
+  @media #{$large} {
+    margin: 1em 10% 0 20%;
+  }
+
+
+  .fig_container {
+    min-height: 100vh;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
 
   .h3 {
-    padding: 2rem 0 2rem 0;
+    padding: 1em 0 1em 0;
+    font-size: 1rem;
+    grid-row: 1 / 2;
+    grid-column: 1 / -1;
 
-    @media #{$max_height_medium} {
-      padding: 0.5rem 0 1rem 0;
+    #h3_sphere {
+      color: $blue;
+      font-size: 0.85em;
+      text-transform: uppercase;
+      @media #{$mobile} {
+        display: block;
+      }
     }
-
-    div {
-      display: flex;
-      justify-content: space-between;
+    
+    @media #{$mobile} {
+      font-size: 1em;
+      padding: 0;
+      em {
+        font-size: 1em;
+      }
     }
   }
 
   figure {
     padding: 0;
-    margin: 0;
+    margin: 0 2em 0 0;
     display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    grid-template-columns: 1fr;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    overflow: hidden;
+    grid-gap: 2em;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1.61fr 1fr;
 
-    @media #{$max_height_medium} {
-      grid-template-rows: auto 1fr auto;
-      grid-template-columns: 1fr minmax(auto, 200px);
-    }
-
-    .h3 {
-      padding-left: 10%;
-      padding-right: 10%;
-
-      @media #{$max_height_medium} {
-        grid-column: 1 / -1;
-      }
+    @media #{$mobile} {
+      grid-template-rows: 1fr auto;
+      grid-template-columns: 1fr;
+      grid-gap: 0;
     }
 
     #bars {
-      margin: 0 0 2em 0;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-gap: 2em;
-      padding-left: 10%;
-      padding-right: 10%;
+      margin: 0 0 0 0;
+      @media #{$mobile} {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      div.bar_vde:first-of-type {
+        margin: 0 1em 0 0;
+        @media #{$medium} {
+          margin: 0 0 2em 0;
+        }
+      }
 
       svg {
+        display: inherit;
         overflow: visible;
       }
 
@@ -128,9 +296,20 @@ main {
       }
 
       p {
-        margin: 0;
-        font-size: 0.85em;
+        margin: 0 0 0.75em 0;
+        font-size: 0.75em;
         line-height: 1;
+      }
+
+      p#bar_year {
+        font-size: 1em;
+        color: $blue;
+        font-weight: 600;
+        margin: 1em 0 2em 0;
+
+        @media #{$mobile} {
+          display: none;
+        }
       }
 
       [data-vde="vde"] {
@@ -167,35 +346,16 @@ main {
 
       span.ktne {
         white-space: nowrap;
-      }
-
-      @media #{$max_height_medium} {
-        grid-template-columns: 1fr;
-        grid-column: 2 / 3;
-        grid-gap: 0;
-
-        p {
-          font-size: 0.75rem;
+        @media #{$mobile} {
+          display: block;
         }
-
-        span.ktne {
-          display: none;
-        }
+        //display: none;
       }
 
     }
 
     #lines {
-      margin: 0 0 2em 0;
-      padding-left: 10%;
-      padding-right: 10%;
-
-      @media #{$max_height_medium} {
-        grid-column: 1 / 2;
-        grid-row: 2 / 3;
-        padding-left: 2em;
-        padding-right: 2em;
-      }
+      margin: 0;
 
       svg {
         overflow: visible;
@@ -211,7 +371,7 @@ main {
 
         line {
           stroke-width: 2;
-          stroke: lighten($fontcol, 30%);
+          stroke: $blue;
         }
       }
 
@@ -221,44 +381,105 @@ main {
 
         &.active {
           font-weight: 600;
-          font-size: 1.25rem;
+          //font-size: 1.25em;
+        }
+
+        @media #{$mobile} {
+          font-size: 1em;
+        }
+      }
+
+      #y_axis {
+        path {
+          display: none;
+        }
+
+        line {
+          fill: lighten($fontcol, 85%);
+        }
+
+        @media #{$mobile} {
+          font-size: 0.7em;
+          fill: lighten($fontcol, 50%)
         }
       }
 
       circle {
         cursor: pointer;
       }
-    }
-  }
 
-  .data_caption {
-    @media #{$max_height_medium} {
-      grid-column: 1 / -1;
-      grid-row: 3 / 4;
+      textPath {
+        white-space: pre;
+        font-size: 0.85em;
+        @media #{$mobile} {
+          font-size: 0.75em;
+        }
+      }
+
+      #consumption_nav {
+        pointer-events: none;
+        transition: opacity 0.5s;
+
+        path {
+          fill: none;
+          stroke: lighten($fontcol, 30%);
+        }
+
+        text {
+          fill: $blue;
+          font-size: 0.75em;
+          font-weight: 600;
+        }
+      }
     }
   }
 
   article#explanation {
-    padding: 1em;
-    margin: 0;
-    grid-column: 2 / -1;
-    background-color: darken($bgcol, 5%);
+    padding: 0;
+    margin: 0 1em 0 1em;
+    pointer-events: none;
+    z-index: 1;
+    position: relative;
+
+    @media #{$medium} {
+      margin: 0 -5% 0 calc(50% + 3em);
+    }
+
+    @media #{$large} {
+      margin: 0 -10% 0 calc(50% + 4em);
+    }
 
     h4 {
-      padding: 2rem 0 1em 0;
+      padding: 0;
+      margin: 1em 0 1em 1em;
+      pointer-events: auto;
     }
 
     .text {
-      padding: 1em 0 2em 0;
-      min-height: 80vh;
+      padding: 2em;
+      margin: 100vh 0 120vh 0;
+      background: darken($bgcol, 3%);
+      box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
+      pointer-events: none;
     }
 
     ul {
+      padding: 0;
+      margin: 0;
       list-style-type: none;
+      pointer-events: auto;
 
       i {
         font-size: 0.5em;
-        color: $green;
+        transition: all 0.5s;
+
+        &.fa-check {
+          color: $green;
+        }
+
+        &.fa-times {
+          color: $red;
+        }
       }
 
       li {
@@ -273,137 +494,297 @@ main {
   }
 }
 
+section.dark {
+  color: $bgcol;
+
+  text {
+    fill: $bgcol
+  }
+
+  .tick line {
+    stroke: lighten($fontcol, 50%);
+  }
+
+  #y_axis line {
+    fill: lighten($fontcol, 50%);
+  }
+
+  textPath {
+    fill: darken($bgcol, 20%);
+  }
+
+  .text {
+    background: lighten($fontcol, 3%) !important;
+    box-shadow: 0 0.1em 0.4em -0.1em rgba(lighten($fontcol, 50%), 0.85) !important;
+  }
+}
+
 #costs {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto 1fr auto;
-  padding: 1em 2em 1em 2em;
+  padding: 1em 0 0 0;
+  margin: 1em 1em 0 1em;
 
-  h3 {
-    grid-column: 1 / -1;
-    padding: 1em 0 1em 0;
-    margin: 1em 0 1em 0;
-  }
-
-  p {
-    padding: 0;
-    margin: 0 0 1em 0;
-  }
-
-  figure {
+  @media #{$medium} {
+    margin: 1em 10% 0 10%;
     display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+  }
+
+  @media #{$large} {
+    margin: 1em 20% 0 20%;
+  }
+
+  .h3 {
+    grid-column: 1 / -1;
     padding: 0;
-    margin: 0;
-    grid-template-columns: 1fr 20em 1fr;
-    grid-template-rows: auto 1fr;
-    grid-gap: 2em;
-
-    .h5 {
-      margin: 1em 0 0 1em;
+    margin: 0 0 0 0;
+    @media #{$mobile} {
       font-size: 1em;
-
-      &.dirt {
-        grid-column: 1 / 2;
-      }
-
-      &.vde {
-        grid-column: 3 / 4;
-      }
-
-      p {
-        margin: 0;
-        padding: 0;
-
-        span {
-          font-weight: 500;
-        }
-      }
-
-      h5 {
-        font-size: 1em;
-        padding: 0;
-        margin: 0;
-      }
-    }
-
-    #costs-legend {
-      grid-column: 2 / 3;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-
-      svg {
-        display: inline;
-        margin: 0 1em 0 0;
-      }
-
-      p.legend {
-        margin: 0 0.75em 0 0.75em;
-        padding: 0.5em;
-        box-shadow: 0 0 0 0 transparent;
-        transition: all 0.5s;
-
-        &.active {
-          box-shadow: 0 0 0.5em 0 darken($bgcol, 15%);
-        }
-      }
-
-    }
-
-    .byType#base-scen {
-      grid-column: 1 / 2;
-      grid-row: 2 / 3;
-    }
-
-    .byType#rev-scen {
-      grid-column: 3 / 4;
-      grid-row: 2 / 3;
-    }
-
-    .byType {
-
-      svg {
-        overflow: visible;
-
-        .slope {
-          cursor: pointer;
-          line {
-            stroke-width: 3;
-          }
-        }
-
-        line#slope-tip {
-          opacity: 0;
-          stroke: lighten($fontcol, 50%);
-          stroke-dasharray: 2 2;
-          stroke-width: 3;
-          transition: all 0.5s;
-
-          &.active {
-            opacity: 1;
-          }
-        }
-
-        #cost_ax_x {
-          text {
-            font-family: $fontfam;
-            font-size: 1rem;
-          }
-
-          line {
-            stroke: lighten($fontcol, 50%);
-          }
-        }
-      }
-
+      padding: 0;
     }
 
     p {
-      font-size: 0.85em;
-      margin: 0;
-      padding: 1em 0 1em 0;
+      padding: 0;
+      margin: 0 0 1em 0;
     }
+
+    i {
+      color: lighten($fontcol, 40%);
+      transition: color 1s;
+
+      &.active {
+        color: $blue;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .data_caption {
+    grid-column: 1 / -1;
+    margin: 2em 0 0 0;
+  }
+
+  figure {
+    padding: 0;
+    margin: 0 2em 0 0;
+    max-height: 90vh;
+    @media #{$mobile} {
+      height: 75vh;
+      margin: 0 0 0 0;
+    }
+
+    svg {
+      overflow: visible;
+    }
+
+    path.t_bubble {
+      fill-opacity: 0.5;
+    }
+
+    text.lab, #t_bubble_lab, text.t_bubble_val {
+      font-family: $fontfam;
+      font-size: 0.75em;
+      //dominant-baseline: text-after-edge;
+      transition: opacity 0.5s;
+      @media #{$mobile} {
+        font-size: 0.7em;
+      }
+    }
+
+    #t_bubble_lab {
+      fill: lighten($fontcol, 30%);
+    }
+
+    .slope {
+      cursor: pointer;
+      transition: all 0.5s;
+
+      path {
+        stroke-width: 2;
+        stroke: lighten($fontcol, 45%);
+      }
+
+      circle {
+        fill: lighten($fontcol, 45%);
+      }
+
+      &.active {
+        path {
+          stroke: $blue;
+        }
+        circle {
+          fill: $blue;
+        }
+      }
+    }
+
+    .blured {
+      opacity: 0.33;
+    }
+
+    text.y_lab {
+      font-size: 0.75em;
+      fill: rgba($fontcol, 0.7);
+      dominant-baseline: text-before-edge;
+    }
+
+    #cost_ax_x {
+      text {
+        font-family: $fontfam;
+        font-size: 0.75rem;
+        color: $fontcol;
+        font-weight: 800;
+        @media #{$mobile} {
+          font-size: 0.95em;
+        }
+        //dominant-baseline: text-after-edge;
+      }
+
+      line {
+        stroke: lighten($fontcol, 50%);
+      }
+    }
+  }
+
+  article {
+    line-height: 1.75;
+    padding: 0;
+    margin: 0 0 0 2em;
+
+    strong {
+      font-weight: 800;
+    }
+
+    span[data-cost] {
+      cursor: pointer;
+      white-space: nowrap;
+      @media #{$medium} {
+        border-bottom: 2px solid $blue;
+      }
+    }
+
+    //[data-cost="Вартість палива"] {
+    //  border-bottom: 2px solid rgba(#ff554e, 1);
+    //}
+    //
+    //[data-cost="Капітальні інвестиції"] {
+    //  border-bottom: 2px solid rgba(#1dada6, 1);
+    //}
+  }
+}
+
+#general, #general2 {
+  padding: 1em 0 0 0;
+
+  .h3 {
+    @media #{$mobile} {
+      font-size: 1em;
+    }
+  }
+
+  .h3, .data_caption {
+    margin: 0 1em 0 1em;
+
+    @media #{$medium} {
+      margin: 0 10% 0 10%;
+    }
+
+    @media #{$large} {
+      margin: 0 20% 0 20%;
+    }
+  }
+
+  .data_caption {
+    margin-top: 2em;
+  }
+
+  figure {
+    height: 25em;
+    max-height: 90vh;
+    margin: 0 1em 0 1em;
+    position: relative;
+
+    @media #{$large} {
+      margin: 0 10% 0 10%;
+    }
+
+    svg {
+      overflow: visible;
+    }
+  }
+
+  path#x_helper {
+    display: none;
+    fill: darken($bgcol, 5%);
+    transition: fill 0.5s;
+    &.dark {
+      fill: lighten($fontcol, 5%);
+    }
+  }
+
+  path.area_stack {
+    fill-opacity: 0.7;
+    stroke-opacity: 0.75;
+    stroke-width: 2;
+    mix-blend-mode: multiply;
+  }
+
+  #legend_gen {
+    text {
+      font-size: 0.75em;
+      fill: $fontcol;
+    }
+  }
+
+  g#x_ax_gen {
+    path, line {
+      display: none;
+    }
+  }
+
+  #labels_gen {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.75em;
+    fill: $fontcol;
+
+    p {
+      margin: 0 1em 0 0;
+    }
+  }
+
+  path.lab_arrow {
+    fill: none;
+    stroke: $fontcol;
+    stroke-opacity: 0.25;
+  }
+
+  #gen_helper {
+    margin: 0 1em 0 1em;
+
+    @media #{$large} {
+      margin: 0 10% 0 10%;
+    }
+
+    p {
+      display: inline-block;
+      padding: 0.5em;
+      margin: 0;
+      text-align: center;
+      font-size: 0.85em;
+      border: 1px dotted $blue;
+      white-space: nowrap;
+      transition: margin 0.2s;
+    }
+  }
+
+  path#nav_helper {
+    stroke: $blue;
+    fill: none;
+    stroke-dasharray: 1 1;
+
   }
 }
 
@@ -420,17 +801,29 @@ span.dirt {
   div.tippy-tooltip {
     color: $fontcol;
     font-size: 1rem;
-    padding: 0.75em !important;
+    padding: 0.25em !important;
     box-shadow: 0 0 0.5em 1px darken($bgcol, 10%);
   }
 
   .tippy-backdrop {
-    background-color: rgba($bgcol, 0.75);
+    background-color: rgba($bgcol, 0.8);
+  }
+
+  .vde {
+    color: $green;
+  }
+
+  .dirt {
+    color: $red;
   }
 
   p {
     margin: 0 0 0 0;
     padding: 0 0 0 0;
+
+    &.sm {
+      font-size: 0.75em;
+    }
   }
 
 }

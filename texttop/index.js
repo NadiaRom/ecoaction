@@ -514,7 +514,7 @@ Promise.all([
         const svgH = parseInt(svg.attr('height'));
         const svgM = {
             top: fontSize * 0.5,
-            right: (window.innerWidth < mobW) ? fontSize * 3 : circleR + 1,
+            right: (window.innerWidth < mobW) ? fontSize * 3 : circleR + 1 + fontSize,
             bottom: fontSize * 1,
             left: 1,
         };
@@ -778,7 +778,7 @@ Promise.all([
         $('#costs .h3 i').click(function () {
             const $t = $(this);
             if ($t.hasClass('active')) {
-                const $sp = $t.siblings('span'),
+                const $sp = $('#consumprion #costs_year'),
                     dir = $t.hasClass('fa-caret-left') ? -1 : 1;
                 activeYear = (parseInt($sp.text()) + 5 * dir).toString();
                 if (activeYear === '2050' || activeYear === '2015') {

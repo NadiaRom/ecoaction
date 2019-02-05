@@ -4,9 +4,9 @@
   "description": "modules for ecoaction viz",
   "main": "index.js",
   "scripts": {
-    "build": "npx browserify index.js -o bundle.js && npx postcss style.css -o style_prefixed.css -u autoprefixer",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npx watchify index.js -o bundle.js && npx postcss style.css -o style_prefixed.css -w -u autoprefixer"
+    "build": "npx babel index.js -o bundle.js && npx browserify bundle.js -o bundle.js && npx postcss style.css -o style.css -u autoprefixer",
+    "build_tt": "npx babel texttop/index.js -o texttop/bundle.js && npx browserify texttop/bundle.js -o texttop/bundle.js && npx postcss texttop/style.css -o texttop/style.css -u autoprefixer",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/NadiaRom/ecoaction#readme",
   "dependencies": {
+    "@babel/polyfill": "^7.2.5",
     "chroma-js": "^2.0.2",
     "d3": "^5.8.0",
     "intersection-observer": "^0.5.1",
@@ -32,9 +33,14 @@
     "tippy.js": "^3.4.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-transform-arrow-functions": "^7.2.0",
+    "@babel/plugin-transform-destructuring": "^7.3.2",
+    "@babel/preset-env": "^7.3.1",
     "autoprefixer": "^9.4.5",
+    "babel-plugin-transform-es2015-template-literals": "^6.22.0",
     "browserify": "^16.2.3",
-    "postcss-cli": "^6.1.1",
-    "watchify": "^3.11.0"
+    "postcss-cli": "^6.1.1"
   }
 }
