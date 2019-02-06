@@ -232,8 +232,8 @@ Promise.all([
         dragger.append('line')
             .attr('x1', -5)
             .attr('x2', 5)
-            .attr('y1', scaleKTNE.range()[0])
-            .attr('y2', scaleKTNE.range()[0]);
+            .attr('y1', scaleKTNE.range()[1])
+            .attr('y2', scaleKTNE.range()[1]);
 
         // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
         const navigation = linesSvg.append('g')
@@ -778,7 +778,7 @@ Promise.all([
         $('#costs .h3 i').click(function () {
             const $t = $(this);
             if ($t.hasClass('active')) {
-                const $sp = $('#consumprion #costs_year'),
+                const $sp = $('#costs #costs_year'),
                     dir = $t.hasClass('fa-caret-left') ? -1 : 1;
                 activeYear = (parseInt($sp.text()) + 5 * dir).toString();
                 if (activeYear === '2050' || activeYear === '2015') {

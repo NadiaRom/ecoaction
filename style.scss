@@ -12,7 +12,7 @@ $fontfam: "Open Sans", Helvetica, Arial, Verdana, sans-serif;
 
 $medium: 'screen and (min-width: 577px)';
 $xlarge: 'screen and (min-width: 1500px)';
-$large: 'screen and (min-width: 950px)';
+$large: 'screen and (min-width: 1000px)';
 $mobile: 'screen and (max-width: 577px)';
 $max_height_medium: 'screen and (max-height: 850px)';
 
@@ -525,14 +525,14 @@ section.dark {
 
   @media #{$medium} {
     margin: 1em 10% 0 10%;
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    grid-template-rows: auto 1fr auto;
-    min-height: 100vh;
   }
 
   @media #{$large} {
     margin: 1em 20% 0 20%;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
   }
 
   .h3 {
@@ -567,11 +567,13 @@ section.dark {
 
   figure {
     padding: 0;
-    margin: 0 2em 0 0;
+    height: 75vh;
+    margin: 0 0 0 0;
     max-height: 90vh;
-    @media #{$mobile} {
-      height: 75vh;
-      margin: 0 0 0 0;
+    max-width: 30em;
+    @media #{large} {
+      margin: 0 2em 0 0;
+      height: auto;
     }
 
     svg {
@@ -579,7 +581,7 @@ section.dark {
     }
 
     path.t_bubble {
-      fill-opacity: 0.5;
+      fill-opacity: 0.75;
     }
 
     text.lab, #t_bubble_lab, text.t_bubble_val {
@@ -794,6 +796,10 @@ span.vde {
 
 span.dirt {
   color: $red;
+}
+
+.nobreak {
+  white-space: nowrap;
 }
 
 .tippy-popper {

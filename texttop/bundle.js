@@ -39476,7 +39476,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   const dragHelperW = d3.max([linesW * 0.05, 10]);
   dragger.append('line').attr('x1', 0).attr('x2', 0).attr('y1', scaleKTNE.range()[1]).attr('y2', scaleKTNE.range()[0]);
   dragger.append('rect').attr('x', dragHelperW / 2 * -1).attr('y', scaleKTNE.range()[1]).attr('height', scaleKTNE.range()[0]).attr('width', dragHelperW).style('stroke', 'none').style('fill', cols.bgcol).style('opacity', 0);
-  dragger.append('line').attr('x1', -5).attr('x2', 5).attr('y1', scaleKTNE.range()[0]).attr('y2', scaleKTNE.range()[0]); // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
+  dragger.append('line').attr('x1', -5).attr('x2', 5).attr('y1', scaleKTNE.range()[1]).attr('y2', scaleKTNE.range()[1]); // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
 
   const navigation = linesSvg.append('g').attr('id', 'consumption_nav');
   const dragBBox = dragger.node().getBBox();
@@ -39852,7 +39852,7 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     const $t = $(this);
 
     if ($t.hasClass('active')) {
-      const $sp = $('#consumprion #costs_year'),
+      const $sp = $('#costs #costs_year'),
             dir = $t.hasClass('fa-caret-left') ? -1 : 1;
       activeYear = (parseInt($sp.text()) + 5 * dir).toString();
 
