@@ -426,7 +426,7 @@ Promise.all([
             step: '#consumption article .text',
             container: '#consumption',
             graphic: '#consumption .fig_container',
-            offset: 0.8,
+            offset: 0.97,
         })
             .onContainerEnter(function (r) {
                 updateLines();
@@ -606,7 +606,7 @@ Promise.all([
             .attr('x', function() { return textX - this.getComputedTextLength(); });
         
         const scaleScen = d3.scalePoint()
-            .domain(['Консервативний', 'Революційний'])
+            .domain(['Базовий', 'Революційний'])
             .range([svgM.left, svgW - svgM.right]);
         
         const [x1, x2] = scaleScen.range();
@@ -699,17 +699,17 @@ Promise.all([
             .classed('t_bubble', true)
             .attr('d', function (d) {
                 const r = scaleR(d3.sum(d.values, a => a[activeYear])),
-                    my = d.key === 'Консервативний'
+                    my = d.key === 'Базовий'
                         ? r + (bubleH - r) / 2 + fontSize
                         : (bubleH - r) / 2 + fontSize,
-                    ar = d.key === 'Консервативний' ? -r : r;
+                    ar = d.key === 'Базовий' ? -r : r;
 
                 return `M ${scaleScen(d.key)} ${my}
                         a1,1 0 0,0 0,
                         ${ar}`
             })
-            .style('fill', d => d.key === 'Консервативний' ? cols.orange : cols.green)
-            .style('stroke', d => d.key === 'Консервативний' ? cols.orange : cols.green);
+            .style('fill', d => d.key === 'Базовий' ? cols.orange : cols.green)
+            .style('stroke', d => d.key === 'Базовий' ? cols.orange : cols.green);
 
         const totalBLab = svg.append('text')
             .attr('id', 't_bubble_lab')
@@ -729,11 +729,11 @@ Promise.all([
             .attr('y', function (_, i) {
                 return totalBubbles.nodes()[i].getBBox().y - fontSize*0.3;
             })
-            .style('fill', d => d.key === 'Консервативний'
+            .style('fill', d => d.key === 'Базовий'
                 ? chroma(cols.orange).darken()
                 : chroma(cols.green).darken()
             )
-            .style('text-anchor', d => d.key === 'Консервативний' ? 'start' : 'end');
+            .style('text-anchor', d => d.key === 'Базовий' ? 'start' : 'end');
         
         const updSlopes = function () {
             slopeGs.selectAll('path')
@@ -753,10 +753,10 @@ Promise.all([
                 .duration(600)
                 .attr('d', function (d) {
                     const r = scaleR(d3.sum(d.values, a => a[activeYear])),
-                        my = d.key === 'Консервативний'
+                        my = d.key === 'Базовий'
                             ? r + (bubleH - r) / 2 + fontSize
                             : (bubleH - r) / 2 + fontSize,
-                        ar = d.key === 'Консервативний' ? -r : r;
+                        ar = d.key === 'Базовий' ? -r : r;
                     
                     return `M ${scaleScen(d.key)} ${my}
                         a1,1 0 0,0 0,

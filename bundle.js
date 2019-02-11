@@ -286,7 +286,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
     step: '#consumption article .text',
     container: '#consumption',
     graphic: '#consumption .fig_container',
-    offset: 0.8
+    offset: 0.97
   }).onContainerEnter(function (r) {
     updateLines();
     updateBar();
@@ -426,7 +426,7 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   labs.selectAll('tspan').attr('x', function () {
     return textX - this.getComputedTextLength();
   });
-  const scaleScen = d3.scalePoint().domain(['Консервативний', 'Революційний']).range([svgM.left, svgW - svgM.right]);
+  const scaleScen = d3.scalePoint().domain(['Базовий', 'Революційний']).range([svgM.left, svgW - svgM.right]);
 
   const _scaleScen$range = scaleScen.range(),
         _scaleScen$range2 = _slicedToArray(_scaleScen$range, 2),
@@ -479,13 +479,13 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     const r = scaleR(d3.sum(d.values, function (a) {
       return a[activeYear];
     })),
-          my = d.key === 'Консервативний' ? r + (bubleH - r) / 2 + fontSize : (bubleH - r) / 2 + fontSize,
-          ar = d.key === 'Консервативний' ? -r : r;
+          my = d.key === 'Базовий' ? r + (bubleH - r) / 2 + fontSize : (bubleH - r) / 2 + fontSize,
+          ar = d.key === 'Базовий' ? -r : r;
     return "M " + scaleScen(d.key) + " " + my + "\n                        a1,1 0 0,0 0,\n                        " + ar;
   }).style('fill', function (d) {
-    return d.key === 'Консервативний' ? cols.orange : cols.green;
+    return d.key === 'Базовий' ? cols.orange : cols.green;
   }).style('stroke', function (d) {
-    return d.key === 'Консервативний' ? cols.orange : cols.green;
+    return d.key === 'Базовий' ? cols.orange : cols.green;
   });
   const totalBLab = svg.append('text').attr('id', 't_bubble_lab').text('Загалом').attr('x', textX).attr('y', bubleH / 2 + fontSize).style('dominant-baseline', 'middle').style('text-anchor', 'end');
   const totalBVal = svg.selectAll('text.t_bubble_val').data(totalBubbles.data()).enter().append('text').classed('t_bubble_val', true).text(function (d) {
@@ -497,9 +497,9 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   }).attr('y', function (_, i) {
     return totalBubbles.nodes()[i].getBBox().y - fontSize * 0.3;
   }).style('fill', function (d) {
-    return d.key === 'Консервативний' ? chroma(cols.orange).darken() : chroma(cols.green).darken();
+    return d.key === 'Базовий' ? chroma(cols.orange).darken() : chroma(cols.green).darken();
   }).style('text-anchor', function (d) {
-    return d.key === 'Консервативний' ? 'start' : 'end';
+    return d.key === 'Базовий' ? 'start' : 'end';
   });
 
   const updSlopes = function updSlopes() {
@@ -515,8 +515,8 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
       const r = scaleR(d3.sum(d.values, function (a) {
         return a[activeYear];
       })),
-            my = d.key === 'Консервативний' ? r + (bubleH - r) / 2 + fontSize : (bubleH - r) / 2 + fontSize,
-            ar = d.key === 'Консервативний' ? -r : r;
+            my = d.key === 'Базовий' ? r + (bubleH - r) / 2 + fontSize : (bubleH - r) / 2 + fontSize,
+            ar = d.key === 'Базовий' ? -r : r;
       return "M " + scaleScen(d.key) + " " + my + "\n                        a1,1 0 0,0 0,\n                        " + ar;
     });
     totalBVal.transition().duration(600).text(function (d) {

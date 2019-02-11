@@ -422,7 +422,7 @@ main {
 
         path {
           fill: none;
-          stroke: lighten($fontcol, 30%);
+          stroke: $blue;
         }
 
         text {
@@ -453,6 +453,8 @@ main {
       padding: 0;
       margin: 1em 0 1em 1em;
       pointer-events: auto;
+      text-transform: uppercase;
+      color: $blue;
     }
 
     .text {
@@ -676,7 +678,7 @@ section.dark {
   }
 }
 
-#general, #general2 {
+#general {
   padding: 1em 0 0 0;
 
   .h3 {
@@ -732,16 +734,13 @@ section.dark {
     mix-blend-mode: multiply;
   }
 
-  #legend_gen {
-    text {
-      font-size: 0.75em;
-      fill: $fontcol;
-    }
-  }
-
   g#x_ax_gen {
     path, line {
       display: none;
+    }
+
+    text {
+      font-size: 0.85rem;
     }
   }
 
