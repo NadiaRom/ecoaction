@@ -201,9 +201,10 @@ main {
   color: white;
   font-size: 0.9em;
   transition: background-color 0.5s;
+  border-radius: 0 0.5em 0.5em 0;
 
   &:first-of-type {
-    margin-right: 1em;
+    border-radius: 0.5em 0 0 0.5em;
   }
 
   &.active {
@@ -235,17 +236,46 @@ main {
   }
 
   .h3 {
-    padding: 1em 0 1em 0;
+    padding: 1em 0 0.5em 0;
     font-size: 1rem;
     grid-row: 1 / 2;
     grid-column: 1 / -1;
 
+    p {
+      margin: 0 0 0.5em 0;
+    }
+
+    p:last-of-type {
+      font-size: 1.1rem;
+      display: grid;
+      @media #{$medium} {
+        grid-template-columns: 1.61fr 1fr;
+      }
+
+      #bar_year {
+        font-size: 1rem;
+        color: $blue;
+        font-weight: 600;
+
+        @media #{$mobile} {
+          display: none;
+        }
+      }
+    }
+
     #h3_sphere {
       color: $blue;
-      font-size: 0.85em;
+      font-weight: 600;
       text-transform: uppercase;
+      display: inline-block;
+      font-size: 1rem;
+      height: 1.1rem;
+      overflow-y: hidden;
+      transition: all 0.375s;
       @media #{$mobile} {
         display: block;
+        font-size: 0.85em;
+        height: auto;
       }
     }
     
@@ -299,17 +329,6 @@ main {
         margin: 0 0 0.75em 0;
         font-size: 0.75em;
         line-height: 1;
-      }
-
-      p#bar_year {
-        font-size: 1em;
-        color: $blue;
-        font-weight: 600;
-        margin: 1em 0 2em 0;
-
-        @media #{$mobile} {
-          display: none;
-        }
       }
 
       [data-vde="vde"] {
@@ -455,6 +474,13 @@ main {
       pointer-events: auto;
       text-transform: uppercase;
       color: $blue;
+
+      span.about_rev {
+        color: $fontcol;
+        font-size: 0.85em;
+        text-transform: none;
+        font-weight: 600;
+      }
     }
 
     .text {
@@ -504,6 +530,10 @@ main {
 
 section.dark {
   color: $bgcol;
+
+  span.about_rev {
+    color: $bgcol !important;
+  }
 
   text {
     fill: $bgcol
@@ -669,8 +699,8 @@ section.dark {
     span[data-cost] {
       cursor: pointer;
       white-space: nowrap;
-      @media #{$medium} {
-        border-bottom: 2px solid $blue;
+      @media #{$large} {
+        border-bottom: 2px dotted $blue;
       }
     }
 
