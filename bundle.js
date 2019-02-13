@@ -283,10 +283,10 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   const $textLiMarks = $('#consumption .text li i');
   const scroller = scrollama();
   scroller.setup({
-    step: '#consumption article .text',
+    step: '#consumption article .text_cont',
     container: '#consumption',
     graphic: '#consumption .fig_container',
-    offset: 0.97
+    offset: 0.85
   }).onContainerEnter(function (r) {
     updateLines();
     updateBar();

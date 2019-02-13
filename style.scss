@@ -459,10 +459,16 @@ main {
 
     .text {
       padding: 2em;
-      margin: 100vh 0 120vh 0;
+      //margin: 100vh 0 120vh 0;
+      margin: 3em 0 3em 0;
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
+    }
+    .blank_for_scroll {
+      opacity: 0;
+      pointer-events: none;
+      height: 80vh;
     }
 
     ul {
@@ -700,7 +706,7 @@ section.dark {
   }
 
   .data_caption {
-    margin-top: 2em;
+    margin-top: 4em;
   }
 
   figure {
