@@ -555,6 +555,7 @@ section.dark {
   .text {
     background: lighten($fontcol, 3%) !important;
     box-shadow: 0 0.1em 0.4em -0.1em rgba(lighten($fontcol, 50%), 0.85) !important;
+    color: lighten($fontcol, 43%);
   }
 }
 
