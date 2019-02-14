@@ -131,7 +131,7 @@ Promise.all([
             .attr('height', linesH);
 
         const linesM = {
-            top: linesH * 0.1,
+            top: fontSize*0.25,
             right: linesW * 0.1,
             bottom: linesW * 0.05,
             left: linesH * 0,
@@ -143,7 +143,7 @@ Promise.all([
 
         const scaleKTNE = d3.scaleLinear()
             .domain([0, 0])
-            .range([linesH - linesM.top, linesM.bottom]);
+            .range([linesH - linesM.bottom, linesM.top]);
 
         const line = d3.line()
             .x(d => scaleYear(d.year))
@@ -255,7 +255,7 @@ Promise.all([
             navigationArrow
                 .attr('d', `
                 M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
-                q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y - fontSize * 0.25}
+                Q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y - fontSize * 0.25}
                  ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y - fontSize * 0.5}
                         `);
         } else {
@@ -265,8 +265,8 @@ Promise.all([
             navigationArrow
                 .attr('d', `
                 M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
-                q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize * 0.5}
-                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize*0.5}
+                Q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize}
+                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize*1.9}
                         `)
         }
 
@@ -435,7 +435,17 @@ Promise.all([
             .onStepEnter(function (r) {
                 if (r.element.id !== 'phantom') {
                     activeSphere = r.element.getAttribute('data-sphere');
-                    $('#consumption .h3 #h3_sphere').text(activeSphere.toLowerCase());
+                    const $h3Span = $('#consumption .h3 #h3_sphere');
+                    if ((window.innerWidth < mobW) && ($h3Span.text() !== activeSphere.toLowerCase())) {
+                        $h3Span.text(activeSphere.toLowerCase());
+                    } else if ($h3Span.text() !== activeSphere.toLowerCase()) {
+                        $h3Span.css('height', '0')
+                        setTimeout(function () {
+                            $h3Span.text(activeSphere.toLowerCase())
+                                .css('height', '');
+                        }, 375)
+                    }
+                    
                     updateLines();
                     updateBar();
                 }
@@ -456,7 +466,6 @@ Promise.all([
                     .addClass('active');
 
                 $textLiMarks.removeClass('fa-times').addClass('fa-check')
-
             });
 
 
@@ -941,7 +950,7 @@ Promise.all([
             });
         const $nav = $("#general nav p");
         $nav.html(`${linesGBCR[0].e.__data__.year} рік<br/>
-                   ${linesGBCR[0].e.__data__.source}: ${nform(linesGBCR[0].e.__data__[scenario])} тис. т н.е.`);
+                   <strong>${linesGBCR[0].e.__data__.source}</strong>: ${nform(linesGBCR[0].e.__data__[scenario])} тис. т н.е.`);
 
         const navHelper = svg.append('path')
             .attr('id', 'nav_helper')
@@ -962,7 +971,7 @@ Promise.all([
                 const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
 
                 $nav.html(`${closestLine.e.__data__.year}  рік<br/>
-                   ${closestLine.e.__data__.source}: ${nform(closestLine.e.__data__[scenario])} тис. т н.е.`);
+                   <strong>${closestLine.e.__data__.source}</strong>: ${nform(closestLine.e.__data__[scenario])} тис. т н.е.`);
 
                 const navBCR = $nav.get(0).getBoundingClientRect(),
                     maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
@@ -972,7 +981,7 @@ Promise.all([
                 perfectMargin = (perfectMargin > maxMargin) ? maxMargin : perfectMargin;
                 $nav.css('margin-left', `${perfectMargin}px`);
 
-                const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2
+                const navHelperY = svgH / 2 - scaleKTNE(closestLine.e.__data__[scenario]) - 2;
                 navHelper.transition()
                     .duration(150)
                     .ease(d3.easeLinear)
