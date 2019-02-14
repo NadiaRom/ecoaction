@@ -39361,7 +39361,7 @@ const cols = {
 };
 
 const nform = function nform(d) {
-  return d3.format(',.6r')(d).replace(/\..*/, '').replace(',', ' ');
+  return d3.format(',.6r')(d).replace(/\..*/, '');
 };
 
 const mobW = 577;
@@ -39435,13 +39435,13 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   const linesH = $('#consumption figure .chart#lines').height();
   const linesSvg = d3.select('#consumption figure .chart#lines').append('svg').attr('width', linesW).attr('height', linesH);
   const linesM = {
-    top: 1,
+    top: linesH * 0.1,
     right: linesW * 0.1,
     bottom: linesW * 0.05,
     left: linesH * 0
   };
   const scaleYear = d3.scaleLinear().domain([2015, 2050]).range([linesM.left, linesW - linesM.right]);
-  const scaleKTNE = d3.scaleLinear().domain([0, 0]).range([linesH - linesM.bottom, linesM.top]);
+  const scaleKTNE = d3.scaleLinear().domain([0, 0]).range([linesH - linesM.top, linesM.bottom]);
   const line = d3.line().x(function (d) {
     return scaleYear(d.year);
   }).y(function (d) {
@@ -39485,10 +39485,10 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
 
   if (window.innerWidth < mobW) {
     navigationText.attr('y', dragBBox.y + fontSize / 2);
-    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 2) + " " + dragBBox.y + "\n                Q" + (dragBBox.x + dragBBox.width / 2) + " " + (dragBBox.y + fontSize / 4) + "\n                 " + (dragBBox.x + dragBBox.width / 2 + fontSize * 2) + " " + (dragBBox.y + fontSize / 2) + "\n                        ");
+    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y - fontSize * 0.25) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y - fontSize * 0.5) + "\n                        ");
   } else {
     navigationText.attr('y', dragBBox.y + fontSize * 2);
-    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 2) + " " + dragBBox.y + "\n                Q" + (dragBBox.x + dragBBox.width / 2) + " " + (dragBBox.y + fontSize * 1.35) + "\n                 " + (dragBBox.x + dragBBox.width / 2 + fontSize * 2) + " " + (dragBBox.y + fontSize * 1.85) + "\n                        ");
+    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y + fontSize * 0.5) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y + fontSize * 0.5) + "\n                        ");
   } // continue dots
 
 
@@ -39609,17 +39609,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   }).onStepEnter(function (r) {
     if (r.element.id !== 'phantom') {
       activeSphere = r.element.getAttribute('data-sphere');
-      const $h3Span = $('#consumption .h3 #h3_sphere');
-
-      if ($h3Span.text() !== activeSphere.toLowerCase() && window.innerWidth > mobW) {
-        $h3Span.css('height', '0');
-        setTimeout(function () {
-          $h3Span.text(activeSphere.toLowerCase()).css('height', '');
-        }, 375);
-      } else if (window.innerWidth <= mobW) {
-        $h3Span.text(activeSphere.toLowerCase());
-      }
-
+      $('#consumption .h3 #h3_sphere').text(activeSphere.toLowerCase());
       updateLines();
       updateBar();
     } // if (r.index === 0) {
@@ -39978,7 +39968,7 @@ Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_
     };
   });
   const $nav = $("#general nav p");
-  $nav.html(linesGBCR[0].e.__data__.year + " \u0440\u0456\u043A<br/>\n                   <strong>" + linesGBCR[0].e.__data__.source + "</strong>: " + nform(linesGBCR[0].e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.");
+  $nav.html(linesGBCR[0].e.__data__.year + " \u0440\u0456\u043A<br/>\n                   " + linesGBCR[0].e.__data__.source + ": " + nform(linesGBCR[0].e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.");
   const navHelper = svg.append('path').attr('id', 'nav_helper').attr('d', "M" + (linesGBCR[0].e.getBoundingClientRect().x - svgBCR.x + lineW / 2) + "\n                         " + (svgH / 2 - scaleKTNE(linesGBCR[0].e.__data__[scenario]) - 2) + "\n                        V 0\n                         ");
   const transparentRect = svg.append('rect').attr('x', 0).attr('y', 0).attr('width', svgW).attr('height', svgH).style('opacity', 0).on('mousemove', function () {
     const eX = d3.event.clientX - svgBCR.left;
@@ -39986,7 +39976,7 @@ Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_
       return Math.abs(d.x - eX);
     });
     const closestLine = linesGBCR[lineDist.indexOf(d3.min(lineDist))];
-    $nav.html(closestLine.e.__data__.year + "  \u0440\u0456\u043A<br/>\n                   <strong>" + closestLine.e.__data__.source + "</strong>: " + nform(closestLine.e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.");
+    $nav.html(closestLine.e.__data__.year + "  \u0440\u0456\u043A<br/>\n                   " + closestLine.e.__data__.source + ": " + nform(closestLine.e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.");
     const navBCR = $nav.get(0).getBoundingClientRect(),
           maxMargin = svgBCR.right - navBCR.width / 2 - svgBCR.left;
     let perfectMargin = closestLine.x + lineW / 2 - navBCR.width / 2;
