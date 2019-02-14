@@ -418,6 +418,10 @@ Promise.all([
         };
 
         // SCROLLAMA -----------------------------------------------------------------------------------------
+        const scaleColor = d3.scaleOrdinal()
+            .domain(['загалом', 'населення', 'промисловість', 'сільське господарство', 'транспорт', 'сфера послуг'])
+            .range([cols.lightblack, '#ff554e','#ff7bac','#ffa25c','#00afc9','#3EEC15']);
+        
         const $textLiMarks = $('#consumption .text li i');
 
         const scroller = scrollama();
@@ -439,12 +443,13 @@ Promise.all([
                     if ((window.innerWidth < mobW) && ($h3Span.text() !== activeSphere.toLowerCase())) {
                         $h3Span.text(activeSphere.toLowerCase());
                     } else if ($h3Span.text() !== activeSphere.toLowerCase()) {
-                        $h3Span.css('height', '0')
+                        $h3Span.css('height', '0');
                         setTimeout(function () {
                             $h3Span.text(activeSphere.toLowerCase())
                                 .css('height', '');
                         }, 375)
                     }
+                    // $h3Span.css('color', scaleColor(activeSphere));
                     
                     updateLines();
                     updateBar();
