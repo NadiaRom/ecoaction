@@ -169,7 +169,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
 
   if (window.innerWidth < mobW) {
     navigationText.attr('y', dragBBox.y + fontSize / 2);
-    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                Q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y - fontSize * 0.25) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y - fontSize * 0.5) + "\n                        ");
+    navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                Q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y + fontSize * 0.25) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y + fontSize * 0.5) + "\n                        ");
   } else {
     navigationText.attr('y', dragBBox.y + fontSize * 2);
     navigationArrow.attr('d', "\n                M" + (dragBBox.x + dragBBox.width / 1.9) + " " + dragBBox.y + "\n                Q" + (dragBBox.x + dragBBox.width / 1.9) + " " + (dragBBox.y + fontSize) + "\n                 " + (dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9) + " " + (dragBBox.y + fontSize * 1.9) + "\n                        ");
@@ -459,17 +459,37 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   const slopeGs = svg.selectAll('g.slope').data(nested).enter().append('g').classed('slope', true).attr('data-cost', function (d) {
     return d.key;
   });
-  $('#costs [data-cost]').css('cursor', 'pointer').on('mouseover', function () {
-    const c = $(this).data('cost');
-    $("g.slope[data-cost=\"" + c + "\"]").addClass('active').find('circle').each(function () {
-      this._tippy.show(500);
+
+  if (window.innerWidth < mobW) {
+    $('#costs [data-cost]').css('cursor', 'pointer').on('click', function () {
+      const c = $(this).data('cost');
+      tippy.hideAllPoppers();
+      $('.blured').removeClass('blured');
+      $('#costs [data-cost].active').removeClass('active');
+      $("g.slope[data-cost=\"" + c + "\"]").addClass('active').find('circle').each(function () {
+        this._tippy.show();
+      });
+      $('#costs svg [data-cost]').not("[data-cost=\"" + c + "\"]").addClass('blured');
+      setTimeout(function () {
+        tippy.hideAllPoppers();
+        $('.blured').removeClass('blured');
+        $('#costs [data-cost].active').removeClass('active');
+      }, 7000);
     });
-    $('#costs svg [data-cost]').not("[data-cost=\"" + c + "\"]").addClass('blured');
-  }).on('mouseout', function () {
-    tippy.hideAllPoppers();
-    $('.blured').removeClass('blured');
-    $('#costs [data-cost].active').removeClass('active');
-  });
+  } else {
+    $('#costs [data-cost]').css('cursor', 'pointer').on('mouseover', function () {
+      const c = $(this).data('cost');
+      $("g.slope[data-cost=\"" + c + "\"]").addClass('active').find('circle').each(function () {
+        this._tippy.show(500);
+      });
+      $('#costs svg [data-cost]').not("[data-cost=\"" + c + "\"]").addClass('blured');
+    }).on('mouseout', function () {
+      tippy.hideAllPoppers();
+      $('.blured').removeClass('blured');
+      $('#costs [data-cost].active').removeClass('active');
+    });
+  }
+
   const slopeLines = slopeGs.append('path').attr('d', function (d) {
     return "M " + x1 + " " + scaleExpence(d.values[0].values[0][activeYear]) + " L" + x2 + " " + scaleExpence(d.values[1].values[0][activeYear]);
   }); // .style('stroke', d => scaleColor(d.key));
@@ -879,11 +899,12 @@ Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_
 //
 //
 //
-// $(document).ready(function () {
-//     window.addEventListener('scroll', function () {
-//         tippy.hideAllPoppers();
-//     });
-// });
+
+$(document).ready(function () {
+  window.addEventListener('scroll', function () {
+    tippy.hideAllPoppers();
+  });
+});
 
 },{"chroma-js":2,"core-js/modules/es6.array.sort":69,"core-js/modules/es6.regexp.replace":72,"core-js/modules/es6.regexp.search":73,"core-js/modules/es6.regexp.split":74,"core-js/modules/es6.regexp.to-string":75,"core-js/modules/es6.symbol":76,"core-js/modules/es7.symbol.async-iterator":77,"core-js/modules/web.dom.iterable":78,"d3":110,"jquery":111,"scrollama":112,"tippy.js":113}],2:[function(require,module,exports){
 /**

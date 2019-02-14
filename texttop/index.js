@@ -255,8 +255,8 @@ Promise.all([
             navigationArrow
                 .attr('d', `
                 M${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y}
-                Q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y - fontSize * 0.25}
-                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y - fontSize * 0.5}
+                Q${dragBBox.x + dragBBox.width / 1.9} ${dragBBox.y + fontSize * 0.25}
+                 ${dragBBox.x + dragBBox.width / 1.9 + fontSize * 1.9} ${dragBBox.y + fontSize * 0.5}
                         `);
         } else {
             navigationText
@@ -657,23 +657,50 @@ Promise.all([
             .classed('slope', true)
             .attr('data-cost', d => d.key);
         
-        $('#costs [data-cost]')
-            .css('cursor', 'pointer')
-            .on('mouseover', function () {
-                const c = $(this).data('cost');
-                $(`g.slope[data-cost="${c}"]`)
-                    .addClass('active')
-                    .find('circle')
-                    .each(function() {this._tippy.show(500)});
-                $('#costs svg [data-cost]')
-                    .not(`[data-cost="${c}"]`)
-                    .addClass('blured');
-            })
-            .on('mouseout', function () {
-                tippy.hideAllPoppers();
-                $('.blured').removeClass('blured');
-                $('#costs [data-cost].active').removeClass('active');
-            });
+        if (window.innerWidth < mobW) {
+            $('#costs [data-cost]')
+                .css('cursor', 'pointer')
+                .on('click', function () {
+                    const c = $(this).data('cost');
+                    tippy.hideAllPoppers();
+                    $('.blured').removeClass('blured');
+                    $('#costs [data-cost].active').removeClass('active');
+                    $(`g.slope[data-cost="${c}"]`)
+                        .addClass('active')
+                        .find('circle')
+                        .each(function() {
+                            this._tippy.show();
+                        });
+                    $('#costs svg [data-cost]')
+                        .not(`[data-cost="${c}"]`)
+                        .addClass('blured');
+                    setTimeout(function () {
+                        tippy.hideAllPoppers();
+                        $('.blured').removeClass('blured');
+                        $('#costs [data-cost].active').removeClass('active');
+                    }, 7000)
+                });
+        } else {
+            $('#costs [data-cost]')
+                .css('cursor', 'pointer')
+                .on('mouseover', function () {
+                    const c = $(this).data('cost');
+                    $(`g.slope[data-cost="${c}"]`)
+                        .addClass('active')
+                        .find('circle')
+                        .each(function() {
+                            this._tippy.show(500)
+                        });
+                    $('#costs svg [data-cost]')
+                        .not(`[data-cost="${c}"]`)
+                        .addClass('blured');
+                })
+                .on('mouseout', function () {
+                    tippy.hideAllPoppers();
+                    $('.blured').removeClass('blured');
+                    $('#costs [data-cost].active').removeClass('active');
+                });
+        }
 
         const slopeLines = slopeGs
             .append('path')
@@ -1195,8 +1222,8 @@ Promise.all([
 //
 //
 //
-// $(document).ready(function () {
-//     window.addEventListener('scroll', function () {
-//         tippy.hideAllPoppers();
-//     });
-// });
+$(document).ready(function () {
+    window.addEventListener('scroll', function () {
+        tippy.hideAllPoppers();
+    });
+});
