@@ -52,17 +52,17 @@ header {
   justify-content: center;
   overflow: hidden;
 
-  img {
-    width: 100%;
-    //height: auto;
-    background-color: $calmgreen;
-    padding: 0 0 1.5em 0;
-
-    @media #{$mobile} {
-      width: 125vw;
-      margin: 0 -12.5vw 0 -12.5vw;
-    }
-  }
+  //img {
+  //  width: 100%;
+  //  //height: auto;
+  //  background-color: $calmgreen;
+  //  padding: 0 0 1.5em 0;
+  //
+  //  @media #{$mobile} {
+  //    width: 125vw;
+  //    margin: 0 -12.5vw 0 -12.5vw;
+  //  }
+  //}
 
   h1 {
     font-size: 3em;
@@ -71,8 +71,9 @@ header {
     padding: 1em 0.75em 0 0.75em;
     text-align: center;
     font-weight: 400;
-    color: #608cc4;
-    background-color: #faf9e1;
+    color: $blue;
+    //color: #608cc4;
+    //background-color: #faf9e1;
 
     @media #{$mobile} {
       font-size: 2.25em;

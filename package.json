@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "build": "npx babel index.js -o bundle.js && npx browserify bundle.js -o bundle.js && npx postcss style.css -o style.css -u autoprefixer",
-    "build_tt": "npx babel texttop/index.js -o texttop/bundle.js && npx browserify texttop/bundle.js -o texttop/bundle.js && npx postcss texttop/style.css -o texttop/style.css -u autoprefixer",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
