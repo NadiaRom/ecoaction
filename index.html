@@ -11,13 +11,17 @@
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
-<div id="menu-container"><img src="img/menu.png"></div>
+<div id="menu-container">
+    <!--placeholder for menu-->
+    <img src="img/menu.png">
+</div>
 
 <header>
     <h1>Енергетика майбутнього</h1>
     <img src="img/cover.png">
     <h2>
-        <p>Україна має технічний та економічний потенціал для переходу на відновлювані джерела енергії.</p>
+        <p class="green">Україна має технічний та економічний потенціал для переходу на відновлювані джерела енергії (ВДЕ)</p>
+        <p>Дослідники Національної академії наук України підготували моделювання вигляду української енергетики в 2050 році. Ми порівнюємо 2 сценарії: базовий, який передбачає збереження динаміки 2012 року та революційний, який показує максимальне використання можливостей енергоефективних заходів та енергії з відновлюваних джерел.</p>
         <p><span class="green">91%</span> зеленої енергетики до 2050 року можна отримати при використанні вже існуючих технологій та зменшенні споживання енергоресурсів на <span>42%</span> в порівнянні з базовим сценарієм у 2050 році.</p>
     </h2>
 </header>
@@ -37,7 +41,7 @@
             <div id="labels_gen"></div>
         </figure>
         <div class="data_caption">
-            <p>Дані: Дослідження <a href="https://ua.boell.org/sites/default/files/perehid_ukraini_na_vidnovlyuvanu_energetiku_do_2050_roku.pdf" target="_blank">"Перехід України на відновлювану енергетику до 2050 року"</a></p>
+            <p>* за базовий рік взято 2015 відповідно до дослідження <a href="https://ua.boell.org/sites/default/files/perehid_ukraini_na_vidnovlyuvanu_energetiku_do_2050_roku.pdf" target="_blank">"Перехід України на відновлювану енергетику до 2050 року"</a></p>
         </div>
     </section>
 
@@ -62,7 +66,7 @@
             <li><i class="fas fa-check"></i> Нові робочі місця в галузі ВДЕ та енергоефективності</li>
             <li><i class="fas fa-check"></i> Нові можливості для розвитку на місцях: локальне виробництво енергії, використання місцевих ресурсів</li>
             <li><i class="fas fa-check"></i> Зменшення кількості працівників у видобувній галузі</li>
-            <li><i class="fas fa-check"></i> Скорочення викидів парникових газів 90 %  від рівня 1990 р.</li>
+            <li><i class="fas fa-check"></i> Скорочення викидів парникових газів на 90 % від рівня 1990 р.</li>
             <li><i class="fas fa-check"></i> Зниження негативного впливу від енергетики на здоров’я людей</li>
         </ul>
         <ul id="why_ec">
@@ -93,7 +97,8 @@
         <article id="explanation">
             <div class="text_cont" data-sphere="Загалом">
                 <div class="text">
-                    <p>Впровадження заходів з енергоефективності скоротить сукупне споживання ресурсів на <span class="vde"><strong>42%</strong></span>. </p>
+                    <p>Енергоефективність — це важливо!</p>
+                    <p>Впровадження заходів з енергоефективності скоротить сукупне споживання ресурсів на <span class="vde"><strong>42%</strong></span> в 2050 році. </p>
                     <p>Здійснивши енергетичний перехід ми будемо отримувати <span class="vde"><strong>91%</strong></span> енергії з відновлюваних джерел.</p>
                 </div>
                 <div class="blank_for_scroll"></div>
@@ -101,7 +106,7 @@
             <div class="text_cont" data-sphere="Населення">
                 <div class="blank_for_scroll"></div>
                 <div class="text">
-                    <h4>Населення<span class="about_rev"> - заходи за революційним сценарієм</span></h4>
+                    <h4>Що має відбутися для <span class="h4_sphere">населення</span>?</h4>
                     <ul><li class=""><i class="fas fa-check"></i> Термомодернізація житлових будинків</li><li><i class="fas fa-check"></i> Модернізація систем енергозабезпечення об’єктів ЖКГ</li><li><i class="fas fa-check"></i> Автоматизовані індивідуальні теплові пункти (ІТП)</li><li><i class="fas fa-check"></i> Впровадження когенераційних систем для багатоповерхових будинків</li><li><i class="fas fa-check"></i> Техніка А++, А+++</li><li><i class="fas fa-check"></i> 40-50% населення використовує сонячні панелі на дахах будинків</li><li class=""><i class="fas fa-check"></i> Опалення та гаряча вода за рахунок біопалива та відходів, централізованого ВДЕ-тепла та використання сонячних колекторів</li></ul>
                 </div>
                 <div class="blank_for_scroll"></div>
@@ -109,23 +114,23 @@
             <div class="text_cont" data-sphere="Промисловість">
                 <div class="blank_for_scroll"></div>
                 <div class="text">
-                    <h4>Промисловість<span class="about_rev"> - заходи за революційним сценарієм</span></h4>
-                    <ul><li class=""><i class="fas fa-check"></i> 88% - енергія з відновлюваних джерел та альтернативних видів палива</li><li><i class="fas fa-check"></i> Електрифікація промисловості</li><li><i class="fas fa-check"></i> Заміна енергоємного обладнання на нове та ефективне</li><li><i class="fas fa-check"></i> Більші інвестиції з боку промислових виробників, зокрема електроенергетичної галузі</li></ul>
+                    <h4>Що має відбутися для <span class="h4_sphere">промисловості</span>?</h4>
+                    <ul><li class=""><i class="fas fa-check"></i> 88% — енергія з відновлюваних джерел та альтернативних видів палива</li><li><i class="fas fa-check"></i> Електрифікація промисловості</li><li><i class="fas fa-check"></i> Заміна енергоємного обладнання на нове та ефективне</li><li><i class="fas fa-check"></i> Більші інвестиції з боку промислових виробників, зокрема електроенергетичної галузі</li></ul>
                 </div>
                 <div class="blank_for_scroll"></div>
             </div>
             <div class="text_cont" data-sphere="Сфера послуг">
                 <div class="blank_for_scroll"></div>
                 <div class="text">
-                    <h4>Сфера послуг<span class="about_rev"> - заходи за революційним сценарієм</span></h4>
-                    <ul><li class=""><i class="fas fa-check"></i> ВДЕ 88%</li><li><i class="fas fa-check"></i> Заходи з енергоефективності та енергозаощадження</li><li><i class="fas fa-check"></i> Термоізоляція приміщень</li><li><i class="fas fa-check"></i> Використання високоефективних технічних приладів (А++, А+++)</li></ul>
+                    <h4>Що має відбутися в <span class="h4_sphere">сфері надання послуг</span>?</h4>
+                    <ul><li class=""><i class="fas fa-check"></i> Частка відновлюваної енергетики складатиме 88%</li><li><i class="fas fa-check"></i> Заходи з енергоефективності та енергозаощадження</li><li><i class="fas fa-check"></i> Термоізоляція приміщень</li><li><i class="fas fa-check"></i> Використання високоефективних технічних приладів (А++, А+++)</li></ul>
                 </div>
                 <div class="blank_for_scroll"></div>
             </div>
             <div class="text_cont" data-sphere="Сільське господарство">
                 <div class="blank_for_scroll"></div>
                 <div class="text">
-                    <h4>Сільське господарство<span class="about_rev"> - заходи за революційним сценарієм</span></h4>
+                    <h4>Що має відбутися в <span class="h4_sphere">сільському господарстві</span>?</h4>
                     <ul><li class=""><i class="fas fa-check"></i> Використання ВДЕ для виробництва електроенергії та тепла</li><li><i class="fas fa-check"></i> СГ Транспорт на біопаливі</li><li><i class="fas fa-check"></i> Вирощування енергетичних культур</li><li><i class="fas fa-check"></i> Нові технології використання сільськогосподарських машин та механізмів</li></ul>
                 </div>
                 <div class="blank_for_scroll"></div>
@@ -133,7 +138,7 @@
             <div class="text_cont" data-sphere="Транспорт">
                 <div class="blank_for_scroll"></div>
                 <div class="text">
-                    <h4>Транспорт<span class="about_rev"> - заходи за революційним сценарієм</span></h4>
+                    <h4>Що має відбутися в <span class="h4_sphere">транспортному секторі</span>?</h4>
                     <ul><li class=""><i class="fas fa-check"></i> Легкові авто: 90% електромобілі, 10% на біопаливі</li><li><i class="fas fa-check"></i> Електроавтобуси та електропотяги</li><li><i class="fas fa-check"></i> Авіаційний, водний, вантажний транспорт на біопаливі</li></ul>
                 </div>
                 <div class="blank_for_scroll"></div>

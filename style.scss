@@ -473,20 +473,16 @@ main {
       padding: 0;
       margin: 1em 0 1em 1em;
       pointer-events: auto;
-      text-transform: uppercase;
-      color: $blue;
 
-      span.about_rev {
-        color: $fontcol;
-        font-size: 0.85em;
-        text-transform: none;
+      span.h4_sphere {
+        color: $blue;
+        text-transform: uppercase;
         font-weight: 600;
       }
     }
 
     .text {
       padding: 2em;
-      //margin: 100vh 0 120vh 0;
       margin: 3em 0 3em 0;
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
@@ -555,6 +551,7 @@ section.dark {
   .text {
     background: lighten($fontcol, 3%) !important;
     box-shadow: 0 0.1em 0.4em -0.1em rgba(lighten($fontcol, 50%), 0.85) !important;
+    color: lighten($fontcol, 43%);
   }
 }
 
@@ -870,3 +867,7 @@ span.dirt {
 
 }
 
+p.green {
+  color: $green;
+  font-size: 1.1em;
+}
