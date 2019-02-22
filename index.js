@@ -531,7 +531,10 @@ Promise.all([
                 $textLiMarks.removeClass('fa-times').addClass('fa-check')
             });
 
-        $(window).resize(linesOnResize);
+        $(window).resize(function () {
+            linesOnResize();
+            scroller.resize();
+        });
         
         $('#consumption .switch_scenario').click(function (e) {
             const $t = $(this);
@@ -1162,6 +1165,25 @@ Promise.all([
             
         });
 
+        const scroller = scrollama();
+        scroller.setup({
+            step: '#general figure',
+            container: '#general',
+            graphic: '#general svg',
+            offset: 0.8,
+        })
+            .onContainerExit(function () {
+                if ($('main').hasClass('dark')) {
+                    $('#general').toggleClass('dark');
+                    $('main').toggleClass('dark');
+                    $('#general .switch_scenario').removeClass('active');
+                    const $t = $('#general .switch_scenario').first()
+                    $t.addClass('active');
+                    scenario = $.trim($t.text());
+                    updClip();
+                }
+            });
+
         $(window).resize(function () {
             svgW = $(svg.node()).width();
             svgH = $(svg.node()).height();
@@ -1252,31 +1274,15 @@ Promise.all([
 
             transparentRect
                 .attr('width', svgW)
-                .attr('height', svgH)
+                .attr('height', svgH);
 
             $nav.html(`${linesGBCR[0].e.__data__.year} рік<br/>
                    <strong>${linesGBCR[0].e.__data__.source}</strong>: ${nform(linesGBCR[0].e.__data__[scenario])} тис. т н.е.`)
                 .css('margin', 0);
+
+            scroller.resize();
         });
 
-        const scroller = scrollama();
-        scroller.setup({
-            step: '#general figure',
-            container: '#general',
-            graphic: '#general svg',
-            offset: 0.8,
-        })
-            .onContainerExit(function () {
-                if ($('main').hasClass('dark')) {
-                    $('#general').toggleClass('dark');
-                    $('main').toggleClass('dark');
-                    $('#general .switch_scenario').removeClass('active');
-                    const $t = $('#general .switch_scenario').first()
-                    $t.addClass('active');
-                    scenario = $.trim($t.text());
-                    updClip();
-                }
-            });
     });
 
 $(document).ready(function () {

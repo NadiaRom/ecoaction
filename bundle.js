@@ -357,7 +357,10 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
     $('#consumption .switch_scenario').removeClass('active').first().addClass('active');
     $textLiMarks.removeClass('fa-times').addClass('fa-check');
   });
-  $(window).resize(linesOnResize);
+  $(window).resize(function () {
+    linesOnResize();
+    scroller.resize();
+  });
   $('#consumption .switch_scenario').click(function (e) {
     const $t = $(this);
 
@@ -801,6 +804,23 @@ Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_
     scenario = $.trim($t.text());
     updClip();
   });
+  const scroller = scrollama();
+  scroller.setup({
+    step: '#general figure',
+    container: '#general',
+    graphic: '#general svg',
+    offset: 0.8
+  }).onContainerExit(function () {
+    if ($('main').hasClass('dark')) {
+      $('#general').toggleClass('dark');
+      $('main').toggleClass('dark');
+      $('#general .switch_scenario').removeClass('active');
+      const $t = $('#general .switch_scenario').first();
+      $t.addClass('active');
+      scenario = $.trim($t.text());
+      updClip();
+    }
+  });
   $(window).resize(function () {
     svgW = $(svg.node()).width();
     svgH = $(svg.node()).height();
@@ -864,23 +884,7 @@ Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_
     navHelper.attr('d', "M" + (linesGBCR[0].e.getBoundingClientRect().x - svgBCR.x + lineW / 2) + "\n                         " + (svgH / 2 - scaleKTNE(linesGBCR[0].e.__data__[scenario]) - 2) + "\n                        V 0\n                         ");
     transparentRect.attr('width', svgW).attr('height', svgH);
     $nav.html(linesGBCR[0].e.__data__.year + " \u0440\u0456\u043A<br/>\n                   <strong>" + linesGBCR[0].e.__data__.source + "</strong>: " + nform(linesGBCR[0].e.__data__[scenario]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.").css('margin', 0);
-  });
-  const scroller = scrollama();
-  scroller.setup({
-    step: '#general figure',
-    container: '#general',
-    graphic: '#general svg',
-    offset: 0.8
-  }).onContainerExit(function () {
-    if ($('main').hasClass('dark')) {
-      $('#general').toggleClass('dark');
-      $('main').toggleClass('dark');
-      $('#general .switch_scenario').removeClass('active');
-      const $t = $('#general .switch_scenario').first();
-      $t.addClass('active');
-      scenario = $.trim($t.text());
-      updClip();
-    }
+    scroller.resize();
   });
 });
 $(document).ready(function () {
