@@ -284,7 +284,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   const $textLiMarks = $('#consumption .text li i');
   const scroller = scrollama();
   scroller.setup({
-    step: '#consumption .text_cont',
+    step: '#consumption .text_cont .text',
     container: '#consumption',
     graphic: '#consumption .fig_container',
     offset: 0.85
