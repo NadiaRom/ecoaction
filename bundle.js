@@ -107,9 +107,11 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   const bars = d3.selectAll('#consumption figure #bars div.e-source');
   const barSpans = bars.append('p').text(function (d) {
     return d.source + ' ';
-  }).append('span').classed('ktne', true);
-  const barW = $('.e-source').width();
-  const barsSvg = bars.append('svg').attr('height', '4px').attr('width', barW); // DRAW BARS ------------------------------------------------------------------------------------------
+  }).append('span').classed('ktne', true); // let barW = $('.e-source').width();
+
+  const barsSvg = bars.append('svg').attr('height', '4px'); // .attr('width', barW);
+
+  let barW = $(barsSvg.node()).width(); // DRAW BARS ------------------------------------------------------------------------------------------
 
   const $hYear = $('#consumption #bar_year');
   let datYear = nest_year[scenario];
@@ -117,9 +119,9 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   const barsBar = barsSvg.append('rect').attr('x', 0).attr('y', 0).attr('width', 0).attr('height', '4px');
   const barsCircle = barsSvg.append('circle').attr('cx', 0).attr('cy', 2).attr('r', window.innerWidth < mobW ? 3 : 5); // Lines mobile height
 
-  const linesW = $('#consumption figure .chart#lines').width();
-  const linesH = $('#consumption figure .chart#lines').height();
-  const linesSvg = d3.select('#consumption figure .chart#lines').append('svg').attr('width', linesW).attr('height', linesH);
+  const linesSvg = d3.select('#consumption figure .chart#lines').append('svg');
+  let linesW = $(linesSvg.node()).width(),
+      linesH = $(linesSvg.node()).height();
   const linesM = {
     top: fontSize * 0.25,
     right: linesW * 0.1,
@@ -159,8 +161,8 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   }); // Dragger created here, to be before dots
 
   const dragger = linesSvg.append('g').attr('id', 'year_dragger').attr('transform', "translate(" + scaleYear(2015) + " 0)");
-  const dragHelperW = d3.max([linesW * 0.05, 10]);
-  dragger.append('line').attr('x1', 0).attr('x2', 0).attr('y1', scaleKTNE.range()[1]).attr('y2', scaleKTNE.range()[0]);
+  let dragHelperW = d3.max([linesW * 0.05, 10]);
+  dragger.append('line').classed('dragger_main_line', true).attr('x1', 0).attr('x2', 0).attr('y1', scaleKTNE.range()[1]).attr('y2', scaleKTNE.range()[0]);
   dragger.append('rect').attr('x', dragHelperW / 2 * -1).attr('y', scaleKTNE.range()[1]).attr('height', scaleKTNE.range()[0]).attr('width', dragHelperW).style('stroke', 'none').style('fill', cols.bgcol).style('opacity', 0);
   dragger.append('line').attr('x1', -5).attr('x2', 5).attr('y1', scaleKTNE.range()[1]).attr('y2', scaleKTNE.range()[1]); // USER TIPS TO NAVIGATE ----------------------------------------------------------------------------
 
@@ -279,6 +281,30 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
       return scaleKTNE(d[activeSphere]);
     }); // dragYear = 2015;
     // dragEnd();
+  }; // resize --------------------------------------------------------------------------------------------
+
+
+  const linesOnResize = function linesOnResize() {
+    barW = $(barsSvg.node()).width();
+    scaleBar.range([0, barW]);
+    linesW = $(linesSvg.node()).width();
+    linesH = $(linesSvg.node()).height();
+    linesM.right = linesW * 0.1;
+    linesM.bottom = linesW * 0.05;
+    scaleYear.range([linesM.left, linesW - linesM.right]);
+    scaleKTNE.range([linesH - linesM.bottom, linesM.top]);
+    dragger.attr('transform', "translate(" + scaleYear(2015) + " 0)");
+    dragHelperW = d3.max([linesW * 0.05, 10]);
+    dragger.selectAll('line').attr('y1', scaleKTNE.range()[1]).attr('y2', function () {
+      return $(this).hasClass('dragger_main_line') ? scaleKTNE.range()[0] : scaleKTNE.range()[1];
+    });
+    dragger.select('rect').attr('x', dragHelperW / 2 * -1).attr('y', scaleKTNE.range()[1]).attr('height', scaleKTNE.range()[0]).attr('width', dragHelperW);
+    gXAxis.attr('transform', "translate(0 " + scaleKTNE.range()[0] + ")").call(xAxis);
+    gXAxis.selectAll('.tick text').attr('font-size', '0.85rem');
+    gXAxis.selectAll('.tick line').attr('y1', -1 * (linesH - linesM.top - linesM.bottom)).attr('stroke', chroma(cols.black).alpha(0.4)).attr('stroke-dasharray', '2 2');
+    gYAxis.attr('transform', "translate(" + (linesW - linesM.right) + ", 0)");
+    updateLines();
+    updateBar();
   }; // SCROLLAMA -----------------------------------------------------------------------------------------
 
 
@@ -325,6 +351,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
     $('#consumption .switch_scenario').removeClass('active').first().addClass('active');
     $textLiMarks.removeClass('fa-times').addClass('fa-check');
   });
+  $(window).resize(linesOnResize);
   $('#consumption .switch_scenario').click(function (e) {
     const $t = $(this);
 
@@ -431,7 +458,7 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   };
 
   checkOverlap();
-  const textX = svg.select('#labels').node().getBBox().width;
+  let textX = svg.select('#labels').node().getBBox().width;
   svgM.left = textX + fontSize * 0.5 + circleR * 2;
   labs.style('text-anchor', 'start').attr('x', svgM.left - fontSize * 0.5 - circleR * 2);
   labs.selectAll('tspan').attr('x', function () {
@@ -439,10 +466,10 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   });
   const scaleScen = d3.scalePoint().domain(['Базовий', 'Революційний']).range([svgM.left, svgW - svgM.right]);
 
-  const _scaleScen$range = scaleScen.range(),
-        _scaleScen$range2 = _slicedToArray(_scaleScen$range, 2),
-        x1 = _scaleScen$range2[0],
-        x2 = _scaleScen$range2[1];
+  let _scaleScen$range = scaleScen.range(),
+      _scaleScen$range2 = _slicedToArray(_scaleScen$range, 2),
+      x1 = _scaleScen$range2[0],
+      x2 = _scaleScen$range2[1];
 
   const xAxis = d3.axisTop(scaleScen); // .tickValues(['Базовий', 'Революційний']);
 
@@ -560,6 +587,8 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
         return a[activeYear];
       }));
       return (bubleH - r) / 2 + fontSize * 0.7;
+    }).attr('x', function (d) {
+      return scaleScen(d.key);
     });
     checkOverlap();
   };
@@ -601,7 +630,25 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     svgH = parseInt(svg.attr('height'));
     scaleExpence.range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
     bubleH = scaleExpence.range()[1] - fontSize;
+    textX = svg.select('#labels').node().getBBox().width;
+    svgM.left = textX + fontSize * 0.5 + circleR * 2;
+    labs.style('text-anchor', 'start').attr('x', svgM.left - fontSize * 0.5 - circleR * 2);
+    labs.selectAll('tspan').attr('x', function () {
+      return textX - this.getComputedTextLength();
+    });
+    scaleScen.range([svgM.left, svgW - svgM.right]);
+
+    var _scaleScen$range3 = scaleScen.range();
+
+    var _scaleScen$range4 = _slicedToArray(_scaleScen$range3, 2);
+
+    x1 = _scaleScen$range4[0];
+    x2 = _scaleScen$range4[1];
     updSlopes();
+    gXAxis.call(xAxis);
+    gXAxis.selectAll('.tick line').attr('y1', scaleExpence.range()[0]).attr('y2', scaleExpence.range()[1]);
+    gXAxis.selectAll('.tick text').attr('y', scaleExpence.range()[1] - fontSize * 0.75);
+    gXAxis.selectAll('path').remove();
   });
 });
 Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_ref5) {

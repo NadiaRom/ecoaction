@@ -98,14 +98,16 @@ Promise.all([
             .append('span')
             .classed('ktne', true);
 
-        const barW = $('.e-source').width();
+        // let barW = $('.e-source').width();
 
         const barsSvg = bars.append('svg')
             .attr('height', '4px')
-            .attr('width', barW);
+            // .attr('width', barW);
+
+        let barW = $(barsSvg.node()).width();
 
         // DRAW BARS ------------------------------------------------------------------------------------------
-        const $hYear = $('#consumption #bar_year')
+        const $hYear = $('#consumption #bar_year');
         let datYear = nest_year[scenario];
         const scaleBar = d3.scaleLinear()
             .range([0, barW]);
@@ -123,13 +125,11 @@ Promise.all([
         
         // Lines mobile height
 
-        const linesW = $('#consumption figure .chart#lines').width();
-        const linesH = $('#consumption figure .chart#lines').height();
-
         const linesSvg = d3.select('#consumption figure .chart#lines')
-            .append('svg')
-            .attr('width', linesW)
-            .attr('height', linesH);
+            .append('svg');
+
+        let linesW = $(linesSvg.node()).width(),
+            linesH = $(linesSvg.node()).height();
 
         const linesM = {
             top: fontSize*0.25,
@@ -213,9 +213,10 @@ Promise.all([
             .attr('id', 'year_dragger')
             .attr('transform', `translate(${scaleYear(2015)} 0)`);
 
-        const dragHelperW = d3.max([linesW * 0.05, 10]);
+        let dragHelperW = d3.max([linesW * 0.05, 10]);
 
         dragger.append('line')
+            .classed('dragger_main_line', true)
             .attr('x1', 0)
             .attr('x2', 0)
             .attr('y1', scaleKTNE.range()[1])
@@ -418,6 +419,56 @@ Promise.all([
             // dragEnd();
         };
 
+        // resize --------------------------------------------------------------------------------------------
+        const linesOnResize = function () {
+
+            barW = $(barsSvg.node()).width();
+            scaleBar.range([0, barW]);
+
+            linesW = $(linesSvg.node()).width();
+            linesH = $(linesSvg.node()).height();
+
+            linesM.right = linesW * 0.1;
+            linesM.bottom = linesW * 0.05;
+
+            scaleYear.range([linesM.left, linesW - linesM.right]);
+
+            scaleKTNE.range([linesH - linesM.bottom, linesM.top]);
+
+            dragger.attr('transform', `translate(${scaleYear(2015)} 0)`);
+
+            dragHelperW = d3.max([linesW * 0.05, 10]);
+
+            dragger.selectAll('line')
+                .attr('y1', scaleKTNE.range()[1])
+                .attr('y2', function () {
+                    return $(this).hasClass('dragger_main_line') ? scaleKTNE.range()[0] : scaleKTNE.range()[1];
+                });
+
+            dragger.select('rect')
+                .attr('x', dragHelperW / 2 * (-1))
+                .attr('y', scaleKTNE.range()[1])
+                .attr('height', scaleKTNE.range()[0])
+                .attr('width', dragHelperW);
+
+            gXAxis.attr('transform', `translate(0 ${scaleKTNE.range()[0]})`)
+                .call(xAxis);
+
+            gXAxis.selectAll('.tick text')
+                .attr('font-size', '0.85rem');
+
+            gXAxis.selectAll('.tick line')
+                .attr('y1', -1 * (linesH - linesM.top - linesM.bottom))
+                .attr('stroke', chroma(cols.black).alpha(0.4))
+                .attr('stroke-dasharray', '2 2');
+
+            gYAxis.attr('transform', `translate(${linesW - linesM.right}, 0)`)
+
+            updateLines();
+            updateBar();
+
+        };
+
         // SCROLLAMA -----------------------------------------------------------------------------------------
         const scaleColor = d3.scaleOrdinal()
             .domain(['загалом', 'населення', 'промисловість', 'сільське господарство', 'транспорт', 'сфера послуг'])
@@ -474,7 +525,7 @@ Promise.all([
                 $textLiMarks.removeClass('fa-times').addClass('fa-check')
             });
 
-
+        $(window).resize(linesOnResize);
         
         $('#consumption .switch_scenario').click(function (e) {
             const $t = $(this);
@@ -607,7 +658,7 @@ Promise.all([
 
         checkOverlap();
 
-        const textX = svg.select('#labels').node().getBBox().width;
+        let textX = svg.select('#labels').node().getBBox().width;
 
         svgM.left = textX + fontSize * 0.5 + circleR * 2;
         labs.style('text-anchor', 'start')
@@ -620,7 +671,7 @@ Promise.all([
             .domain(['Базовий', 'Революційний'])
             .range([svgM.left, svgW - svgM.right]);
         
-        const [x1, x2] = scaleScen.range();
+        let [x1, x2] = scaleScen.range();
 
         const xAxis = d3.axisTop(scaleScen);
             // .tickValues(['Базовий', 'Революційний']);
@@ -814,7 +865,8 @@ Promise.all([
                 .attr('y', function (d) {
                     const r = scaleR(d3.sum(d.values, a => a[activeYear]));
                     return (bubleH - r) / 2 + fontSize*0.7;
-                });
+                })
+                .attr('x', d => scaleScen(d.key));
 
             checkOverlap();
         };
@@ -859,6 +911,20 @@ Promise.all([
             scaleExpence.range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
 
             bubleH = scaleExpence.range()[1] - fontSize;
+
+            textX = svg.select('#labels').node().getBBox().width;
+
+            svgM.left = textX + fontSize * 0.5 + circleR * 2;
+            labs.style('text-anchor', 'start')
+                .attr('x', svgM.left - fontSize*0.5 - circleR * 2);
+
+            labs.selectAll('tspan')
+                .attr('x', function() { return textX - this.getComputedTextLength(); });
+
+            scaleScen
+                .range([svgM.left, svgW - svgM.right]);
+
+            [x1, x2] = scaleScen.range();
 
             updSlopes();
 
