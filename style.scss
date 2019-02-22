@@ -503,7 +503,7 @@ main {
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
-      transform:translate3d(0,0,0);
+      //transform:translate3d(0,0,0);
     }
     .blank_for_scroll {
       opacity: 0;
