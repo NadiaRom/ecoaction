@@ -290,6 +290,11 @@ Promise.all([
             .attr('class', d => d.by_vde)
             .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
 
+        const dotHelpers = dots.clone()
+            .attr('r', (window.innerWidth < mobW) ? 7 : 9)
+            .attr('class', 'circle_helper')
+            .style('opacity', 0);
+
         const updateBar = function () {
             const dat = {};
             datYear[dragYear.toString()].map(function (d) {
@@ -321,9 +326,11 @@ Promise.all([
         updateBar();
 
         // DRAG YEAR ------------------------------------------------------------------------------------------
-        const lineTipSelection = (window.innerHeight > 850)
-            ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde')
-            : document.querySelectorAll('#lines circle.dirt, #lines circle.vde, .e-source circle');
+        // const lineTipSelection = (window.innerHeight > 850)
+        //     ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde')
+        //     : document.querySelectorAll('#lines circle.dirt, #lines circle.vde');
+
+        const lineTipSelection = document.querySelectorAll('#lines .circle_g .circle_helper');
 
         const lineTip = tippy(lineTipSelection, {
             animation: 'fade',
@@ -412,6 +419,10 @@ Promise.all([
             dots.data(d => d.values.slice(1))
                 .transition()
                 .duration(500)
+                .attr('cx', d => scaleYear(d.year))
+                .attr('cy', d => scaleKTNE(d[activeSphere]));
+
+            dotHelpers.data(d => d.values.slice(1))
                 .attr('cx', d => scaleYear(d.year))
                 .attr('cy', d => scaleKTNE(d[activeSphere]));
 

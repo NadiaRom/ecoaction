@@ -192,6 +192,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   }).style('fill', function (d) {
     return d.by_vde === 'vde' ? cols.green : cols.orange;
   });
+  const dotHelpers = dots.clone().attr('r', window.innerWidth < mobW ? 7 : 9).attr('class', 'circle_helper').style('opacity', 0);
 
   const updateBar = function updateBar() {
     const dat = {};
@@ -217,8 +218,11 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   };
 
   updateBar(); // DRAG YEAR ------------------------------------------------------------------------------------------
+  // const lineTipSelection = (window.innerHeight > 850)
+  //     ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde')
+  //     : document.querySelectorAll('#lines circle.dirt, #lines circle.vde');
 
-  const lineTipSelection = window.innerHeight > 850 ? document.querySelectorAll('#lines circle.dirt, #lines circle.vde') : document.querySelectorAll('#lines circle.dirt, #lines circle.vde, .e-source circle');
+  const lineTipSelection = document.querySelectorAll('#lines .circle_g .circle_helper');
   const lineTip = tippy(lineTipSelection, {
     animation: 'fade',
     appendTo: document.querySelector('main'),
@@ -276,6 +280,13 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
     dots.data(function (d) {
       return d.values.slice(1);
     }).transition().duration(500).attr('cx', function (d) {
+      return scaleYear(d.year);
+    }).attr('cy', function (d) {
+      return scaleKTNE(d[activeSphere]);
+    });
+    dotHelpers.data(function (d) {
+      return d.values.slice(1);
+    }).attr('cx', function (d) {
       return scaleYear(d.year);
     }).attr('cy', function (d) {
       return scaleKTNE(d[activeSphere]);
