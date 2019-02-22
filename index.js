@@ -5,11 +5,11 @@ const chroma = require('chroma-js');
 const tippy = require('tippy.js');
 
 $('#menu-container h2').text(`
-      body.scrollHeight: ${body.scrollHeight},
-      body.offsetHeight: ${body.offsetHeight},
-      html.clientHeight: ${html.clientHeight},
-      html.scrollHeight: ${html.scrollHeight},
-      html.offsetHeight: ${html.offsetHeight}`);
+      body.scrollHeight: ${document.body.scrollHeight},
+      body.offsetHeight: ${document.body.offsetHeight},
+      html.clientHeight: ${document.documentElement.clientHeight},
+      html.scrollHeight: ${document.documentElement.scrollHeight},
+      html.offsetHeight: ${document.documentElement.offsetHeight}`);
 
 const cols = {
     green: '#3bdf14',
