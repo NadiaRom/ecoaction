@@ -427,7 +427,7 @@ Promise.all([
         const scroller = scrollama();
 
         scroller.setup({
-            step: '#consumption .text_cont .text',
+            step: '#consumption .text_cont',
             container: '#consumption',
             graphic: '#consumption .fig_container',
             offset: 0.85,
