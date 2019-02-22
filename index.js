@@ -4,6 +4,13 @@ const d3 = require('d3');
 const chroma = require('chroma-js');
 const tippy = require('tippy.js');
 
+$('#menu-container h2').text(`
+      body.scrollHeight: ${body.scrollHeight},
+      body.offsetHeight: ${body.offsetHeight},
+      html.clientHeight: ${html.clientHeight},
+      html.scrollHeight: ${html.scrollHeight},
+      html.offsetHeight: ${html.offsetHeight}`);
+
 const cols = {
     green: '#3bdf14',
     black: 'rgb(51, 51, 51)',

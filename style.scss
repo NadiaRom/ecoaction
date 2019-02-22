@@ -474,6 +474,7 @@ main {
     margin: 0 1em 0 1em;
     pointer-events: none;
     z-index: 5;
+    position: relative;
 
     @media #{$medium} {
       margin: 0 -5% 0 calc(50% + 3em);
@@ -487,8 +488,6 @@ main {
       padding: 0;
       margin: 1em 0 1em 1em;
       pointer-events: auto;
-      z-index: 6;
-      opacity: 0.99;
 
       span.h4_sphere {
         color: $blue;
@@ -503,7 +502,7 @@ main {
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
-      //transform:translate3d(0,0,0);
+      transform:translate3d(0,0,0);
     }
     .blank_for_scroll {
       opacity: 0;
