@@ -18,6 +18,11 @@ $max_height_medium: 'screen and (max-height: 850px)';
 
 @import '../node_modules/tippy.js/dist/themes/light.css';
 
+html {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   color: $fontcol;
   background-color: $bgcol;
