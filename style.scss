@@ -217,6 +217,7 @@ main {
   padding: 0;
   margin: 1em 1em 0 1em;
   transition: color 0.5s, fill 0.5s, stroke 0.5s, background-color 0.5s;
+  position: relative;
 
   @media #{$medium} {
     margin: 1em 5% 0 10%;
@@ -459,7 +460,7 @@ main {
     padding: 0;
     margin: 0 1em 0 1em;
     pointer-events: none;
-    z-index: 1;
+    z-index: 5;
     position: relative;
 
     @media #{$medium} {
@@ -488,6 +489,7 @@ main {
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
+      z-index: 6;
     }
     .blank_for_scroll {
       opacity: 0;
