@@ -234,7 +234,6 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   });
 
   const dragStart = function dragStart() {
-    $('#consumption #consumption_nav').css('opacity', 0);
     d3.select(this).classed('active', true);
   };
 
@@ -245,6 +244,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   };
 
   const dragEnd = function dragEnd() {
+    $('#consumption #consumption_nav').css('opacity', 0);
     const yearDragger = d3.select('#lines #year_dragger');
     yearDragger.transition().duration(500).attr('transform', "translate(" + scaleYear(dragYear) + " 0)");
     yearDragger.classed('active', false);
@@ -347,12 +347,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
 
       updateLines();
       updateBar();
-    } // if (r.index === 0) {
-    //     navigation.style('opacity', 1)
-    // } else if (r.index === 1) {
-    //     navigation.style('opacity', 0)
-    // }
-
+    }
   }).onContainerExit(function (r) {
     $('#consumption').removeClass('dark');
     $('main').removeClass('dark');

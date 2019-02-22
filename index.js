@@ -347,7 +347,6 @@ Promise.all([
         });
 
         const dragStart = function() {
-            $('#consumption #consumption_nav').css('opacity', 0);
             d3.select(this).classed('active', true);
         };
 
@@ -358,6 +357,7 @@ Promise.all([
         };
 
         const dragEnd = function() {
+            $('#consumption #consumption_nav').css('opacity', 0);
             const yearDragger = d3.select('#lines #year_dragger');
             yearDragger.transition()
                 .duration(500)
@@ -517,11 +517,6 @@ Promise.all([
                     updateLines();
                     updateBar();
                 }
-                // if (r.index === 0) {
-                //     navigation.style('opacity', 1)
-                // } else if (r.index === 1) {
-                //     navigation.style('opacity', 0)
-                // }
             })
             .onContainerExit(function (r) {
                 $('#consumption').removeClass('dark');
