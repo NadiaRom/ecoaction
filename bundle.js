@@ -192,7 +192,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
   }).style('fill', function (d) {
     return d.by_vde === 'vde' ? cols.green : cols.orange;
   });
-  const dotHelpers = dots.clone().attr('r', window.innerWidth < mobW ? 7 : 9).attr('class', 'circle_helper').style('opacity', 0);
+  const dotHelpers = dots.clone().attr('r', window.innerWidth < mobW ? 8 : 12).attr('class', 'circle_helper').style('opacity', 0);
 
   const updateBar = function updateBar() {
     const dat = {};
@@ -229,7 +229,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
     onShow: function onShow(tip) {
       const d = tip.reference.__data__;
       const is_vde = d.source ? sourcesOrder[d.source].is_vde ? 'vde' : 'dirt' : d.by_vde;
-      tip.setContent("\n            <p class=\"small\"><span class=\"" + is_vde + "\">" + nform(d[activeSphere]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.</span></p>\n            ");
+      tip.setContent("\n            <p class=\"sm\"><span class=\"" + is_vde + "\">" + nform(d[activeSphere]) + " \u0442\u0438\u0441. \u0442 \u043D.\u0435.</span></p>\n            ");
     }
   });
 

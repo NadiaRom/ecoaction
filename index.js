@@ -291,7 +291,7 @@ Promise.all([
             .style('fill', d => (d.by_vde === 'vde') ? cols.green : cols.orange);
 
         const dotHelpers = dots.clone()
-            .attr('r', (window.innerWidth < mobW) ? 7 : 9)
+            .attr('r', (window.innerWidth < mobW) ? 8 : 12)
             .attr('class', 'circle_helper')
             .style('opacity', 0);
 
@@ -341,7 +341,7 @@ Promise.all([
                     ? ((sourcesOrder[d.source].is_vde) ? 'vde' : 'dirt')
                     : d.by_vde;
                 tip.setContent(`
-            <p class="small"><span class="${is_vde}">${nform(d[activeSphere])} тис. т н.е.</span></p>
+            <p class="sm"><span class="${is_vde}">${nform(d[activeSphere])} тис. т н.е.</span></p>
             `);
             },
         });
