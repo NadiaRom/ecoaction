@@ -936,6 +936,10 @@ Promise.all([
                 .attr('x', textX)
                 .attr('y', bubleH / 2 + fontSize);
 
+            yLabs.data(scaleExpence.domain())
+                .attr('y', d => scaleExpence(d))
+                .attr('x', x1 + 2);
+
             updSlopes();
 
             totalBVal.attr('x', d => scaleScen(d.key))

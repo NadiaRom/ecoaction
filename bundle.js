@@ -651,6 +651,9 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     x1 = _scaleScen$range4[0];
     x2 = _scaleScen$range4[1];
     totalBLab.attr('x', textX).attr('y', bubleH / 2 + fontSize);
+    yLabs.data(scaleExpence.domain()).attr('y', function (d) {
+      return scaleExpence(d);
+    }).attr('x', x1 + 2);
     updSlopes();
     totalBVal.attr('x', function (d) {
       return scaleScen(d.key);
