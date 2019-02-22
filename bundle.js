@@ -650,7 +650,13 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
 
     x1 = _scaleScen$range4[0];
     x2 = _scaleScen$range4[1];
+    totalBLab.attr('x', textX).attr('y', bubleH / 2 + fontSize);
     updSlopes();
+    totalBVal.attr('x', function (d) {
+      return scaleScen(d.key);
+    }).attr('y', function (_, i) {
+      return totalBubbles.nodes()[i].getBBox().y - fontSize * 0.3;
+    });
     gXAxis.call(xAxis);
     gXAxis.selectAll('.tick line').attr('y1', scaleExpence.range()[0]).attr('y2', scaleExpence.range()[1]);
     gXAxis.selectAll('.tick text').attr('y', scaleExpence.range()[1] - fontSize * 0.75);

@@ -932,7 +932,16 @@ Promise.all([
 
             [x1, x2] = scaleScen.range();
 
+            totalBLab
+                .attr('x', textX)
+                .attr('y', bubleH / 2 + fontSize);
+
             updSlopes();
+
+            totalBVal.attr('x', d => scaleScen(d.key))
+                .attr('y', function (_, i) {
+                    return totalBubbles.nodes()[i].getBBox().y - fontSize*0.3;
+                });
 
             gXAxis.call(xAxis);
 
