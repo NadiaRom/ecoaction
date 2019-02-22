@@ -476,6 +476,7 @@ main {
       padding: 0;
       margin: 1em 0 1em 1em;
       pointer-events: auto;
+      z-index: 6;
 
       span.h4_sphere {
         color: $blue;
