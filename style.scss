@@ -235,7 +235,7 @@ main {
     top: 0;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    z-index: -1;
+    z-index: 0;
   }
 
   .h3 {
@@ -457,7 +457,7 @@ main {
     }
   }
 
-  article#explanation {
+  .text_cont {
     padding: 0;
     margin: 0 1em 0 1em;
     pointer-events: none;
