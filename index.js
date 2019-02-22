@@ -509,10 +509,6 @@ Promise.all([
             .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
             .range(['#ff554e','#ff7bac','#ffa25c','#00afc9','#3EEC15']);
 
-        // const scaleColor = d3.scaleOrdinal()
-        //     .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
-        //     .range(['#ee4d30','#241d58','#f69a33','#1dada6','#81b652']);
-
         let activeYear = '2050';
         
         const svg = d3.select('#costs figure svg')
@@ -525,8 +521,8 @@ Promise.all([
 
         const circleR = (window.innerWidth < mobW) ? 3 : 5;
         
-        const svgW = parseInt(svg.attr('width'));
-        const svgH = parseInt(svg.attr('height'));
+        let svgW = parseInt(svg.attr('width'));
+        let svgH = parseInt(svg.attr('height'));
         const svgM = {
             top: fontSize * 0.5,
             right: (window.innerWidth < mobW) ? fontSize * 3 : circleR + 1 + fontSize,
@@ -722,7 +718,7 @@ Promise.all([
             .style('stroke-width', 10)
             .style('fill', 'none');
 
-        const bubleH = scaleExpence.range()[1] - fontSize;
+        let bubleH = scaleExpence.range()[1] - fontSize;
 
         const scaleR = d3.scaleLinear()
             .domain([0, 116000])
@@ -790,6 +786,12 @@ Promise.all([
                 .attr('cx', d => scaleScen(d.key))
                 .attr('cy', d => scaleExpence(d.values[0][activeYear]));
 
+            scaleR
+                .range([0, d3.min([
+                    slopeLines.node().getBBox().width,
+                    bubleH - fontSize*4
+                ])]);
+
             totalBubbles
                 .transition()
                 .duration(600)
@@ -842,6 +844,34 @@ Promise.all([
                 `)
             },
             trigger: 'manual',
+        });
+
+        $(window).resize(function () {
+            svg.attr('height', function () {
+                    return $(this).parent().height();
+                })
+                .attr('width', function () {
+                    return $(this).parent().width();
+                });
+
+            svgW = parseInt(svg.attr('width'));
+            svgH = parseInt(svg.attr('height'));
+            scaleExpence.range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
+
+            bubleH = scaleExpence.range()[1] - fontSize;
+
+            updSlopes();
+
+            gXAxis.call(xAxis);
+
+            gXAxis.selectAll('.tick line')
+                .attr('y1', scaleExpence.range()[0])
+                .attr('y2', scaleExpence.range()[1]);
+
+            gXAxis.selectAll('.tick text')
+                .attr('y', scaleExpence.range()[1] - fontSize * 0.75);
+
+            gXAxis.selectAll('path').remove();
         });
         
     });

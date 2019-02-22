@@ -354,10 +354,7 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   }).key(function (d) {
     return d.scenario;
   }).entries(data);
-  const scaleColor = d3.scaleOrdinal().domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)']).range(['#ff554e', '#ff7bac', '#ffa25c', '#00afc9', '#3EEC15']); // const scaleColor = d3.scaleOrdinal()
-  //     .domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)'])
-  //     .range(['#ee4d30','#241d58','#f69a33','#1dada6','#81b652']);
-
+  const scaleColor = d3.scaleOrdinal().domain(['Вартість палива', 'Транспортування, постачання та проміжні технології', 'Експлуатаційні витрати', 'Капітальні інвестиції', 'Субсидії («зелений» тариф)']).range(['#ff554e', '#ff7bac', '#ffa25c', '#00afc9', '#3EEC15']);
   let activeYear = '2050';
   const svg = d3.select('#costs figure svg').attr('height', function () {
     return $(this).parent().height();
@@ -365,8 +362,8 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     return $(this).parent().width();
   });
   const circleR = window.innerWidth < mobW ? 3 : 5;
-  const svgW = parseInt(svg.attr('width'));
-  const svgH = parseInt(svg.attr('height'));
+  let svgW = parseInt(svg.attr('width'));
+  let svgH = parseInt(svg.attr('height'));
   const svgM = {
     top: fontSize * 0.5,
     right: window.innerWidth < mobW ? fontSize * 3 : circleR + 1 + fontSize,
@@ -505,7 +502,7 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
   }).attr('r', circleR); // .style('fill', d => scaleColor(d.values[0].action));
 
   const slopeHelpers = slopeLines.clone().style('stroke-opacity', 0).style('stroke-width', 10).style('fill', 'none');
-  const bubleH = scaleExpence.range()[1] - fontSize;
+  let bubleH = scaleExpence.range()[1] - fontSize;
   const scaleR = d3.scaleLinear().domain([0, 116000]).range([0, d3.min([slopeLines.node().getBBox().width, bubleH - fontSize * 4])]);
   const totalBubbles = svg.selectAll('path.t_bubble').data(d3.nest().key(function (d) {
     return d.scenario;
@@ -545,6 +542,7 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     }).attr('cy', function (d) {
       return scaleExpence(d.values[0][activeYear]);
     });
+    scaleR.range([0, d3.min([slopeLines.node().getBBox().width, bubleH - fontSize * 4])]);
     totalBubbles.transition().duration(600).attr('d', function (d) {
       const r = scaleR(d3.sum(d.values, function (a) {
         return a[activeYear];
@@ -592,6 +590,18 @@ Promise.all([d3.csv('data/costs_agg_wide.csv', numericalize)]).then(function (_r
     },
 
     trigger: 'manual'
+  });
+  $(window).resize(function () {
+    svg.attr('height', function () {
+      return $(this).parent().height();
+    }).attr('width', function () {
+      return $(this).parent().width();
+    });
+    svgW = parseInt(svg.attr('width'));
+    svgH = parseInt(svg.attr('height'));
+    scaleExpence.range([svgH - svgM.bottom, svgH * 0.33 + svgM.top]);
+    bubleH = scaleExpence.range()[1] - fontSize;
+    updSlopes();
   });
 });
 Promise.all([d3.csv('data/eresources_long.csv', numericalize)]).then(function (_ref5) {
