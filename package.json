@@ -25,8 +25,9 @@
     "@babel/polyfill": "^7.2.5",
     "chroma-js": "^2.0.2",
     "d3": "^5.8.0",
+    "intersection-observer": "^0.5.1",
     "jquery": "^3.3.1",
-    "scrollama": "git+https://github.com/russellgoldenberg/scrollama.git",
+    "scrollama": "^1.4.4",
     "tippy.js": "^3.4.1"
   },
   "devDependencies": {
