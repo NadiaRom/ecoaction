@@ -309,8 +309,6 @@ main {
     grid-gap: 2em;
     grid-template-rows: 1fr;
     grid-template-columns: 1.61fr 1fr;
-    z-index: 1;
-    position: relative;
 
     @media #{$mobile} {
       grid-template-rows: 1fr auto;
@@ -333,7 +331,7 @@ main {
       }
 
       svg {
-        display: inherit;
+        display: block;
         overflow: visible;
       }
 
@@ -397,7 +395,7 @@ main {
       }
 
       path.sl {
-        stroke-width: 3;
+        stroke-width: 3px;
         stroke-opacity: 0.75;
       }
 
@@ -473,8 +471,8 @@ main {
     padding: 0;
     margin: 0 1em 0 1em;
     pointer-events: none;
-    z-index: 5;
-    position: relative;
+    transform:translate3d(0,0,0);
+    //z-index: 5;
 
     @media #{$medium} {
       margin: 0 -5% 0 calc(50% + 3em);
@@ -502,7 +500,6 @@ main {
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
-      transform:translate3d(0,0,0);
     }
     .blank_for_scroll {
       opacity: 0;

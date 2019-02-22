@@ -35,7 +35,6 @@ const chroma = require('chroma-js');
 
 const tippy = require('tippy.js');
 
-$('#menu-container h2').text("\n      body.scrollHeight: " + document.body.scrollHeight + ",\n      body.offsetHeight: " + document.body.offsetHeight + ",\n      html.clientHeight: " + document.documentElement.clientHeight + ",\n      html.scrollHeight: " + document.documentElement.scrollHeight + ",\n      html.offsetHeight: " + document.documentElement.offsetHeight);
 const cols = {
   green: '#3bdf14',
   black: 'rgb(51, 51, 51)',
