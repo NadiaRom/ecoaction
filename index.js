@@ -101,7 +101,7 @@ Promise.all([
         // let barW = $('.e-source').width();
 
         const barsSvg = bars.append('svg')
-            .attr('height', '4px')
+            .attr('height', '4px');
             // .attr('width', barW);
 
         let barW = $(barsSvg.node()).width();

@@ -236,6 +236,12 @@ main {
   @media #{$large} {
     margin: 1em 10% 0 20%;
   }
+  
+  @media #{$mobile} {
+    .data_caption {
+      display: none;
+    }
+  }
 
 
   .fig_container {
@@ -256,16 +262,22 @@ main {
     grid-column: 1 / -1;
     z-index: 1;
 
+    @media #{$mobile} {
+      h3 {
+        margin: 0.5em 0 0.5em 0;
+      }
+    }
+
     p {
       margin: 0 0 0.5em 0;
     }
 
     p:last-of-type {
-      margin: 1em 0 0 0;
       font-size: 1.1rem;
       display: grid;
       @media #{$medium} {
         grid-template-columns: 1.61fr 1fr;
+        margin: 1em 0 0 0;
       }
 
       #bar_year {
