@@ -236,7 +236,7 @@ main {
     top: 0;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    z-index: 0;
+    //z-index: 0;
     //transform: translate3d(0,0,0);
   }
 
@@ -467,7 +467,6 @@ main {
     margin: 0 1em 0 1em;
     pointer-events: none;
     z-index: 5;
-    transform:translate3d(0,0,0);
 
     @media #{$medium} {
       margin: 0 -5% 0 calc(50% + 3em);
@@ -497,7 +496,7 @@ main {
       background: darken($bgcol, 3%);
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
-      z-index: 6;
+      transform:translate3d(0,0,0);
     }
     .blank_for_scroll {
       opacity: 0;
