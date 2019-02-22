@@ -259,7 +259,7 @@ Promise.all([d3.csv('data/by_vde_wide.csv', numericalize), d3.csv('data/data_rep
     dragYear = this.__data__;
     dragEnd();
   });
-  d3.selectAll('#lines circle.dirt, #lines circle.vde').on('click', function (d) {
+  d3.selectAll('#lines circle.dirt, #lines .circle_g circle').on('click', function (d) {
     dragYear = d.year;
     dragEnd();
   }); // FUNC TO UPDATE LINES -----------------------------------------------------------------------------

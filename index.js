@@ -384,7 +384,7 @@ Promise.all([
             dragEnd();
         });
 
-        d3.selectAll('#lines circle.dirt, #lines circle.vde')
+        d3.selectAll('#lines circle.dirt, #lines .circle_g circle')
             .on('click', function (d) {
                 dragYear = d.year;
                 dragEnd();
