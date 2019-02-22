@@ -467,7 +467,6 @@ main {
     margin: 0 1em 0 1em;
     pointer-events: none;
     z-index: 5;
-    position: relative;
     transform:translate3d(0,0,0);
 
     @media #{$medium} {
@@ -499,8 +498,6 @@ main {
       box-shadow: 0 0.1em 0.4em -0.1em rgba(darken($bgcol, 50%), 0.85);
       pointer-events: none;
       z-index: 6;
-      opacity: 0.99;
-      position: relative;
     }
     .blank_for_scroll {
       opacity: 0;
