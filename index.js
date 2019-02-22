@@ -1,8 +1,9 @@
-const scrollama = require('scrollama');
 const $ = require('jquery');
 const d3 = require('d3');
 const chroma = require('chroma-js');
 const tippy = require('tippy.js');
+require('intersection-observer');
+const scrollama = require('scrollama');
 
 const cols = {
     green: '#3bdf14',
