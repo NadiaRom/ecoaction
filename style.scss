@@ -237,6 +237,7 @@ main {
     display: grid;
     grid-template-rows: auto 1fr auto;
     z-index: 0;
+    transform: translate3d(0,0,0);
   }
 
   .h3 {
@@ -302,6 +303,7 @@ main {
     grid-template-rows: 1fr;
     grid-template-columns: 1.61fr 1fr;
     z-index: 1;
+    position: relative;
 
     @media #{$mobile} {
       grid-template-rows: 1fr auto;
@@ -465,8 +467,8 @@ main {
     margin: 0 1em 0 1em;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.99;
     position: relative;
+    transform:translate3d(0,0,0);
 
     @media #{$medium} {
       margin: 0 -5% 0 calc(50% + 3em);
